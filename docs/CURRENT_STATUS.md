@@ -6,7 +6,7 @@
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
 - **Rien n'est encore en ligne** : base Supabase pas encore installée, pas d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
-- **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 3).
+- **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 4, avec les vraies photos).
 - **Supabase** : projet créé (`https://dxemjkfvaofijqptubfh.supabase.co`, clé publique dans `apps/web/.env.supabase` et `apps/mobile/eas.json`). **Base pas encore installée** : il manque les secrets GitHub (voir [TASKS.md](TASKS.md)).
 - **Photos** : 12 vraies photos de plats (Wikimedia Commons, licences libres).
 - **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
