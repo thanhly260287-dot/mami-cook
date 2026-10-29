@@ -10,7 +10,7 @@ import { Button, Card, T } from "@/components/ui";
 
 export default function AccountScreen() {
   const c = useColors();
-  const { session, cook, signOut } = useAuth();
+  const { session, cook, courier, signOut } = useAuth();
 
   const item = (icon: keyof typeof Ionicons.glyphMap, label: string, onPress: () => void, danger?: boolean) => (
     <Pressable onPress={onPress} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 14 }}>
@@ -42,9 +42,12 @@ export default function AccountScreen() {
         <Card style={{ gap: 10 }}><T weight="700">{t("Bienvenue !")}</T><T color={c.muted}>{t("Connectez-vous pour commander et suivre vos plats.")}</T><Button title={t("Se connecter / S'inscrire")} onPress={() => router.push("/connexion")} /></Card>
       )}
       <Card style={{ paddingVertical: 4 }}>
-        {cook ? item("restaurant", t("Ma cuisine"), () => router.push("/cuisinier")) : item("restaurant-outline", t("Devenir Mami Cook"), () => Linking.openURL(`${SITE_URL}/devenir-cuisinier`))}
+        {session && item("stats-chart-outline", t("Mon espace"), () => router.push("/mon-espace"))}
+        {cook ? item("restaurant", t("Ma cuisine"), () => router.push("/cuisinier")) : item("restaurant-outline", t("Vendre mes plats"), () => Linking.openURL(`${SITE_URL}/devenir-cuisinier`))}
+        {courier && courier.status !== "draft" ? item("bicycle", t("Espace livreur"), () => router.push("/livreur")) : item("bicycle-outline", t("Devenir livreur"), () => Linking.openURL(`${SITE_URL}/devenir-livreur`))}
         {item("help-circle-outline", t("Aide"), () => Linking.openURL(`${SITE_URL}/aide`))}
-        {item("document-text-outline", t("Conditions générales"), () => Linking.openURL(`${SITE_URL}/legal/cgu`))}
+        {item("earth-outline", t("Règles par pays"), () => Linking.openURL(`${SITE_URL}/guide-legal`))}
+        {item("document-text-outline", t("Informations légales"), () => Linking.openURL(`${SITE_URL}/legal`))}
         {item("shield-checkmark-outline", t("Confidentialité"), () => Linking.openURL(`${SITE_URL}/legal/confidentialite`))}
       </Card>
       <Card style={{ gap: 8 }}>

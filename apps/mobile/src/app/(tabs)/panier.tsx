@@ -5,9 +5,9 @@ import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStripe } from "@/lib/stripe";
 import { Ionicons } from "@expo/vector-icons";
-import { formatEuros, MIN_ORDER_CENTS, relativeDay, t } from "@mami/shared";
+import { formatMoney, MIN_ORDER_CENTS, relativeDay, t, TIP_PRESETS_CENTS } from "@mami/shared";
 import { useAuth, useCart } from "@/hooks/providers";
-import { checkout, createAddress, fetchAddresses, searchAddress } from "@/lib/api";
+import { checkout, createAddress, fetchAddresses, fetchDeliveryQuote, searchAddress } from "@/lib/api";
 import { DEMO_MODE, errorMessage, photoUrl } from "@/lib/supabase";
 import { useColors } from "@/lib/theme";
 import { Button, Card, Empty, Input, Stepper, T } from "@/components/ui";
@@ -19,7 +19,8 @@ export default function CartScreen() {
   const qc = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const first = cart.lines[0];
-  const [mode, setMode] = useState<"pickup" | "delivery">("pickup");
+  const [mode, setMode] = useState<"pickup" | "delivery" | "courier">("pickup");
+  const [tip, setTip] = useState(0);
   const [addressId, setAddressId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Awaited<ReturnType<typeof searchAddress>>>([]);
@@ -28,7 +29,15 @@ export default function CartScreen() {
   const [loading, setLoading] = useState(false);
   const addresses = useQuery({ queryKey: ["addresses", userId], queryFn: fetchAddresses, enabled: !!userId && !DEMO_MODE });
   const selected = addressId ?? addresses.data?.[0]?.id ?? null;
-  const price = cart.price(mode === "delivery");
+  const quote = useQuery({
+    queryKey: ["delivery-quote", first?.cookId, selected], enabled: !!first && !!selected && !!userId && !DEMO_MODE,
+    queryFn: () => fetchDeliveryQuote(first!.cookId, selected!),
+  });
+  const courierFee = quote.data?.courier?.fee_cents ?? 390;
+  const cur = first?.currency ?? "EUR";
+  const formatEuros = (cents: number) => formatMoney(cents, cur);
+  const needsAddress = mode !== "pickup";
+  const price = cart.price({ delivery: mode === "delivery", deliveryFeeCents: mode === "courier" ? courierFee : undefined, tipCents: mode === "courier" ? tip : 0 });
   // Une clé par contenu de panier : un double appui ne crée pas deux commandes.
   const idem = useRef<{ sig: string; key: string } | null>(null);
 
@@ -37,19 +46,20 @@ export default function CartScreen() {
   const pay = async () => {
     if (DEMO_MODE) return Alert.alert(t("Mode démo"), t("Le paiement sera actif une fois Supabase et Stripe configurés."));
     if (!userId) return router.push("/connexion");
-    if (mode === "delivery" && !selected) return Alert.alert(t("Adresse"), t("Ajoutez une adresse de livraison."));
-    const sig = JSON.stringify([cart.lines, mode, selected, promo]);
+    if (needsAddress && !selected) return Alert.alert(t("Adresse"), t("Ajoutez une adresse de livraison."));
+    if (mode === "courier" && quote.data && !quote.data.courier?.available) return Alert.alert(t("Adresse"), t("Adresse trop éloignée pour la livraison par livreur"));
+    const sig = JSON.stringify([cart.lines, mode, selected, promo, tip]);
     if (idem.current?.sig !== sig) idem.current = { sig, key: newKey() };
     setLoading(true);
     try {
       const res = await checkout({
         lines: cart.lines.map((l) => ({ drop_id: l.dropId, quantity: l.quantity, extra_ids: l.extras.map((e) => e.id), menu_deal_id: l.menuDealId })),
-        fulfillment: mode, address_id: mode === "delivery" ? selected : null, note: note.trim() || undefined, promo_code: promo.trim() || undefined, idempotency_key: idem.current.key,
+        fulfillment: mode, address_id: needsAddress ? selected : null, tip_cents: mode === "courier" ? tip : 0, note: note.trim() || undefined, promo_code: promo.trim() || undefined, idempotency_key: idem.current.key,
       });
       if (!res.client_secret) { router.push(`/commande/${res.order_id}`); return; }
       const init = await initPaymentSheet({
         merchantDisplayName: "MAMI COOK", paymentIntentClientSecret: res.client_secret, returnURL: "mamicook://stripe-redirect",
-        applePay: { merchantCountryCode: "FR" }, googlePay: { merchantCountryCode: "FR", currencyCode: "EUR", testEnv: __DEV__ },
+        applePay: { merchantCountryCode: "FR" }, googlePay: { merchantCountryCode: "FR", currencyCode: cur, testEnv: __DEV__ },
         defaultBillingDetails: { address: { country: "FR" } },
       });
       if (init.error) throw new Error(init.error.message);
@@ -94,21 +104,22 @@ export default function CartScreen() {
 
       <Card style={{ gap: 10 }}>
         <T weight="700">{t("Mode de remise")}</T>
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          {(["pickup", "delivery"] as const).map((m) => {
-            const ok = m === "pickup" ? first.offersPickup : first.offersDelivery;
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {(["pickup", "courier", "delivery"] as const).map((m) => {
+            const ok = m === "pickup" ? first.offersPickup : m === "courier" ? !!first.offersCourier : first.offersDelivery;
             const on = mode === m;
             return (
-              <Pressable key={m} disabled={!ok} onPress={() => setMode(m)} accessibilityState={{ selected: on, disabled: !ok }}
-                style={{ flex: 1, borderWidth: 2, borderColor: on ? c.primary : c.border, borderRadius: 14, padding: 12, opacity: ok ? 1 : 0.4 }}>
-                <Ionicons name={m === "pickup" ? "storefront-outline" : "bicycle-outline"} size={20} color={c.text} />
-                <T weight="700">{m === "pickup" ? t("Retrait") : t("Livraison")}</T>
-                <T size={12} color={c.muted}>{m === "pickup" ? t("Gratuit") : ok ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : t("Offerte")) : t("Non proposée")}</T>
+              <Pressable key={m} disabled={!ok} onPress={() => setMode(m)} accessibilityRole="radio" accessibilityState={{ selected: on, disabled: !ok }}
+                style={{ flex: 1, borderWidth: 2, borderColor: on ? c.primary : c.border, borderRadius: 14, padding: 10, opacity: ok ? 1 : 0.4 }}>
+                <Ionicons name={m === "pickup" ? "storefront-outline" : m === "courier" ? "flash-outline" : "bicycle-outline"} size={20} color={c.text} />
+                <T weight="700" size={14}>{m === "pickup" ? t("Retrait") : m === "courier" ? t("Livreur") : t("Par la cuisinière")}</T>
+                <T size={11} color={c.muted}>{m === "pickup" ? t("Gratuit") : !ok ? t("Non proposée") : m === "courier" ? (quote.data ? formatEuros(courierFee) : t("Selon la distance")) : (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : t("Offerte"))}</T>
               </Pressable>
             );
           })}
         </View>
-        {mode === "delivery" && userId && (
+        {mode === "courier" && quote.data && !quote.data.courier?.available && <T size={13} color={c.danger}>{t("Cette adresse est trop éloignée pour un livreur. Choisissez le retrait ou une autre adresse.")}</T>}
+        {needsAddress && userId && (
           <View style={{ gap: 8 }}>
             {(addresses.data ?? []).map((a) => (
               <Pressable key={a.id} onPress={() => setAddressId(a.id)} style={{ flexDirection: "row", gap: 8, alignItems: "center", padding: 10, borderRadius: 12, borderWidth: 1, borderColor: selected === a.id ? c.primary : c.border }}>
@@ -122,6 +133,21 @@ export default function CartScreen() {
         )}
       </Card>
 
+      {mode === "courier" && (
+        <Card style={{ gap: 10 }}>
+          <T weight="700">{t("Pourboire pour le livreur")}</T>
+          <T size={12} color={c.muted}>{t("100 % du pourboire est reversé au livreur.")}</T>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {TIP_PRESETS_CENTS.map((v) => (
+              <Pressable key={v} onPress={() => setTip(v)} accessibilityRole="radio" accessibilityState={{ selected: tip === v }}
+                style={{ paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, borderWidth: 2, borderColor: tip === v ? c.primary : c.border }}>
+                <T size={14} weight="600">{v === 0 ? t("Pas cette fois") : formatEuros(v)}</T>
+              </Pressable>
+            ))}
+          </View>
+        </Card>
+      )}
+
       <Card style={{ gap: 10 }}>
         <Input label={t("Un mot pour la cuisinière ?")} value={note} onChangeText={setNote} maxLength={500} placeholder={t("Sans coriandre svp…")} multiline />
         <Input label={t("Code promo")} value={promo} onChangeText={(t) => setPromo(t.toUpperCase())} autoCapitalize="characters" maxLength={30} />
@@ -130,7 +156,8 @@ export default function CartScreen() {
       <Card style={{ gap: 6 }}>
         <Row label={t(price.totalPlates > 1 ? "Sous-total ({n} plats)" : "Sous-total ({n} plat)", { n: price.totalPlates })} value={formatEuros(price.subtotalCents)} />
         {price.discountCents > 0 && <Row label={t("Remise volume")} value={`−${formatEuros(price.discountCents)}`} color={c.success} />}
-        {mode === "delivery" && <Row label={t("Livraison")} value={formatEuros(price.deliveryFeeCents)} />}
+        {needsAddress && <Row label={t("Livraison")} value={formatEuros(price.deliveryFeeCents)} />}
+        {price.tipCents > 0 && <Row label={t("Pourboire livreur")} value={formatEuros(price.tipCents)} />}
         <View style={{ height: 1, backgroundColor: c.border, marginVertical: 6 }} />
         <Row label={t("Total")} value={formatEuros(price.totalCents)} bold />
         {price.totalPlates < 5 && <T size={12} color={c.success}>{t("Plus que {n} plat(s) pour −10 % !", { n: 5 - price.totalPlates })}</T>}

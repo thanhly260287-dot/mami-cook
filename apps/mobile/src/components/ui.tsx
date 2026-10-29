@@ -37,11 +37,11 @@ export function Card({ children, style }: { children: ReactNode; style?: ViewSty
   return <View style={[{ backgroundColor: c.card, borderColor: c.border, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, padding: 16 }, style]}>{children}</View>;
 }
 
-export function T({ children, size = 15, weight = "400", color, style, numberOfLines }: {
-  children: ReactNode; size?: number; weight?: "400" | "500" | "600" | "700" | "800"; color?: string; style?: object; numberOfLines?: number;
+export function T({ children, size = 15, weight = "400", color, style, numberOfLines, onPress }: {
+  children: ReactNode; size?: number; weight?: "400" | "500" | "600" | "700" | "800"; color?: string; style?: object; numberOfLines?: number; onPress?: () => void;
 }) {
   const c = useColors();
-  return <Text numberOfLines={numberOfLines} style={[{ fontSize: size, fontWeight: weight, color: color ?? c.text }, style]}>{children}</Text>;
+  return <Text numberOfLines={numberOfLines} onPress={onPress} accessibilityRole={onPress ? "link" : undefined} style={[{ fontSize: size, fontWeight: weight, color: color ?? c.text }, style]}>{children}</Text>;
 }
 
 export function Input(props: TextInputProps & { label?: string }) {

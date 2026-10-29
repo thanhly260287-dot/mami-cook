@@ -15,8 +15,9 @@ function useNotificationNavigation() {
   // Ouvre la commande quand on touche une notification
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((r) => {
-      const orderId = r.notification.request.content.data?.order_id;
-      if (typeof orderId === "string") router.push(`/commande/${orderId}`);
+      const data = r.notification.request.content.data;
+      if (typeof data?.delivery_id === "string") router.push("/livreur");
+      else if (typeof data?.order_id === "string") router.push(`/commande/${data.order_id}`);
     });
     return () => sub.remove();
   }, []);
@@ -42,6 +43,8 @@ export default function RootLayout() {
                 <Stack.Screen name="commande/[id]" options={{ title: t("Ma commande") }} />
                 <Stack.Screen name="connexion" options={{ title: t("Connexion"), presentation: "modal" }} />
                 <Stack.Screen name="cuisinier/index" options={{ title: t("Ma cuisine") }} />
+                <Stack.Screen name="livreur/index" options={{ title: t("Espace livreur") }} />
+                <Stack.Screen name="mon-espace" options={{ title: t("Mon espace") }} />
               </Stack>
             </CartProvider>
           </GeoProvider>

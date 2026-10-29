@@ -7,12 +7,15 @@ import * as Device from "expo-device";
 import Constants from "expo-constants";
 import type { Session } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { computeOrderPrice, DEFAULT_LOCATION, MAX_QTY_PER_LINE, type Cook, type FeedItem, t } from "@mami/shared";
+import { computeOrderPrice, DEFAULT_LOCATION, MAX_QTY_PER_LINE, type Cook, type Courier, type FeedItem, t } from "@mami/shared";
 import { supabase } from "@/lib/supabase";
-import { fetchMyCook } from "@/lib/api";
+import { fetchMyCook, fetchMyCourier } from "@/lib/api";
 
 // ------------------------------------------------------------------ authentification
-interface AuthState { session: Session | null; userId: string | null; loading: boolean; cook: Cook | null; refreshCook: () => void; signOut: () => Promise<void> }
+interface AuthState {
+  session: Session | null; userId: string | null; loading: boolean; cook: Cook | null; courier: Courier | null;
+  refreshCook: () => void; refreshCourier: () => void; signOut: () => Promise<void>;
+}
 const AuthCtx = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -27,13 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [qc]);
   const userId = session?.user.id ?? null;
   const cook = useQuery({ queryKey: ["my-cook", userId], queryFn: () => fetchMyCook(userId!), enabled: !!userId });
+  const courier = useQuery({ queryKey: ["my-courier", userId], queryFn: () => fetchMyCourier(userId!), enabled: !!userId });
   useEffect(() => { if (userId) registerPush(userId).catch(() => undefined); }, [userId]);
 
   const value = useMemo<AuthState>(() => ({
-    session, userId, loading, cook: cook.data ?? null,
+    session, userId, loading, cook: cook.data ?? null, courier: courier.data ?? null,
     refreshCook: () => qc.invalidateQueries({ queryKey: ["my-cook", userId] }),
+    refreshCourier: () => qc.invalidateQueries({ queryKey: ["my-courier", userId] }),
     signOut: async () => { await supabase?.auth.signOut(); },
-  }), [session, userId, loading, cook.data, qc]);
+  }), [session, userId, loading, cook.data, courier.data, qc]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => { const c = useContext(AuthCtx); if (!c) throw new Error(t("AuthProvider manquant")); return c; };
@@ -88,12 +93,13 @@ export interface CartLine {
   key: string; dropId: string; cookId: string; cookName: string; title: string; photo: string | null; availableOn: string;
   unitCookPriceCents: number; extras: { id: string; name: string; price_cents: number }[]; menuDealId: string | null;
   quantity: number; maxQuantity: number; offersPickup: boolean; offersDelivery: boolean; deliveryFeeCents: number;
+  offersCourier?: boolean; currency?: string;
 }
 interface CartState {
   lines: CartLine[]; count: number;
   add: (item: FeedItem, o: { quantity: number; extraIds: string[]; menuDeal: boolean }) => { replaced: boolean };
   setQuantity: (k: string, q: number) => void; remove: (k: string) => void; clear: () => void;
-  price: (delivery: boolean) => ReturnType<typeof computeOrderPrice>;
+  price: (o: { delivery?: boolean; deliveryFeeCents?: number; tipCents?: number }) => ReturnType<typeof computeOrderPrice>;
 }
 const CartCtx = createContext<CartState | null>(null);
 
@@ -129,6 +135,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           extras: item.extras.filter((e) => extraIds.includes(e.id)).map(({ id, name, price_cents }) => ({ id, name, price_cents })),
           menuDealId: deal?.id ?? null, quantity: Math.min(quantity, max), maxQuantity: max,
           offersPickup: item.offers_pickup, offersDelivery: item.offers_delivery, deliveryFeeCents: item.delivery_fee_cents,
+          offersCourier: item.offers_courier ?? false, currency: item.currency ?? "EUR",
         }];
       });
       return { replaced };
@@ -136,9 +143,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setQuantity: (k, q) => setLines((p) => p.map((l) => l.key === k ? { ...l, quantity: Math.max(1, Math.min(q, l.maxQuantity)) } : l)),
     remove: (k) => setLines((p) => p.filter((l) => l.key !== k)),
     clear: () => setLines([]),
-    price: (delivery) => computeOrderPrice(
+    price: (o) => computeOrderPrice(
       lines.map((l) => ({ unitCookPriceCents: l.unitCookPriceCents, extrasCookPriceCents: l.extras.reduce((s, e) => s + e.price_cents, 0), quantity: l.quantity, isMenuDeal: !!l.menuDealId })),
-      { deliveryFeeCents: delivery ? lines[0]?.deliveryFeeCents ?? 0 : 0 }),
+      { deliveryFeeCents: o.deliveryFeeCents ?? (o.delivery ? lines[0]?.deliveryFeeCents ?? 0 : 0), tipCents: o.tipCents ?? 0 }),
   }), [lines]);
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
 }

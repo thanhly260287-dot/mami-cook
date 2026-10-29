@@ -1,6 +1,6 @@
-import { t } from "@mami/shared";
+import { COURSES, t } from "@mami/shared";
 import { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFeed } from "@/lib/api";
 import { useGeo } from "@/hooks/providers";
@@ -14,8 +14,9 @@ export default function Explore() {
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(10);
+  const [course, setCourse] = useState("");
   useEffect(() => { const t = setTimeout(() => setQuery(text), 350); return () => clearTimeout(t); }, [text]);
-  const q = useQuery({ queryKey: ["explore", geo.lat, geo.lng, query, radius], queryFn: () => fetchFeed({ lat: geo.lat, lng: geo.lng, query, radiusKm: radius }) });
+  const q = useQuery({ queryKey: ["explore", geo.lat, geo.lng, query, radius, course], queryFn: () => fetchFeed({ lat: geo.lat, lng: geo.lng, query, radiusKm: radius, course: course || null }) });
 
   return (
     <FlatList
@@ -28,6 +29,9 @@ export default function Explore() {
       ListHeaderComponent={
         <View style={{ gap: 10, marginBottom: 14 }}>
           <Input value={text} onChangeText={setText} placeholder={t("Lasagnes, phở, tajine…")} returnKeyType="search" clearButtonMode="while-editing" accessibilityLabel="Rechercher" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {[{ id: "", label: "Tout", emoji: "🍽️" }, ...COURSES].map((x) => <Chip key={x.id || "all"} label={`${x.emoji} ${t(x.label)}`} active={course === x.id} onPress={() => setCourse(x.id)} />)}
+          </ScrollView>
           <View style={{ flexDirection: "row" }}>
             {[3, 5, 10, 20].map((r) => <Chip key={r} label={`${r} km`} active={r === radius} onPress={() => setRadius(r)} />)}
           </View>

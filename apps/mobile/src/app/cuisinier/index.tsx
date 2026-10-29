@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Linking, RefreshControl, ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatEuros, ORDER_STATUS_LABELS, relativeDay, formatTime, type Order, t } from "@mami/shared";
+import { formatMoney, ORDER_STATUS_LABELS, relativeDay, formatTime, type Order, t } from "@mami/shared";
 import { fetchCookOrders, fetchMyDrops, orderAction } from "@/lib/api";
 import { errorMessage, SITE_URL, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/providers";
@@ -69,20 +69,22 @@ function CookOrderCard({ order: o }: { order: Order & { customer: { display_name
   });
   const next: Record<string, [string, string] | undefined> = {
     paid: ["accepted", "Accepter"], accepted: ["preparing", "Commencer"], preparing: ["ready", "Prête"],
-    ready: o.fulfillment === "delivery" ? ["out_for_delivery", t("En livraison")] : undefined, out_for_delivery: ["completed", "Livrée"],
+    ready: o.fulfillment === "delivery" ? ["out_for_delivery", t("En livraison")] : undefined,
+    out_for_delivery: o.fulfillment === "delivery" ? ["completed", t("Livrée")] : undefined,
   };
   const n = next[o.status];
   return (
     <Card style={{ gap: 8 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <T weight="800">n°{o.number} · {o.customer?.display_name}</T>
-        <Badge label={o.fulfillment === "pickup" ? t("Retrait") : t("Livraison")} color={c.primary} />
+        <Badge label={o.fulfillment === "pickup" ? t("Retrait") : o.fulfillment === "courier" ? t("Livreur MAMI COOK") : t("Livraison")} color={c.primary} />
       </View>
       <Badge label={t(ORDER_STATUS_LABELS[o.status])} />
       {o.order_items?.map((i) => <T key={i.id} size={14}>{i.quantity}× {i.title}</T>)}
       {o.note && <T size={13} color={c.warn}>📝 {o.note}</T>}
-      {o.delivery_address && <T size={13} color={c.muted}>📍 {o.delivery_address.line1}, {o.delivery_address.city}</T>}
-      <T size={13}>{t("Vous recevrez")}{" "}<T size={13} weight="700">{formatEuros(o.cook_payout_cents)}</T></T>
+      {o.fulfillment === "courier" && ["accepted", "preparing", "ready"].includes(o.status) && <T size={13} color={c.primary}>🛵 {t("Un livreur viendra chercher la commande quand elle sera prête.")}</T>}
+      {o.delivery_address && o.fulfillment !== "courier" && <T size={13} color={c.muted}>📍 {o.delivery_address.line1}, {o.delivery_address.city}</T>}
+      <T size={13}>{t("Vous recevrez")}{" "}<T size={13} weight="700">{formatMoney(o.cook_payout_cents, o.currency ?? "EUR")}</T></T>
       <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {n && <Button title={n[1]} loading={act.isPending} onPress={() => act.mutate({ to: n[0] })} />}
         {["paid", "accepted", "preparing"].includes(o.status) && (

@@ -1,4 +1,7 @@
-import { DEMO_FEED, haversineKm, type Address, type AppNotification, type Cook, type FeedItem, type FeedParams, type Message, type Order } from "@mami/shared";
+import {
+  DEMO_FEED, haversineKm, type Address, type AppNotification, type AvailableDelivery, type Cook, type Courier, type CourierDashboard, type DeliveryDetails,
+  type DeliveryQuote, type DeliveryTracking, type FeedItem, type FeedParams, type Message, type Order,
+} from "@mami/shared";
 import { callFunction, DEMO_MODE, requireSupabase, supabase } from "./supabase";
 
 const unwrap = <T>(r: { data: T | null; error: unknown }): T => { if (r.error) throw r.error; return r.data as T; };
@@ -9,12 +12,13 @@ export async function fetchFeed(p: FeedParams): Promise<FeedItem[]> {
     return DEMO_FEED.map((d) => ({ ...d, distance_m: haversineKm(p, d) * 1000 }))
       .filter((d) => !p.cookId || d.cook_id === p.cookId)
       .filter((d) => !p.cuisine || d.cuisine === p.cuisine)
+      .filter((d) => !p.course || (p.course === "dessert" ? d.cuisine === "dessert" : d.cuisine !== "dessert"))
       .filter((d) => !q || `${d.title} ${d.cook_name}`.toLowerCase().includes(q))
       .sort((a, b) => (a.distance_m ?? 0) - (b.distance_m ?? 0));
   }
   return unwrap(await supabase!.rpc("feed", {
     p_lat: p.lat, p_lng: p.lng, p_radius_km: p.radiusKm ?? 10, p_cuisine: p.cuisine ?? null, p_query: p.query?.trim() || null,
-    p_cook_id: p.cookId ?? null, p_limit: p.limit ?? 40, p_offset: p.offset ?? 0,
+    p_cook_id: p.cookId ?? null, p_limit: p.limit ?? 40, p_offset: p.offset ?? 0, p_course: p.course ?? null,
   })) as FeedItem[];
 }
 
@@ -85,9 +89,11 @@ export async function sendMessage(orderId: string, senderId: string, body: strin
   unwrap(await requireSupabase().from("messages").insert({ order_id: orderId, sender_id: senderId, body }));
 }
 
-export async function createReview(o: Order, userId: string, rating: number, comment: string) {
+export async function createReview(o: Order, userId: string, rating: number, comment: string, courierRating?: number) {
   const sb = requireSupabase();
-  const r = unwrap(await sb.from("reviews").insert({ order_id: o.id, customer_id: userId, cook_id: o.cook_id, rating, comment: comment || null }).select("id").single()) as { id: string };
+  const r = unwrap(await sb.from("reviews").insert({
+    order_id: o.id, customer_id: userId, cook_id: o.cook_id, rating, comment: comment || null, courier_rating: courierRating || null,
+  }).select("id").single()) as { id: string };
   const rows = [...new Set((o.order_items ?? []).map((i) => i.dish_id))].map((dish_id) => ({ review_id: r.id, dish_id, rating }));
   if (rows.length) unwrap(await sb.from("review_dishes").insert(rows));
 }
@@ -107,3 +113,33 @@ export async function fetchMyDrops(cookId: string) {
     .gte("available_on", new Date().toISOString().slice(0, 10)).order("available_on")) as
     { id: string; available_on: string; quantity_total: number; quantity_remaining: number; status: string; ready_from: string; dishes: { title: string; photos: string[] } | null }[];
 }
+
+// ------------------------------------------------------------------ livraison, livreurs, tableaux de bord
+const rpc = async <T>(fn: string, args: Record<string, unknown> = {}): Promise<T> => unwrap(await requireSupabase().rpc(fn, args)) as T;
+
+export const fetchDeliveryQuote = (cookId: string, addressId: string) => rpc<DeliveryQuote>("delivery_quote", { _cook_id: cookId, _address_id: addressId });
+export const fetchDeliveryTracking = (orderId: string) => rpc<DeliveryTracking | null>("delivery_tracking", { _order_id: orderId });
+
+export async function fetchMyCourier(userId: string): Promise<Courier | null> {
+  if (DEMO_MODE) return null;
+  return unwrap(await supabase!.from("couriers").select("*").eq("id", userId).maybeSingle()) as Courier | null;
+}
+export const setCourierOnline = (online: boolean, lat?: number, lng?: number) =>
+  rpc<Courier>("courier_set_online", { _online: online, _lat: lat ?? null, _lng: lng ?? null });
+export const fetchAvailableDeliveries = () => rpc<AvailableDelivery[]>("available_deliveries");
+export const acceptDelivery = (id: string) => rpc<DeliveryDetails>("accept_delivery", { _delivery_id: id });
+export const declineDelivery = (id: string) => rpc<void>("decline_delivery", { _delivery_id: id });
+export const deliveryStep = (id: string, step: "at_pickup" | "picked_up" | "delivered", code?: string) =>
+  rpc<DeliveryDetails>("delivery_step", { _delivery_id: id, _step: step, _code: code ?? null });
+export const courierCancel = (id: string) => rpc<void>("courier_cancel", { _delivery_id: id, _reason: null });
+export const fetchDeliveryDetails = (id: string) => rpc<DeliveryDetails | null>("delivery_details", { _delivery_id: id });
+export const fetchCourierDashboard = (days = 1) => rpc<CourierDashboard>("courier_dashboard", { p_days: days });
+export const stripeConnect = (role: "cook" | "courier", mode: "onboarding" | "dashboard") =>
+  callFunction<{ url: string }>("connect-onboarding", { role, mode, return_url: "mamicook://livreur" });
+
+export interface CustomerDashboard {
+  orders: number; active: number; spent: { currency: string; cents: number }[]; saved_cents: number; plates: number; cooks: number;
+  tips_cents: number; reviews: number; favorites: number; top_cuisines: { cuisine: string; n: number }[];
+  top_cooks: { kitchen_name: string; slug: string; n: number }[]; monthly: { month: string; orders: number }[];
+}
+export const fetchCustomerDashboard = () => rpc<CustomerDashboard>("customer_dashboard");
