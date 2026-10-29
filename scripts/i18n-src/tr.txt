@@ -1227,3 +1227,6 @@
 1226=Tüm şehirler
 1227=Şehre göre satışlar
 1228={n} mutfak
+1229=Ev yapımı lazanya
+1230=Ev yapımı phở bò
+1231=Ev yapımı tiramisu

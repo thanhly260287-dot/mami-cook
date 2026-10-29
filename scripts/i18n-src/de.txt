@@ -1227,3 +1227,6 @@
 1226=Alle Städte
 1227=Umsatz nach Stadt
 1228={n} Küchen
+1229=Hausgemachte Lasagne
+1230=Hausgemachtes Phở bò
+1231=Hausgemachtes Tiramisu

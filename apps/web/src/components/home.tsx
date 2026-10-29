@@ -32,11 +32,16 @@ export function HeroSection({ openCount }: { openCount?: number }) {
               <Stat icon={<Star className="h-5 w-5 fill-accent text-accent" />} title={t("Avis vérifiés")} />
             </div>
           </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }} className="relative hidden md:block">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-card">
-              <img src={`${import.meta.env.BASE_URL}images/hero.svg`} alt={t("Une marmite qui mijote dans une cuisine familiale")} className="h-full w-full object-cover" />
+          {/* Photos de vrais plats (Wikimedia Commons, crédits dans les mentions légales) ; en premier sur téléphone */}
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }} className="relative order-first md:order-none">
+            <div className="grid h-56 grid-cols-3 grid-rows-2 gap-2 sm:h-72 md:aspect-[4/3] md:h-auto md:gap-3">
+              {HERO_PHOTOS.map((p, i) => (
+                <img key={p.file} src={`${import.meta.env.BASE_URL}images/dishes/${p.file}`} alt={p.alt}
+                  fetchPriority={i === 0 ? "high" : "auto"} decoding="async"
+                  className={i === 0 ? "col-span-2 row-span-2 h-full w-full rounded-3xl object-cover shadow-card" : "h-full w-full rounded-2xl object-cover shadow-card"} />
+              ))}
             </div>
-            <div className="absolute -bottom-4 -left-4 rounded-2xl border border-border bg-card p-4 shadow-xl">
+            <div className="absolute -bottom-4 -left-4 hidden rounded-2xl border border-border bg-card p-4 shadow-xl md:block">
               <p className="text-xs text-muted-foreground">{t("Dernière commande")}</p>
               <p className="mt-0.5 text-sm font-bold">{t("Chez Mami Nono")}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{t("Lasagnes maison · 15,00 €")}</p>
@@ -47,6 +52,12 @@ export function HeroSection({ openCount }: { openCount?: number }) {
     </section>
   );
 }
+
+const HERO_PHOTOS = [
+  { file: "lasagna.jpg", alt: t("Lasagnes maison") },
+  { file: "pho.jpg", alt: t("Phở bò fait maison") },
+  { file: "tiramisu.jpg", alt: t("Tiramisu fait maison") },
+];
 
 function Stat({ icon, title }: { icon: React.ReactNode; title: string }) {
   return <div className="flex items-center gap-2 font-semibold">{icon}<span className="leading-tight">{title}</span></div>;

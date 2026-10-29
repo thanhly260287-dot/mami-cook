@@ -20,6 +20,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « je veux atteindre le 100% au niveau des fonctionnalités […] que tu te souviennes bien de tout ce que je te dis […] Faut s'occuper de la base de données, moyen de paiement, surtout que tu mettes de vraies photos, de vrais plats, et […] un vrai site avec une vraie démo, et puis qu'on le mette en ligne […] la livraison, qu'il y ait le GPS en temps réel, qu'on prenne notre commission sur la livraison, qu'on prenne notre commission sur chaque vente de chaque plat, avoir un vrai business model. Et surtout qu'au niveau des conditions, que les gens, par exemple en France, ils doivent suivre une formation par rapport à l'hygiène. Etc. Vraiment regarder toutes les lois par rapport à chaque pays. […] termine-moi cette application aujourd'hui. » |
 | 29/10/2026 | « total des vente ca va dans le dashboard on veut le nombre de vendeur, de plats ou de dessert vendu, nombre de commande, etc », puis « nombre de telechargement » → ✅ tableau de bord v2 (#17) |
 | 29/10/2026 | « met aussi filtre par ville » → ✅ filtre par ville dans le tableau de bord + classement des villes (#18) |
+| 29/10/2026 | « met une image dans au debut dans la landing page en haut » → ✅ 3 vraies photos de plats en haut de l'accueil, visibles aussi sur téléphone (#19) |
 
 ## Fonctionnalités
 
