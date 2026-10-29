@@ -21,6 +21,7 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
   - trouver une agence partenaire en Suisse ;
   - choisir un médiateur de la consommation.
 - **Justificatifs (#16), reste à faire** : dépôt des documents directement dans l'appli mobile (aujourd'hui via le site) ; écran testé seulement par typecheck, pas encore avec une vraie base ; liste des documents par pays à faire valider par un juriste.
+- **Bannière d'accueil** : l'utilisateur veut idéalement une maman de ~40 ans, style italien/espagnol, qui cuisine des **spaghettis**. Pas de photo libre trouvée. Options : clé Pexels (secret GitHub `PEXELS_API_KEY`) ou image générée (clé `GEMINI_API_KEY`).
 - **Améliorations possibles** :
   - inscription livreur directement dans l'appli (aujourd'hui via le site) ;
   - position du livreur en arrière-plan sur mobile ;

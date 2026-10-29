@@ -11,10 +11,10 @@ export function HeroSection({ openCount }: { openCount?: number }) {
       <motion.img initial={{ scale: 1.06 }} animate={{ scale: 1 }} transition={{ duration: 1.2, ease: "easeOut" }}
         src={`${import.meta.env.BASE_URL}images/hero.jpg`} alt={t("Une maman souriante qui cuisine dans sa cuisine")}
         fetchPriority="high" decoding="async"
-        className="absolute inset-x-0 top-0 -z-10 h-[340px] w-full object-cover object-[80%_30%] sm:h-[420px] md:inset-0 md:h-full md:object-[70%_35%]" />
-      {/* Fondu blanc : par le bas sur téléphone (photo en haut, texte dessous), par la gauche sur ordinateur */}
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[340px] bg-gradient-to-b from-white/0 via-white/0 to-card sm:h-[420px] md:inset-0 md:h-full md:bg-gradient-to-r md:from-card md:from-25% md:via-card/70 md:via-45% md:to-card/0 md:to-65%" />
-      <div className="container relative flex pb-10 pt-[300px] sm:pt-[380px] md:min-h-[620px] md:items-center md:py-20">
+        className="absolute inset-x-0 top-0 -z-10 h-[380px] w-full object-cover object-[42%_30%] sm:h-[460px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%] md:object-[40%_35%]" />
+      {/* Fondu vers le fond de page : par le bas sur téléphone, par la gauche de la photo sur ordinateur (le texte déborde dessus) */}
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[384px] bg-gradient-to-b from-card/0 from-40% via-card/80 via-70% to-card to-90% sm:h-[464px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%] md:bg-gradient-to-r md:from-card md:from-0% md:via-card/40 md:via-25% md:to-card/0 md:to-50%" />
+      <div className="container relative flex pb-10 pt-[270px] sm:pt-[350px] md:min-h-[620px] md:items-center md:py-20">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="max-w-xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-card/90 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-border backdrop-blur">
             <span className="h-2 w-2 animate-pulse rounded-full bg-status-hot" />
