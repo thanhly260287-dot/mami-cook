@@ -70,4 +70,4 @@ Mobile : `cd apps/mobile && EXPO_OFFLINE=1 npx tsc --noEmit && npx expo lint`.
 
 ## Environnement
 
-Les sessions tournent dans un **conteneur cloud éphémère** : tout ce qui n'est pas commité **et poussé** est perdu à la fin de la session. Il n'y a pas encore de dépôt GitHub (voir `docs/CURRENT_STATUS.md`, section Blocages).
+Les sessions tournent dans un **conteneur cloud éphémère** : tout ce qui n'est pas commité **et poussé** est perdu à la fin de la session. Dépôt : https://github.com/thanhly260287-dot/mami-cook (branche `main`). Toujours `git push` après un commit.

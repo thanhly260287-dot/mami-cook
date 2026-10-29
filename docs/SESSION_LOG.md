@@ -57,3 +57,8 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 1. L'utilisateur installe l'appli Claude sur le dépôt, puis `git push -u origin main`.
 2. Création de Supabase et des clés Stripe (#14).
 3. Clé Gemini pour les photos (#8).
+
+## 2026-10-29 — reprise (session-start)
+- Mémoire relue, tests rapides OK (prix 6/6, i18n 1152/1152).
+- L'utilisateur a installé l'appli Claude sur GitHub : **premier push réussi**, `origin/main` = `4decdc4`, vérifié par `git fetch`.
+- Prochaine étape : Supabase et Stripe (#14).

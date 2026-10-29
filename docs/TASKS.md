@@ -14,7 +14,6 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
   - il active Connect Express ;
   - puis test de paiement de bout en bout.
 - **#8 — Vraies photos (Nano Banana)** : `scripts/generate-images.mjs` et l'action GitHub « Générer les photos » sont prêts. Il manque une clé `GEMINI_API_KEY` (gratuite sur aistudio.google.com) ; le réseau de ce conteneur bloque Google.
-- **#6 — Publication** : dépôt `thanhly260287-dot/mami-cook` créé et relié (`origin`), mais le push est refusé (403). L'utilisateur doit installer l'appli GitHub Claude sur ce dépôt (voir [GITHUB.md](GITHUB.md)).
 - **Mise en ligne** : Supabase, Vercel, EAS (voir [DEPLOIEMENT.md](DEPLOIEMENT.md)). Ajouter le secret `GEMINI_API_KEY` pour la fonction `ai-image`.
 - **Avant le lancement** :
   - relecture des documents juridiques par un avocat et compléter les champs entre crochets ;
@@ -41,4 +40,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 11 | Écrans : espace livreur (web + mobile), panier livreur + pourboire, suivi en direct, back-office complet, statistiques, mon espace, reçu, guide légal, retouche photo IA | Commits `414b689`, `727d738` ; 22 tests E2E, typecheck/lint web et mobile, export iOS/Android |
 | 12 | Documents juridiques (11 pages) | Commit `a415b65` |
 | 15 | Traduction des 404 nouveaux textes dans les 9 langues | `i18n-keys --missing` : 1152/1152 partout |
+| 6 | Code publié sur GitHub | `git push -u origin main` OK, `origin/main` = `4decdc4` |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

@@ -13,7 +13,7 @@
 | Traductions | `node scripts/i18n-keys.cjs --missing` | Aucune clé manquante dans les 10 langues |
 | Documentation | `bash scripts/check-docs.sh` | 10 docs présents, liens valides, date de vérification, pas de secret |
 
-La CI GitHub (`.github/workflows/ci.yml`) lance tout cela à chaque push, plus CodeQL et gitleaks. Elle n'a **jamais tourné**, faute de dépôt distant.
+La CI GitHub (`.github/workflows/ci.yml`) lance tout cela à chaque push, plus CodeQL et gitleaks. Premier push le 29/10/2026 : résultat de la CI à vérifier dans l'onglet « Actions » du dépôt GitHub.
 
 ## Derniers résultats
 
