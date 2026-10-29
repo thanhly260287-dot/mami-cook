@@ -1,8 +1,8 @@
 // Données d'exemple affichées en MODE DÉMO (quand Supabase n'est pas configuré).
 // Identiques à supabase/seed.sql.
-import type { FeedItem } from "@mami/shared";
+import type { FeedItem } from "./types";
 
-type DemoItem = FeedItem & { lat: number; lng: number };
+export type DemoItem = FeedItem & { lat: number; lng: number };
 
 const today = new Date().toISOString().slice(0, 10);
 

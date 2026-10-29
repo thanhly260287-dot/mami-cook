@@ -1,6 +1,7 @@
 // Accès aux données. Toutes les règles de sécurité sont appliquées par la base
 // (RLS + fonctions) : ce module ne fait que des appels, jamais de calcul qui fait foi.
 import {
+  DEMO_FEED,
   haversineKm,
   type Address,
   type AppNotification,
@@ -15,7 +16,6 @@ import {
   type Order,
   type Review,
 } from "@mami/shared";
-import { DEMO_FEED } from "./demo-data";
 import { callFunction, DEMO_MODE, requireSupabase, supabase } from "./supabase";
 
 const unwrap = <T>(res: { data: T | null; error: unknown }): T => {

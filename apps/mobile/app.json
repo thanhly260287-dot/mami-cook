@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "MAMI COOK",
+    "slug": "mami-cook",
+    "scheme": "mamicook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "fr.mamicook.app",
+      "supportsTablet": true,
+      "associatedDomains": ["applinks:mamicook.fr"],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          { "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults", "NSPrivacyAccessedAPITypeReasons": ["CA92.1"] }
+        ]
+      }
+    },
+    "android": {
+      "package": "fr.mamicook.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#3FBEF0",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "POST_NOTIFICATIONS"],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "mamicook.fr", "pathPrefix": "/" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font",
+      "expo-image",
+      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 160, "resizeMode": "contain", "backgroundColor": "#F4FBFE", "dark": { "backgroundColor": "#0F1420" } }],
+      ["expo-location", { "locationWhenInUsePermission": "MAMI COOK utilise votre position pour vous montrer les cuisines proches de chez vous." }],
+      ["expo-image-picker", { "photosPermission": "MAMI COOK a besoin d'accéder à vos photos pour illustrer vos plats.", "cameraPermission": "MAMI COOK a besoin de l'appareil photo pour photographier vos plats." }],
+      ["expo-notifications", { "color": "#3FBEF0" }],
+      ["@stripe/stripe-react-native", { "merchantIdentifier": "merchant.fr.mamicook", "enableGooglePay": true }]
+    ],
+    "experiments": { "typedRoutes": true },
+    "extra": {
+      "eas": { "projectId": "REMPLACER-PAR-VOTRE-PROJECT-ID-EAS" }
+    }
+  }
+}
