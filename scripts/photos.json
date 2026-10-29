@@ -1,15 +1,17 @@
 {
-  "_source": "Photos Unsplash (licence Unsplash : usage gratuit, y compris commercial). Une ligne par plat de démo : nom du fichier → identifiants Unsplash, par ordre de préférence.",
-  "pho": ["NFQi_2HUNRI", "_33r6H_hiz4"],
-  "lasagna": ["mSo3F0D9y4I", "f5hCsmthZ1I"],
-  "springrolls": ["broMfoJ0Emg", "L7dVTV02afU"],
-  "tagine": ["_V4v7BbG338", "s-hak2rlpjY"],
-  "ramen": ["RwAXb8Hv_sU", "TWTxHN2QIGc"],
-  "burger": ["7CLArMn7TCM", "1Shk_PkNkNw"],
-  "butterchicken": ["sqcH2q7lkvo", "8zLfugmjMLc"],
-  "padthai": ["sE4UdOjoYr4", "V82GYnR98lY"],
-  "paella": ["VjM2t7VH9Uo", "gWkvURhoMlA"],
-  "dimsum": ["j9fy7p_hcpM"],
-  "tiramisu": ["_SrCiKojoyM", "MzBLTW3x13g"],
-  "tarte": ["p6OLZPnq810", "K8z5FJUay74"]
+  "_source": "Wikimedia Commons, licences libres (CC0, CC BY, CC BY-SA, domaine public). query = recherche des candidates ; title = fichier choisi après vérification visuelle.",
+  "dishes": {
+    "pho": { "query": "pho bo beef noodle soup bowl", "title": "" },
+    "lasagna": { "query": "lasagna plate", "title": "" },
+    "springrolls": { "query": "nem ran fried spring rolls", "title": "" },
+    "tagine": { "query": "chicken tajine preserved lemon olives", "title": "" },
+    "ramen": { "query": "tonkotsu ramen", "title": "" },
+    "burger": { "query": "cheeseburger homemade", "title": "" },
+    "butterchicken": { "query": "butter chicken murgh makhani", "title": "" },
+    "padthai": { "query": "pad thai shrimp", "title": "" },
+    "paella": { "query": "paella marisco seafood", "title": "" },
+    "dimsum": { "query": "har gow dim sum steamer", "title": "" },
+    "tiramisu": { "query": "tiramisu dessert", "title": "" },
+    "tarte": { "query": "fruit tart berries", "title": "" }
+  }
 }
