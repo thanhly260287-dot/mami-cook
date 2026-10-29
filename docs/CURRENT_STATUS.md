@@ -6,7 +6,7 @@
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
 - **Rien n'est encore en ligne** : pas de projet Supabase, d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
-- **Livraison par livreurs** : partie serveur terminée et testée (120 tests SQL). **Les écrans (espace livreur, choix du livreur au panier, back-office) restent à faire** (#11).
+- **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 3).
 - **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
 
 ## Ce qui fonctionne (vérifié le 29/10/2026)
@@ -15,17 +15,20 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Partie | Preuve |
 | --- | --- |
-| Base de données : sécurité, commandes, stock, paiements, livraison, commissions | 120 tests SQL au vert (`bash supabase/tests/run.sh`) |
+| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques, quota IA | 135 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
 | Calcul des prix | 6 tests au vert (`pnpm --filter @mami/shared test`) |
-| Site web | Typecheck, lint et build OK ; 16 tests navigateur au vert |
+| Site web | Typecheck, lint et build OK ; 22 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1152 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié
 
 - Paiements Stripe réels (aucune clé configurée).
+- Retouche photo IA réelle (pas de clé Gemini ; le réseau du conteneur bloque Google).
+- Mode livreur sur un vrai téléphone (géolocalisation).
+- Les textes des documents juridiques n'ont pas été relus par un juriste.
 - Applis sur un vrai téléphone (seule la compilation des bundles a été faite).
 - Notifications push réelles et envoi d'e-mails.
 - Montée en charge : non mesurée, seulement prévue dans la conception.

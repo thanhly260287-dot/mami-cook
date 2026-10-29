@@ -16,6 +16,13 @@ Les modifications importantes, de la plus récente à la plus ancienne. Le déta
   - export DAC7 ;
   - statistiques de l'équipe.
 
+- Écrans livreur (web et mobile), livreur et pourboire au panier, suivi en direct, reçu.
+- Écosystème vendeurs : desserts et pâtisseries, statistiques détaillées, retouche photo IA (Gemini « Nano Banana »), page légale par pays.
+- Mon espace : tableau de bord personnel pour tous.
+- Back-office : tableau de bord, livreurs, commandes et remboursements, utilisateurs, codes promo, versements, pays et taux, export DAC7.
+- Documents juridiques : CGU, CGV, vendeurs, livreurs, confidentialité, modération, classement, remboursements, charte d'hygiène.
+- 404 nouveaux textes traduits dans les 9 langues.
+
 ## 29/10/2026
 
 - `ed9b55e` Intégration continue (tests, CodeQL, gitleaks, Dependabot) et documentation de mise en ligne.

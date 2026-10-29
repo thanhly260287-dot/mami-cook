@@ -40,7 +40,20 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 
 **Ancien point d'arrêt** (remplacé par ce qui suit) : terminer #10. Écrire la migration `20261029000006_delivery.sql`, la tester avec `bash supabase/tests/run.sh`, puis passer aux fonctions Edge, aux pages (#11) et aux documents juridiques (#12). Détail dans [TASKS.md](TASKS.md).
 
-**Point d'arrêt actuel** :
+**Suite (fin de session)**
+- Demandes :
+  - « termine le SaaS… mets Nano Banana pour les images » ;
+  - « crée un écosystème pour vendre plats et desserts, stats, dashboard pour tous, images et modification IA ».
+- Réalisé et testé : voir [CHANGELOG.md](CHANGELOG.md) et [TASKS.md](TASKS.md) (tâches #11, #12, #15).
+- Nano Banana : intégré côté serveur (`supabase/functions/ai-image`) et en script (`scripts/generate-images.mjs`). Non testé en réel, faute de clé et parce que le réseau bloque Google.
+- GitHub : dépôt créé par l'utilisateur et relié, push refusé (403, l'appli Claude n'a pas l'accès en écriture).
+
+**Point d'arrêt précédent** :
 1. Dès que le dépôt GitHub existe : `add_repo` puis push de `main`, et vérifier en ligne.
 2. Ensuite, #11 : écrans livreur, choix du livreur et du pourboire au panier, back-office, mode `courier` dans les écrans cuisinière.
 3. Stripe (#14) dès que l'utilisateur a créé le projet Supabase et fourni l'URL, la clé `anon` et la clé `pk_test`.
+
+**Point d'arrêt (fin de session)** :
+1. L'utilisateur installe l'appli Claude sur le dépôt, puis `git push -u origin main`.
+2. Création de Supabase et des clés Stripe (#14).
+3. Clé Gemini pour les photos (#8).

@@ -21,6 +21,9 @@ Format : **symptôme** → cause → solution.
 - **Les suites de tests SQL se gênaient** (plats et profils de l'une visibles dans l'autre) → `run.sh` crée une base neuve par fichier de test.
 - **Un test lu « en tant que livreur » renvoie vide** → normal : un livreur n'accède ni aux commandes ni au code du client, seulement à sa course via `delivery_details`. Faire les vérifications en tant qu'administrateur.
 
+- **Commit parti alors qu'un test échouait** → la commande enchaînait `grep … && git commit` : le `grep` réussit même si un test échoue. Toujours vérifier le résultat du test (« ✅ Tous les tests SQL passent ») avant de commiter.
+- **Le badge Pro/Particulier ne correspondait pas au test** → il est calculé automatiquement depuis le statut déclaré dans `cook_private` (déclencheur `sync_cook_professional`).
+
 ## Site web
 
 - **Routes du SPA en 404** sur le serveur de test statique → naviguer à l'intérieur de l'appli. L'aperçu artifact utilise le hash router (`VITE_HASH_ROUTER=1`).
