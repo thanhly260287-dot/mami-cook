@@ -53,17 +53,16 @@
   "hero": {
     "_note": "Bannière d'accueil : une maman contente de cuisiner. queries = recherches ; title = fichier choisi après vérification visuelle (éviter les photos marquées « personality »).",
     "queries": [
-      "Italian woman cooking spaghetti",
-      "woman cooking pasta kitchen smiling",
-      "Spanish woman cooking kitchen",
-      "mother cooking pasta"
+      "Shixart1985 pasta",
+      "Shixart1985 spaghetti",
+      "Shixart1985 woman cooking",
+      "Shixart1985 mother kitchen",
+      "Shixart1985 smiling kitchen",
+      "woman cooking spaghetti",
+      "cooking spaghetti kitchen",
+      "pasta cooking woman smiling"
     ],
     "title": "",
-    "openverse": [
-      "woman cooking spaghetti",
-      "italian mother cooking",
-      "woman cooking pasta",
-      "spanish woman cooking"
-    ]
+    "openverse": []
   }
 }
