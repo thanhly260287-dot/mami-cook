@@ -26,6 +26,8 @@ jobs:
         run: pnpm --filter @mami/shared test && pnpm --filter @mami/shared typecheck
       - name: Traductions complètes dans les 10 langues
         run: node scripts/i18n-keys.cjs --missing
+      - name: Mémoire du projet cohérente
+        run: bash scripts/check-docs.sh
       - name: Site — types, lint, build
         run: pnpm --filter @mami/web typecheck && pnpm --filter @mami/web lint && pnpm --filter @mami/web build
       - name: Site — tests de bout en bout

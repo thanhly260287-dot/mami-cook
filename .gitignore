@@ -14,3 +14,9 @@ supabase/.branches
 ios
 android
 *.tsbuildinfo
+
+# Claude Code : réglages personnels et instantanés locaux
+.claude/settings.local.json
+.claude/state/
+*.pem
+*.key

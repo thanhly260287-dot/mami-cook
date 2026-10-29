@@ -41,9 +41,27 @@ Pour ajouter ou modifier un texte :
 
 Le contenu saisi par les utilisateurs (noms et descriptions des plats) reste dans la langue de la cuisinière. Une traduction automatique (DeepL) pourra être ajoutée plus tard.
 
+## Pays, commissions et livraison (en cours, tâche #10)
+
+- Table `countries` : devise, taux (`service_rate`, `cook_commission_rate`, `courier_commission_rate`), barème de livraison (base + prix au km, borné par un minimum et un maximum), commande minimum, délai de versement, mode livreurs (`independent`, `partner_agency` ou `disabled`).
+- Trois modes de remise (`orders.fulfillment`) :
+  - `pickup` : le client vient chercher sa commande ;
+  - `delivery` : la cuisinière livre elle-même ;
+  - `courier` : un livreur MAMI COOK livre.
+- Course (`deliveries`), dans l'ordre :
+  - créée en `pending` au paiement ;
+  - passe en `searching` quand la cuisinière accepte, et les livreurs proches sont prévenus ;
+  - `assigned` quand un livreur accepte (verrou : un seul livreur gagne) ;
+  - `at_pickup` à son arrivée ;
+  - `picked_up` au retrait, la commande passe alors « en route » ;
+  - `delivered` avec le code à 4 chiffres du client, et la commande est terminée.
+- Versements (`payouts`) : une ligne pour la cuisinière et une pour le livreur, payées par Stripe Connect après le délai du pays.
+- Les livreurs voient les courses disponibles **sans adresse exacte**. Celles-ci ne sont révélées qu'après acceptation.
+
+Voir aussi : [SECURITE.md](SECURITE.md), [DEPLOIEMENT.md](DEPLOIEMENT.md), [DECISIONS.md](DECISIONS.md).
+
 ## Évolutions possibles
 
-- Livreurs partenaires (rôle `courier`, suivi GPS).
 - Abonnements (« un plat par semaine »).
 - Traduction automatique des fiches plats.
 - Facturation automatique pour les cuisiniers professionnels.
