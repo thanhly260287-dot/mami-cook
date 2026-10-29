@@ -39,6 +39,9 @@ jobs:
       - name: Secrets présents ?
         id: ready
         run: |
+          # Indique quel secret est présent, sans jamais afficher sa valeur
+          [ -n "$SUPABASE_ACCESS_TOKEN" ] && echo "::notice::SUPABASE_ACCESS_TOKEN : présent" || echo "::warning::SUPABASE_ACCESS_TOKEN : absent"
+          [ -n "$SUPABASE_DB_PASSWORD" ] && echo "::notice::SUPABASE_DB_PASSWORD : présent" || echo "::warning::SUPABASE_DB_PASSWORD : absent"
           if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
             echo "::warning::Secrets SUPABASE_ACCESS_TOKEN / SUPABASE_DB_PASSWORD absents : déploiement ignoré (voir docs/DEPLOIEMENT.md)."
             echo "ok=false" >> "$GITHUB_OUTPUT"
