@@ -1223,3 +1223,7 @@
 1222=Pending payouts
 1223=iPhone
 1224=To do
+1225=Filtered on {city}: sales, orders, sellers, dishes and couriers. Users and installs: all cities.
+1226=All cities
+1227=Sales by city
+1228={n} kitchens

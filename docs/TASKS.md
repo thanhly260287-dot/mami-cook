@@ -46,4 +46,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 8 | Vraies photos des 12 plats de démo (Wikimedia Commons, licences libres, crédits affichés dans les mentions légales) | Commit `c40d068`, vérification visuelle des 12 photos, 22 tests E2E |
 | 16 | Justificatifs légaux obligatoires par pays (vérification avant validation, expiration, livreurs selon le véhicule) | Commit `4fbb98e` ; 162 vérifications SQL, 22 E2E, typecheck/lint web et mobile, i18n 1191/1191 |
 | 17 | Tableau de bord v2 : ventes, commandes, panier moyen, commissions plats / livraison, plats et desserts vendus, top ventes et vendeurs, installations iOS / Android ; visible en démo | 169 vérifications SQL, 24 E2E, typecheck/lint web et mobile, i18n 1215/1215, capture d'écran |
+| 18 | Filtre par ville du tableau de bord (ventes, commandes, vendeurs, plats, livreurs) + classement des villes | 174 vérifications SQL, 24 E2E (filtre Lyon), i18n 1219/1219, capture d'écran |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

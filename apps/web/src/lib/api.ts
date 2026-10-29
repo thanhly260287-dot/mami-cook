@@ -452,12 +452,28 @@ export interface CustomerDashboard {
 export const fetchCustomerDashboard = () => rpc<CustomerDashboard>("customer_dashboard");
 
 // ------------------------------------------------------------------ administration (suite)
-export const fetchPlatformStats = async (days = 30): Promise<PlatformStats> =>
-  DEMO_MODE ? demoPlatformStats(days) : rpc<PlatformStats>("platform_stats", { p_days: days });
+export const fetchPlatformStats = async (days = 30, city: string | null = null): Promise<PlatformStats> =>
+  DEMO_MODE ? demoPlatformStats(days, city) : rpc<PlatformStats>("platform_stats", { p_days: days, p_city: city });
+
+export interface AdminCity { city: string; cooks: number; couriers: number }
+export const fetchAdminCities = async (): Promise<AdminCity[]> =>
+  DEMO_MODE ? DEMO_CITIES.map(({ city, cooks, couriers }) => ({ city, cooks, couriers })) : rpc<AdminCity[]>("admin_cities");
+
+// Démo : part de l'activité de chaque ville.
+const DEMO_CITIES = [
+  { city: "Paris", cooks: 24, couriers: 15, share: 0.46 },
+  { city: "Lyon", cooks: 9, couriers: 6, share: 0.17 },
+  { city: "Marseille", cooks: 7, couriers: 4, share: 0.14 },
+  { city: "Bruxelles", cooks: 5, couriers: 3, share: 0.1 },
+  { city: "Genève", cooks: 4, couriers: 2, share: 0.08 },
+  { city: "Lille", cooks: 3, couriers: 1, share: 0.05 },
+];
 
 /** Chiffres d'exemple pour la démo (proportionnels à la période choisie). */
-function demoPlatformStats(days: number): PlatformStats {
-  const k = Math.max(1, days) / 30;
+function demoPlatformStats(days: number, city: string | null): PlatformStats {
+  const c = city ? DEMO_CITIES.find((x) => x.city === city) : null;
+  const share = c?.share ?? 1;
+  const k = (Math.max(1, days) / 30) * share;
   const n = (v: number) => Math.round(v * k);
   const orders = n(1240);
   const gmv = n(2_480_000);
@@ -466,36 +482,46 @@ function demoPlatformStats(days: number): PlatformStats {
   const daily = Array.from({ length: Math.min(days, 90) }, (_, i) => {
     const d = new Date(Date.now() - (Math.min(days, 90) - 1 - i) * 86_400_000);
     const weekend = [0, 5, 6].includes(d.getDay());
-    return { day: d.toISOString().slice(0, 10), orders: Math.round((weekend ? 52 : 34) + 8 * Math.sin(i)), revenue_cents: weekend ? 11_000 : 7_000 };
+    return { day: d.toISOString().slice(0, 10), orders: Math.round(((weekend ? 52 : 34) + 8 * Math.sin(i)) * share), revenue_cents: Math.round((weekend ? 11_000 : 7_000) * share) };
   });
+  const top = (v: number) => Math.round(v * share);
+  const inCity = <T extends { kitchen_name: string }>(rows: T[]) => (city ? rows.filter((r) => DEMO_COOK_CITY[r.kitchen_name] === city) : rows);
   return {
+    city,
+    top_cities: DEMO_CITIES.map((x) => ({ city: x.city, orders: Math.round(1240 * x.share * days / 30), sales_cents: Math.round(2_480_000 * x.share * days / 30), currency: x.city === "Genève" ? "CHF" : "EUR" })),
     by_currency: [{
-      currency: "EUR", gmv_cents: gmv, revenue_cents: food + delivery, food_revenue_cents: food, delivery_revenue_cents: delivery,
+      currency: city === "Genève" ? "CHF" : "EUR", gmv_cents: gmv, revenue_cents: food + delivery, food_revenue_cents: food, delivery_revenue_cents: delivery,
       cooks_cents: Math.round(gmv / 1.2) - n(120_000), couriers_cents: n(244_000), tips_cents: n(31_000),
       orders, completed: Math.round(orders * 0.94), cancelled: Math.round(orders * 0.03), avg_basket_cents: Math.round(gmv / orders),
     }],
     items_by_course: { main: n(1630), dessert: n(540), pastry: n(210), starter: n(180), snack: n(150), drink: n(260) },
-    top_dishes: [
+    top_dishes: inCity([
       { title: "Lasagnes Maison Bolognaise", kitchen_name: "Chez Mami Nono", course: "main", qty: n(212), sales_cents: n(318_000), currency: "EUR" },
       { title: "Phở Bò Traditionnel", kitchen_name: "Chez Mami Hương", course: "main", qty: n(187), sales_cents: n(235_620), currency: "EUR" },
       { title: "Tiramisu Artisanal", kitchen_name: "Chez Nonna Lucia", course: "dessert", qty: n(164), sales_cents: n(137_760), currency: "EUR" },
       { title: "Butter Chicken & Naan", kitchen_name: "Chez Mami Priya", course: "main", qty: n(151), sales_cents: n(196_300), currency: "EUR" },
       { title: "Tarte aux Fruits Rouges", kitchen_name: "Chez Mamie Colette", course: "dessert", qty: n(128), sales_cents: n(99_840), currency: "EUR" },
-    ],
-    top_cooks: [
-      { kitchen_name: "Chez Mami Nono", slug: "mami-nono", orders: n(176), sales_cents: n(352_000), currency: "EUR" },
-      { kitchen_name: "Chez Mami Hương", slug: "mami-huong", orders: n(158), sales_cents: n(298_000), currency: "EUR" },
-      { kitchen_name: "Chez Mami Priya", slug: "mami-priya", orders: n(131), sales_cents: n(254_000), currency: "EUR" },
-      { kitchen_name: "Chez Nonna Lucia", slug: "nonna-lucia", orders: n(119), sales_cents: n(171_000), currency: "EUR" },
-      { kitchen_name: "Chez Abuela Rosa", slug: "abuela-rosa", orders: n(97), sales_cents: n(166_000), currency: "EUR" },
-    ],
-    sellers_active: Math.min(48, n(48)), dishes_published: 214, deliveries_completed: n(530),
-    orders_active: 23, deliveries_searching: 1, cooks_approved: 52, cooks_pending: 6, couriers_approved: 31, couriers_pending: 4, couriers_online: 9,
-    users_total: 4870, new_users: n(612), customers_active: n(1890), reports_open: 2, documents_to_review: 7, payouts_pending_cents: 184_000,
-    installs: { total: 3920, ios: 2210, android: 1710, new: n(540), active_30d: 2650 },
+    ]),
+    top_cooks: inCity([
+      { kitchen_name: "Chez Mami Nono", slug: "mami-nono", city: "Paris", orders: n(176), sales_cents: n(352_000), currency: "EUR" },
+      { kitchen_name: "Chez Mami Hương", slug: "mami-huong", city: "Paris", orders: n(158), sales_cents: n(298_000), currency: "EUR" },
+      { kitchen_name: "Chez Mami Priya", slug: "mami-priya", city: "Lyon", orders: n(131), sales_cents: n(254_000), currency: "EUR" },
+      { kitchen_name: "Chez Nonna Lucia", slug: "nonna-lucia", city: "Marseille", orders: n(119), sales_cents: n(171_000), currency: "EUR" },
+      { kitchen_name: "Chez Abuela Rosa", slug: "abuela-rosa", city: "Paris", orders: n(97), sales_cents: n(166_000), currency: "EUR" },
+    ]),
+    sellers_active: Math.min(c?.cooks ?? 48, n(48)), dishes_published: top(214), deliveries_completed: n(530),
+    orders_active: top(23), deliveries_searching: c && c.share < 0.4 ? 0 : 1, cooks_approved: c?.cooks ?? 52, cooks_pending: top(6), couriers_approved: c?.couriers ?? 31, couriers_pending: top(4), couriers_online: top(9),
+    users_total: 4870, new_users: Math.round(612 * days / 30), customers_active: n(1890), reports_open: 2, documents_to_review: 7, payouts_pending_cents: 184_000,
+    installs: { total: 3920, ios: 2210, android: 1710, new: Math.round(540 * days / 30), active_30d: 2650 },
     daily,
   };
 }
+
+/** Démo : ville de chaque cuisine d'exemple. */
+const DEMO_COOK_CITY: Record<string, string> = {
+  "Chez Mami Nono": "Paris", "Chez Mami Hương": "Paris", "Chez Abuela Rosa": "Paris",
+  "Chez Mami Priya": "Lyon", "Chez Nonna Lucia": "Marseille", "Chez Mamie Colette": "Lille",
+};
 export const fetchDac7 = (year: number) => rpc<Dac7Row[]>("dac7_report", { _year: year });
 export const searchUsers = (q: string) => rpc<{
   id: string; email: string; display_name: string; created_at: string; is_cook: boolean; is_courier: boolean; roles: string[]; orders_count: number;

@@ -1223,3 +1223,7 @@
 1222=Ausstehende Auszahlungen
 1223=iPhone
 1224=Zu erledigen
+1225=Gefiltert nach {city}: Umsatz, Bestellungen, Verkäufer, Gerichte und Fahrer. Nutzer und Installationen: alle Städte.
+1226=Alle Städte
+1227=Umsatz nach Stadt
+1228={n} Küchen

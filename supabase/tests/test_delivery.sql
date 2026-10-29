@@ -274,6 +274,21 @@ select pg_temp.check((select (c ->> 'food_revenue_cents')::int + (c ->> 'deliver
 select pg_temp.check((public.platform_stats(30) -> 'items_by_course' ->> 'main')::int >= 2, 'tableau de bord : portions vendues par type (plats)');
 select pg_temp.check((public.platform_stats(30) ->> 'sellers_active')::int = 1, 'tableau de bord : vendeurs ayant vendu sur la période');
 select pg_temp.check((public.platform_stats(30) -> 'top_dishes' -> 0 ->> 'title') = 'Mafé de poulet', 'tableau de bord : meilleures ventes');
+select pg_temp.act_as_admin_db();
+update public.cooks set city = 'Paris' where id = :'cook';
+select pg_temp.act_as(:'admin');
+select pg_temp.check((public.platform_stats(30, ' PARIS ') ->> 'sellers_active')::int = 1
+                     and jsonb_array_length(public.platform_stats(30, 'paris') -> 'by_currency') = 1,
+  'filtre par ville : Paris (sans tenir compte des majuscules ni des espaces)');
+select pg_temp.check((public.platform_stats(30, 'Lyon') ->> 'sellers_active')::int = 0
+                     and jsonb_array_length(public.platform_stats(30, 'Lyon') -> 'by_currency') = 0
+                     and (public.platform_stats(30, 'Lyon') -> 'items_by_course') = '{}'::jsonb,
+  'filtre par ville : aucune vente à Lyon');
+select pg_temp.check((public.platform_stats(30, 'Lyon') -> 'top_cities' -> 0 ->> 'city') = 'Paris', 'classement des villes');
+select pg_temp.check((select cooks = 1 from public.admin_cities() where city = 'Paris'), 'liste des villes pour le filtre');
+select pg_temp.act_as(:'intrus');
+select pg_temp.expect_error($$select * from public.admin_cities()$$, 'liste des villes réservée à l''équipe');
+select pg_temp.act_as(:'admin');
 select pg_temp.act_as(null);
 select public.register_app_install('11111111-1111-1111-1111-111111111111', 'ios', '1.0.0');
 select public.register_app_install('11111111-1111-1111-1111-111111111111', 'ios', '1.0.1');

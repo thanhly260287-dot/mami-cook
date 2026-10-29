@@ -1223,3 +1223,7 @@
 1222=Bekleyen ödemeler
 1223=iPhone
 1224=Yapılacaklar
+1225={city} için filtrelendi: satışlar, siparişler, satıcılar, yemekler ve kuryeler. Kullanıcılar ve kurulumlar: tüm şehirler.
+1226=Tüm şehirler
+1227=Şehre göre satışlar
+1228={n} mutfak

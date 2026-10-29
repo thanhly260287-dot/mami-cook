@@ -112,6 +112,14 @@ test("tableau de bord de l'équipe (démo) : ventes, plats et desserts, vendeurs
   await expect(page.getByText("Vendeurs ayant vendu")).toBeVisible();
   await expect(page.getByText("Installations", { exact: true })).toBeVisible();
   await expect(page.getByText("Tiramisu Artisanal")).toBeVisible();
+  // Filtre par ville : Lyon n'affiche que ses cuisines
+  await expect(page.getByText("Ventes par ville")).toBeVisible();
+  await page.getByLabel("Ville").selectOption("Lyon");
+  await expect(page.getByText(/Filtré sur Lyon/)).toBeVisible();
+  await expect(page.getByText("Butter Chicken & Naan")).toBeVisible();
+  await expect(page.getByText("Tiramisu Artisanal")).toHaveCount(0);
+  await page.getByLabel("Ville").selectOption("");
+  await expect(page.getByText("Tiramisu Artisanal")).toBeVisible();
   // En démo, les onglets qui exigent une vraie base sont masqués
   await expect(page.getByRole("button", { name: "Candidatures" })).toHaveCount(0);
   expect(errors).toEqual([]);

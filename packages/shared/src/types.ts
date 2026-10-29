@@ -381,7 +381,10 @@ export interface PlatformStats {
   /** Portions vendues par type de plat (main, dessert, pastry…). */
   items_by_course: Record<string, number>;
   top_dishes: { title: string; kitchen_name: string; course: string; qty: number; sales_cents: number; currency: string }[];
-  top_cooks: { kitchen_name: string; slug: string; orders: number; sales_cents: number; currency: string }[];
+  top_cooks: { kitchen_name: string; slug: string; city: string | null; orders: number; sales_cents: number; currency: string }[];
+  /** Ville filtrée (null = toutes). */
+  city: string | null;
+  top_cities: { city: string; orders: number; sales_cents: number; currency: string }[];
   sellers_active: number;
   dishes_published: number;
   deliveries_completed: number;

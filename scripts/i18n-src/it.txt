@@ -1223,3 +1223,7 @@
 1222=Pagamenti in attesa
 1223=iPhone
 1224=Da gestire
+1225=Filtrato su {city}: vendite, ordini, venditori, piatti e rider. Utenti e installazioni: tutte le città.
+1226=Tutte le città
+1227=Vendite per città
+1228={n} cucine

@@ -1223,5 +1223,9 @@
  "Vendeurs, livreurs et clients",
  "Versements en attente",
  "iPhone",
- "À traiter"
+ "À traiter",
+ "Filtré sur {city} : ventes, commandes, vendeurs, plats et livreurs. Utilisateurs et installations : toutes les villes.",
+ "Toutes les villes",
+ "Ventes par ville",
+ "{n} cuisines"
 ]

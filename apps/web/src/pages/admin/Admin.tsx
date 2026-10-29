@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { BarChart3, Bike, Check, Download, FileCheck, FileText, Globe, Package, ShieldAlert, Tag, UserCheck, Users, Wallet, X } from "lucide-react";
 import { BUSINESS_STATUSES, COURSES, countryFlag, countryName, cuisineLabel, formatDate, formatMoney, ORDER_STATUS_LABELS, REPORT_REASONS, t, intlLocale, VEHICLES, type Country, type OrderStatus } from "@mami/shared";
 import {
-  adminPayouts, adminSearchOrders, fetchCountries, fetchDac7, fetchPendingCooks, fetchPendingCouriers, fetchPlatformStats, fetchPromoCodes,
+  adminPayouts, adminSearchOrders, fetchAdminCities, fetchCountries, fetchDac7, fetchPendingCooks, fetchPendingCouriers, fetchPlatformStats, fetchPromoCodes,
   fetchComplianceQueue, fetchReports, orderAction, reviewCourier, savePromo, searchUsers, updateCountry,
 } from "@/lib/api";
 import { ComplianceChecklist } from "@/components/Compliance";
@@ -153,7 +153,9 @@ function Reports() {
 // ------------------------------------------------------------------ tableau de bord
 function Stats() {
   const [days, setDays] = useState(30);
-  const q = useQuery({ queryKey: ["platform-stats", days], queryFn: () => fetchPlatformStats(days), refetchInterval: 60_000 });
+  const [city, setCity] = useState<string | null>(null);
+  const cities = useQuery({ queryKey: ["admin-cities"], queryFn: fetchAdminCities, staleTime: 5 * 60_000 });
+  const q = useQuery({ queryKey: ["platform-stats", days, city], queryFn: () => fetchPlatformStats(days, city), refetchInterval: 60_000 });
   if (q.isLoading) return <Spinner />;
   const s = q.data;
   if (!s) return null;
@@ -164,7 +166,15 @@ function Stats() {
   return (
     <div className="space-y-8">
       {DEMO_MODE && <p className="rounded-xl bg-status-warn/10 p-3 text-sm">{t("Démo : chiffres d'exemple. Les vrais chiffres s'affichent dès que la base est en ligne.")}</p>}
-      <div className="flex flex-wrap gap-2">{[1, 7, 30, 90, 365].map((n) => <button key={n} onClick={() => setDays(n)} className={cn("rounded-xl px-3 py-1.5 text-sm font-semibold", days === n ? "gradient-primary text-white" : "bg-muted")}>{t("{n} j", { n })}</button>)}</div>
+      <div className="flex flex-wrap items-center gap-2">
+        {[1, 7, 30, 90, 365].map((n) => <button key={n} onClick={() => setDays(n)} className={cn("rounded-xl px-3 py-1.5 text-sm font-semibold", days === n ? "gradient-primary text-white" : "bg-muted")}>{t("{n} j", { n })}</button>)}
+        <label htmlFor="stats-city" className="sr-only">{t("Ville")}</label>
+        <Select id="stats-city" className="h-9 w-auto min-w-48" value={city ?? ""} onChange={(e) => setCity(e.target.value || null)}>
+          <option value="">{t("Toutes les villes")}</option>
+          {cities.data?.map((c) => <option key={c.city} value={c.city}>{c.city} ({t("{n} cuisines", { n: c.cooks })})</option>)}
+        </Select>
+      </div>
+      {city && <p className="text-sm text-muted-foreground">{t("Filtré sur {city} : ventes, commandes, vendeurs, plats et livreurs. Utilisateurs et installations : toutes les villes.", { city })}</p>}
 
       <Section title={t("Ventes")}>
         {s.by_currency.length === 0 && <p className="text-sm text-muted-foreground">{t("Aucune commande sur la période.")}</p>}
@@ -221,6 +231,18 @@ function Stats() {
           </Card>
         </div>
       </Section>
+
+      {!city && s.top_cities.length > 0 && (
+        <Section title={t("Ventes par ville")}>
+          <Card className="p-5">
+            <ol className="space-y-2 text-sm">{s.top_cities.map((c, i) => (
+              <li key={c.city + c.currency} className="flex justify-between gap-3">
+                <button onClick={() => setCity(c.city)} className="min-w-0 text-left hover:underline"><b>{i + 1}.</b> {c.city}</button>
+                <span className="shrink-0 tabular-nums">{t("{n} commandes", { n: c.orders })} · {formatMoney(c.sales_cents, c.currency)}</span>
+              </li>))}</ol>
+          </Card>
+        </Section>
+      )}
 
       <Section title={t("Vendeurs, livreurs et clients")}>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

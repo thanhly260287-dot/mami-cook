@@ -1223,3 +1223,7 @@
 1222=Pagamentos pendentes
 1223=iPhone
 1224=A tratar
+1225=Filtrado por {city}: vendas, encomendas, vendedores, pratos e estafetas. Utilizadores e instalações: todas as cidades.
+1226=Todas as cidades
+1227=Vendas por cidade
+1228={n} cozinhas

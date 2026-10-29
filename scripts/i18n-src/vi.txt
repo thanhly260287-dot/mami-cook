@@ -1223,3 +1223,7 @@
 1222=Khoản chi trả đang chờ
 1223=iPhone
 1224=Cần xử lý
+1225=Lọc theo {city}: doanh số, đơn hàng, người bán, món ăn và tài xế. Người dùng và lượt cài đặt: tất cả thành phố.
+1226=Tất cả thành phố
+1227=Doanh số theo thành phố
+1228={n} bếp

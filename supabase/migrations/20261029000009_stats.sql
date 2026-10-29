@@ -40,13 +40,46 @@ revoke execute on function public.register_app_install(uuid, text, text) from pu
 grant execute on function public.register_app_install(uuid, text, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------- tableau de bord de l'équipe
-create or replace function public.platform_stats(p_days integer default 30)
-returns jsonb language plpgsql stable security definer set search_path = ''
+-- Nom de ville comparable : sans accents, sans majuscules, sans espaces autour.
+create or replace function public.city_key(_city text)
+returns text language sql immutable set search_path = ''
+as $$ select nullif(lower(public.immutable_unaccent(trim(_city))), '') $$;
+
+-- Villes où il y a des cuisines (pour le filtre du tableau de bord).
+create or replace function public.admin_cities()
+returns table (city text, cooks bigint, couriers bigint)
+language plpgsql stable security definer set search_path = ''
 as $$
-declare _since timestamptz := now() - make_interval(days => least(greatest(p_days, 1), 365));
 begin
   if not public.is_staff() then raise exception 'Réservé à l''équipe' using errcode = '42501'; end if;
+  return query
+  select min(x.city), count(*) filter (where x.kind = 'cook'), count(*) filter (where x.kind = 'courier')
+  from (select c.city, 'cook' kind from public.cooks c where c.city is not null and c.status in ('approved', 'suspended')
+        union all
+        select co.city, 'courier' from public.couriers co where co.city is not null and co.status in ('approved', 'suspended')) x
+  group by public.city_key(x.city)
+  order by count(*) filter (where x.kind = 'cook') desc, min(x.city);
+end $$;
+revoke execute on function public.admin_cities() from anon, public;
+grant execute on function public.admin_cities() to authenticated;
+
+-- p_city : null = toutes les villes. Le filtre s'applique à la ville de la cuisine (ventes, commandes,
+-- vendeurs, plats) et à la ville du livreur ; utilisateurs et installations restent globaux.
+drop function if exists public.platform_stats(integer);
+create or replace function public.platform_stats(p_days integer default 30, p_city text default null)
+returns jsonb language plpgsql stable security definer set search_path = ''
+as $$
+declare
+  _since timestamptz := now() - make_interval(days => least(greatest(p_days, 1), 365));
+  _city text := public.city_key(p_city);
+  _cooks uuid[];
+begin
+  if not public.is_staff() then raise exception 'Réservé à l''équipe' using errcode = '42501'; end if;
+  if _city is not null then
+    select coalesce(array_agg(id), '{}') into _cooks from public.cooks where public.city_key(city) = _city;
+  end if;
   return jsonb_build_object(
+    'city', p_city,
     'by_currency', (select coalesce(jsonb_agg(t order by t.gmv_cents desc nulls last), '[]') from (
         select o.currency,
                sum(o.total_cents) filter (where o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded')) as gmv_cents,
@@ -63,7 +96,8 @@ begin
                round(avg(o.total_cents) filter (where o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded')))::integer as avg_basket_cents
         from public.orders o
         left join public.deliveries dl on dl.order_id = o.id
-        where o.created_at > _since group by o.currency) t),
+        where o.created_at > _since and (_cooks is null or o.cook_id = any (_cooks))
+        group by o.currency) t),
     -- Portions vendues par type (plat, dessert, boisson…), commandes payées non annulées
     'items_by_course', (select coalesce(jsonb_object_agg(course, qty), '{}') from (
         select d.course, sum(oi.quantity) qty
@@ -71,6 +105,7 @@ begin
         join public.orders o on o.id = oi.order_id
         join public.dishes d on d.id = oi.dish_id
         where o.created_at > _since and o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded')
+          and (_cooks is null or o.cook_id = any (_cooks))
         group by d.course) t),
     'top_dishes', (select coalesce(jsonb_agg(t), '[]') from (
         select oi.title, c.kitchen_name, d.course, sum(oi.quantity)::integer as qty, sum(oi.line_total_cents)::bigint as sales_cents, o.currency
@@ -79,29 +114,45 @@ begin
         join public.dishes d on d.id = oi.dish_id
         join public.cooks c on c.id = o.cook_id
         where o.created_at > _since and o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded')
+          and (_cooks is null or o.cook_id = any (_cooks))
         group by oi.dish_id, oi.title, c.kitchen_name, d.course, o.currency
         order by qty desc limit 5) t),
     'top_cooks', (select coalesce(jsonb_agg(t), '[]') from (
-        select c.kitchen_name, c.slug, count(*)::integer as orders, sum(o.total_cents)::bigint as sales_cents, o.currency
+        select c.kitchen_name, c.slug, c.city, count(*)::integer as orders, sum(o.total_cents)::bigint as sales_cents, o.currency
         from public.orders o join public.cooks c on c.id = o.cook_id
         where o.created_at > _since and o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded')
-        group by c.id, c.kitchen_name, c.slug, o.currency
+          and (_cooks is null or o.cook_id = any (_cooks))
+        group by c.id, c.kitchen_name, c.slug, c.city, o.currency
         order by sales_cents desc limit 5) t),
+    -- Classement des villes (toujours sur toutes les villes)
+    'top_cities', (select coalesce(jsonb_agg(t), '[]') from (
+        select min(c.city) as city, count(*)::integer as orders, sum(o.total_cents)::bigint as sales_cents, o.currency
+        from public.orders o join public.cooks c on c.id = o.cook_id
+        where o.created_at > _since and o.status not in ('pending_payment', 'expired', 'cancelled', 'refunded') and c.city is not null
+        group by public.city_key(c.city), o.currency
+        order by sales_cents desc limit 10) t),
     'sellers_active', (select count(distinct cook_id) from public.orders
-                        where created_at > _since and status not in ('pending_payment', 'expired', 'cancelled', 'refunded')),
+                        where created_at > _since and status not in ('pending_payment', 'expired', 'cancelled', 'refunded')
+                          and (_cooks is null or cook_id = any (_cooks))),
     'dishes_published', (select count(*) from public.dishes d join public.cooks c on c.id = d.cook_id
-                          where d.is_active and not d.is_hidden_by_moderation and c.status = 'approved'),
-    'deliveries_completed', (select count(*) from public.deliveries where status = 'delivered' and delivered_at > _since),
-    'orders_active', (select count(*) from public.orders where status in ('paid', 'accepted', 'preparing', 'ready', 'out_for_delivery')),
-    'deliveries_searching', (select count(*) from public.deliveries where status = 'searching'),
-    'cooks_approved', (select count(*) from public.cooks where status = 'approved'),
-    'cooks_pending', (select count(*) from public.cooks where status = 'pending_review'),
-    'couriers_approved', (select count(*) from public.couriers where status = 'approved'),
-    'couriers_pending', (select count(*) from public.couriers where status = 'pending_review'),
-    'couriers_online', (select count(*) from public.couriers where is_online and last_seen_at > now() - interval '10 minutes'),
+                          where d.is_active and not d.is_hidden_by_moderation and c.status = 'approved'
+                            and (_cooks is null or c.id = any (_cooks))),
+    'deliveries_completed', (select count(*) from public.deliveries dl join public.orders o on o.id = dl.order_id
+                              where dl.status = 'delivered' and dl.delivered_at > _since and (_cooks is null or o.cook_id = any (_cooks))),
+    'orders_active', (select count(*) from public.orders where status in ('paid', 'accepted', 'preparing', 'ready', 'out_for_delivery')
+                       and (_cooks is null or cook_id = any (_cooks))),
+    'deliveries_searching', (select count(*) from public.deliveries dl join public.orders o on o.id = dl.order_id
+                              where dl.status = 'searching' and (_cooks is null or o.cook_id = any (_cooks))),
+    'cooks_approved', (select count(*) from public.cooks where status = 'approved' and (_city is null or public.city_key(city) = _city)),
+    'cooks_pending', (select count(*) from public.cooks where status = 'pending_review' and (_city is null or public.city_key(city) = _city)),
+    'couriers_approved', (select count(*) from public.couriers where status = 'approved' and (_city is null or public.city_key(city) = _city)),
+    'couriers_pending', (select count(*) from public.couriers where status = 'pending_review' and (_city is null or public.city_key(city) = _city)),
+    'couriers_online', (select count(*) from public.couriers where is_online and last_seen_at > now() - interval '10 minutes'
+                         and (_city is null or public.city_key(city) = _city)),
     'users_total', (select count(*) from public.profiles),
     'new_users', (select count(*) from public.profiles where created_at > _since),
-    'customers_active', (select count(distinct customer_id) from public.orders where created_at > _since and status = 'completed'),
+    'customers_active', (select count(distinct customer_id) from public.orders where created_at > _since and status = 'completed'
+                          and (_cooks is null or cook_id = any (_cooks))),
     'reports_open', (select count(*) from public.reports where status in ('open', 'investigating')),
     'documents_to_review', (select count(*) from public.compliance_documents where status = 'submitted'),
     'payouts_pending_cents', (select coalesce(sum(amount_cents), 0) from public.payouts where status = 'pending'),
@@ -115,7 +166,8 @@ begin
               from (select date_trunc('day', created_at)::date dd, count(*) n,
                            sum(platform_fee_cents) filter (where status = 'completed') r
                     from public.orders where created_at > _since and status not in ('pending_payment', 'expired')
+                      and (_cooks is null or cook_id = any (_cooks))
                     group by 1) t));
 end $$;
-revoke execute on function public.platform_stats(integer) from anon, public;
-grant execute on function public.platform_stats(integer) to authenticated;
+revoke execute on function public.platform_stats(integer, text) from anon, public;
+grant execute on function public.platform_stats(integer, text) to authenticated;
