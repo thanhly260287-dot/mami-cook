@@ -15,4 +15,11 @@ $PSQL -c "create database test" postgres
 $PSQL -f tests/stubs.sql test
 for f in migrations/*.sql; do echo "→ $f"; $PSQL -f "$f" test; done
 for f in tests/test_*.sql; do echo "→ $f"; $PSQL -t -f "$f" test >/dev/null; done
+echo "→ seed.sql (base neuve)"
+$PSQL -c "create database seedtest" postgres
+$PSQL -f tests/stubs.sql seedtest
+for f in migrations/*.sql; do $PSQL -f "$f" seedtest; done
+$PSQL -f seed.sql seedtest
+n=$($PSQL -tA -c "select count(*) from public.feed(48.8566, 2.3522, 5)" seedtest)
+[ "$n" = "12" ] || { echo "✗ seed : $n plats dans le flux au lieu de 12"; exit 1; }
 echo "✅ Tous les tests SQL passent"
