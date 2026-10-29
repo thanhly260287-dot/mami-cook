@@ -25,3 +25,13 @@ Limites de cette méthode :
 - les dossiers et fichiers commençant par un point (`.github`, `.claude`, `.gitignore`) sont parfois ignorés par le glisser-déposer.
 
 La première méthode est donc préférable.
+
+## Si Claude répond « 403 » ou « pas d'accès » en envoyant
+
+Le dépôt existe, mais l'appli Claude n'a pas le droit d'écrire dessus.
+
+1. Ouvrez https://github.com/apps/claude/installations/select_target.
+2. Choisissez votre compte **thanhly260287-dot**.
+3. Dans **Repository access**, choisissez **All repositories**, ou **Only select repositories** puis ajoutez `mami-cook`.
+4. Cliquez sur **Install** (ou **Save**).
+5. Si cela ne suffit pas, reconnectez GitHub depuis https://claude.ai/customize/connectors.
