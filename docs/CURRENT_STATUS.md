@@ -5,7 +5,7 @@
 ## En bref
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
-- **Rien n'est encore en ligne** : pas de projet Supabase, de compte Stripe, d'hébergement ni de publication sur les stores. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
+- **Rien n'est encore en ligne** : pas de projet Supabase, d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
 - **Livraison par livreurs** : partie serveur terminée et testée (120 tests SQL). **Les écrans (espace livreur, choix du livreur au panier, back-office) restent à faire** (#11).
 - **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
 
