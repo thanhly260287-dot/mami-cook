@@ -10,6 +10,8 @@ Format : **symptôme** → cause → solution.
 - **Le dépôt GitHub reste « not found »** → le dépôt n'existe pas ou l'appli Claude n'y a pas accès → voir les blocages de [CURRENT_STATUS.md](CURRENT_STATUS.md).
 - **Photos et docs.expo.dev inaccessibles** → politique réseau du conteneur → illustrations générées ; vérifier les API Expo avec `tsc` plutôt que sur la documentation en ligne.
 - **`pkill -f motif` tue sa propre commande** → le motif figure dans la ligne de commande du shell → tuer par PID.
+- **Aperçu en ligne refusé (« manifest exceeds 512 entries »)** → chaque publication ajoutait des fichiers aux noms différents (empreinte dans le nom) → construire l'aperçu avec noms fixes : `VITE_HASH_ROUTER=1 pnpm --filter @mami/web exec vite build -c vite.preview.config.ts --base ./ --outDir <dossier>`, supprimer `_headers` et `_redirects`, puis publier les fichiers de `assets/` (430 anciens fichiers supprimés le 29/10/2026).
+- **Photos introuvables sur Wikimedia** → peu de résultats pour certaines recherches → section `hero` de `scripts/photos.json` : plusieurs recherches, propositions sur la branche `photo-review`, tri visuel, puis `title` = fichier choisi (GitHub télécharge et cite l'auteur).
 
 ## Base de données
 
