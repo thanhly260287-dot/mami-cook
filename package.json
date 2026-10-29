@@ -1,0 +1,16 @@
+{
+  "name": "mami-cook",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm --filter @mami/web dev",
+    "dev:mobile": "pnpm --filter @mami/mobile start",
+    "build": "pnpm -r --filter=!@mami/mobile build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test:db": "bash supabase/tests/run.sh"
+  },
+  "engines": { "node": ">=20" }
+}
