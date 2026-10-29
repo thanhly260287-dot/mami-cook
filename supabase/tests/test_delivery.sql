@@ -267,6 +267,22 @@ select pg_temp.check((select count(*) = 2 from public.dac7_report(extract(year f
 select pg_temp.check((select tax_id = '1234567890123' and not reportable from public.dac7_report(extract(year from now())::integer) where seller_id = :'cook'),
   'DAC7 : vendeuse sous le seuil (moins de 30 ventes et 2 000 €)');
 select pg_temp.check((public.platform_stats(30) ->> 'couriers_approved')::integer >= 2, 'statistiques de la plateforme');
+select pg_temp.check((select (c ->> 'food_revenue_cents')::int + (c ->> 'delivery_revenue_cents')::int = (c ->> 'revenue_cents')::int
+                              and (c ->> 'delivery_revenue_cents')::int > 0 and (c ->> 'orders')::int >= 1 and (c ->> 'avg_basket_cents')::int > 0
+                       from jsonb_array_elements(public.platform_stats(30) -> 'by_currency') c where c ->> 'currency' = 'EUR'),
+  'tableau de bord : commission plats + commission livraison = revenus, panier moyen');
+select pg_temp.check((public.platform_stats(30) -> 'items_by_course' ->> 'main')::int >= 2, 'tableau de bord : portions vendues par type (plats)');
+select pg_temp.check((public.platform_stats(30) ->> 'sellers_active')::int = 1, 'tableau de bord : vendeurs ayant vendu sur la période');
+select pg_temp.check((public.platform_stats(30) -> 'top_dishes' -> 0 ->> 'title') = 'Mafé de poulet', 'tableau de bord : meilleures ventes');
+select pg_temp.act_as(null);
+select public.register_app_install('11111111-1111-1111-1111-111111111111', 'ios', '1.0.0');
+select public.register_app_install('11111111-1111-1111-1111-111111111111', 'ios', '1.0.1');
+select public.register_app_install('22222222-2222-2222-2222-222222222222', 'android');
+select pg_temp.expect_error($$select public.register_app_install('33333333-3333-3333-3333-333333333333', 'windows')$$, 'plateforme inconnue');
+select pg_temp.expect_error($$select count(*) from public.app_installs$$, 'installations illisibles par le public');
+select pg_temp.act_as(:'admin');
+select pg_temp.check((select (i ->> 'total')::int = 2 and (i ->> 'ios')::int = 1 and (i ->> 'android')::int = 1 from (select public.platform_stats(30) -> 'installs' i) x),
+  'installations de l''appli : iPhone et Android, sans doublon');
 
 -- Suisse : devise CHF
 select pg_temp.act_as_admin_db();

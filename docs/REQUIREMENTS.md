@@ -18,6 +18,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | Système de mémoire permanente : CLAUDE.md, docs, skills, hooks, Git (voir [SESSION_LOG.md](SESSION_LOG.md)) |
 | 29/10/2026 | « met des vrai image stp » → ✅ 12 photos Wikimedia Commons |
 | 29/10/2026 | « je veux atteindre le 100% au niveau des fonctionnalités […] que tu te souviennes bien de tout ce que je te dis […] Faut s'occuper de la base de données, moyen de paiement, surtout que tu mettes de vraies photos, de vrais plats, et […] un vrai site avec une vraie démo, et puis qu'on le mette en ligne […] la livraison, qu'il y ait le GPS en temps réel, qu'on prenne notre commission sur la livraison, qu'on prenne notre commission sur chaque vente de chaque plat, avoir un vrai business model. Et surtout qu'au niveau des conditions, que les gens, par exemple en France, ils doivent suivre une formation par rapport à l'hygiène. Etc. Vraiment regarder toutes les lois par rapport à chaque pays. […] termine-moi cette application aujourd'hui. » |
+| 29/10/2026 | « total des vente ca va dans le dashboard on veut le nombre de vendeur, de plats ou de dessert vendu, nombre de commande, etc », puis « nombre de telechargement » → ✅ tableau de bord v2 (#17) |
 
 ## Fonctionnalités
 
@@ -45,6 +46,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 
 ### Plateforme / équipe
 - ✅ Modération des cuisines et des signalements, suspension, codes promo, journal d'audit.
+- ✅ Tableau de bord de l'équipe : total des ventes, nombre de commandes, panier moyen, revenus (commission plats et commission livraison séparées), plats / desserts vendus, meilleures ventes et meilleurs vendeurs, vendeurs ayant vendu, utilisateurs, installations de l'appli (iPhone / Android). Visible dans la démo avec des chiffres d'exemple (`/admin`).
 - ✅ Back-office complet : indicateurs, utilisateurs, validation des livreurs, commandes et remboursements, taux par pays, versements, export DAC7 (#11), vérification des justificatifs.
 
 ### Juridique

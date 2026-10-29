@@ -32,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cook = useQuery({ queryKey: ["my-cook", userId], queryFn: () => fetchMyCook(userId!), enabled: !!userId });
   const courier = useQuery({ queryKey: ["my-courier", userId], queryFn: () => fetchMyCourier(userId!), enabled: !!userId });
   useEffect(() => { if (userId) registerPush(userId).catch(() => undefined); }, [userId]);
+  // Compte les installations (identifiant anonyme) ; relié au compte après connexion.
+  useEffect(() => { if (!loading) registerInstall().catch(() => undefined); }, [loading, userId]);
 
   const value = useMemo<AuthState>(() => ({
     session, userId, loading, cook: cook.data ?? null, courier: courier.data ?? null,
@@ -47,6 +49,20 @@ export const useAuth = () => { const c = useContext(AuthCtx); if (!c) throw new 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
 });
+
+/** Identifiant anonyme créé au premier lancement : sert uniquement à compter les installations. */
+async function registerInstall() {
+  if (!supabase || (Platform.OS !== "ios" && Platform.OS !== "android")) return;
+  let id = await AsyncStorage.getItem("install_id");
+  if (!id) {
+    id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    });
+    await AsyncStorage.setItem("install_id", id);
+  }
+  await supabase.rpc("register_app_install", { _install_id: id, _platform: Platform.OS, _version: Constants.expoConfig?.version ?? null });
+}
 
 async function registerPush(userId: string) {
   if (!Device.isDevice || !supabase) return;

@@ -6,7 +6,7 @@
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
 - **Rien n'est encore en ligne** : base Supabase pas encore installée, pas d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
-- **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 4, avec les vraies photos).
+- **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 6 : vraies photos, tableau de bord de l'équipe sur `#/admin` avec des chiffres d'exemple).
 - **Supabase** : projet créé (`https://dxemjkfvaofijqptubfh.supabase.co`, clé publique dans `apps/web/.env.supabase` et `apps/mobile/eas.json`). **Base pas encore installée** : il manque les secrets GitHub (voir [TASKS.md](TASKS.md)).
 - **Lois par pays** : justificatifs obligatoires (ex. France : formation hygiène 14 h, déclaration DDPP, identité, assurance) vérifiés par l'équipe avant la première vente ; suspension automatique si un document expire.
 - **Photos** : 12 vraies photos de plats (Wikimedia Commons, licences libres).
@@ -18,12 +18,12 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Partie | Preuve |
 | --- | --- |
-| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques, quota IA, justificatifs par pays | 162 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
+| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques (tableau de bord v2), installations de l'appli, quota IA, justificatifs par pays | 169 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
 | Calcul des prix | 6 tests au vert (`pnpm --filter @mami/shared test`) |
-| Site web | Typecheck, lint et build OK ; 22 tests navigateur au vert |
+| Site web | Typecheck, lint et build OK ; 24 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes, 1191 textes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1215 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié

@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BarChart3, Bike, Check, Download, FileCheck, FileText, Globe, Package, ShieldAlert, Tag, UserCheck, Users, Wallet, X } from "lucide-react";
-import { BUSINESS_STATUSES, countryFlag, countryName, cuisineLabel, formatDate, formatMoney, ORDER_STATUS_LABELS, REPORT_REASONS, t, intlLocale, VEHICLES, type Country, type OrderStatus } from "@mami/shared";
+import { BUSINESS_STATUSES, COURSES, countryFlag, countryName, cuisineLabel, formatDate, formatMoney, ORDER_STATUS_LABELS, REPORT_REASONS, t, intlLocale, VEHICLES, type Country, type OrderStatus } from "@mami/shared";
 import {
   adminPayouts, adminSearchOrders, fetchCountries, fetchDac7, fetchPendingCooks, fetchPendingCouriers, fetchPlatformStats, fetchPromoCodes,
   fetchComplianceQueue, fetchReports, orderAction, reviewCourier, savePromo, searchUsers, updateCountry,
 } from "@/lib/api";
 import { ComplianceChecklist } from "@/components/Compliance";
-import { requireSupabase } from "@/lib/supabase";
+import { DEMO_MODE, requireSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, errorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,8 @@ export default function Admin() {
   const [tab, setTab] = useState<Tab>("stats");
   const { roles } = useAuth();
   const isAdmin = roles.includes("admin");
-  const visible = TABS.filter((tb) => isAdmin || !["countries", "dac7", "promos", "payouts"].includes(tb.id));
+  // Démo (sans base) : seul le tableau de bord est visible, avec des chiffres d'exemple.
+  const visible = DEMO_MODE ? TABS.filter((tb) => tb.id === "stats") : TABS.filter((tb) => isAdmin || !["countries", "dac7", "promos", "payouts"].includes(tb.id));
   return (
     <div className="container py-8">
       <Seo title={t("Administration — MAMI COOK")} noindex />
@@ -157,29 +158,104 @@ function Stats() {
   const s = q.data;
   if (!s) return null;
   const max = Math.max(1, ...s.daily.map((d) => d.orders));
+  const portions = Object.values(s.items_by_course).reduce((a, b) => a + b, 0);
+  const sweets = (s.items_by_course.dessert ?? 0) + (s.items_by_course.pastry ?? 0);
+  const num = (v: number) => v.toLocaleString(intlLocale());
   return (
-    <div className="space-y-6">
-      <div className="flex gap-2">{[1, 7, 30, 90, 365].map((n) => <button key={n} onClick={() => setDays(n)} className={cn("rounded-xl px-3 py-1.5 text-sm font-semibold", days === n ? "gradient-primary text-white" : "bg-muted")}>{t("{n} j", { n })}</button>)}</div>
-      {s.by_currency.length === 0 && <p className="text-sm text-muted-foreground">{t("Aucune commande sur la période.")}</p>}
-      {s.by_currency.map((c) => (
-        <div key={c.currency} className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-          <Kpi label={t("Volume d'affaires ({c})", { c: c.currency })} value={formatMoney(c.gmv_cents ?? 0, c.currency)} />
-          <Kpi label={t("Revenus MAMI COOK")} value={formatMoney(c.revenue_cents ?? 0, c.currency)} accent />
-          <Kpi label={t("Versé aux cuisinières")} value={formatMoney(c.cooks_cents ?? 0, c.currency)} />
-          <Kpi label={t("Versé aux livreurs")} value={formatMoney(c.couriers_cents ?? 0, c.currency)} />
-          <Kpi label={t("Commandes terminées / annulées")} value={`${c.completed} / ${c.cancelled}`} />
+    <div className="space-y-8">
+      {DEMO_MODE && <p className="rounded-xl bg-status-warn/10 p-3 text-sm">{t("Démo : chiffres d'exemple. Les vrais chiffres s'affichent dès que la base est en ligne.")}</p>}
+      <div className="flex flex-wrap gap-2">{[1, 7, 30, 90, 365].map((n) => <button key={n} onClick={() => setDays(n)} className={cn("rounded-xl px-3 py-1.5 text-sm font-semibold", days === n ? "gradient-primary text-white" : "bg-muted")}>{t("{n} j", { n })}</button>)}</div>
+
+      <Section title={t("Ventes")}>
+        {s.by_currency.length === 0 && <p className="text-sm text-muted-foreground">{t("Aucune commande sur la période.")}</p>}
+        {s.by_currency.map((c) => (
+          <div key={c.currency} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <Kpi label={t("Total des ventes ({c})", { c: c.currency })} value={formatMoney(c.gmv_cents ?? 0, c.currency)} big />
+              <Kpi label={t("Nombre de commandes")} value={num(c.orders)} big />
+              <Kpi label={t("Panier moyen")} value={formatMoney(c.avg_basket_cents ?? 0, c.currency)} big />
+              <Kpi label={t("Revenus MAMI COOK")} value={formatMoney(c.revenue_cents ?? 0, c.currency)} accent big />
+            </div>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+              <Kpi label={t("Commission sur les plats")} value={formatMoney(c.food_revenue_cents ?? 0, c.currency)} />
+              <Kpi label={t("Commission sur les livraisons")} value={formatMoney(c.delivery_revenue_cents, c.currency)} />
+              <Kpi label={t("Versé aux cuisinières")} value={formatMoney(c.cooks_cents ?? 0, c.currency)} />
+              <Kpi label={t("Versé aux livreurs")} value={formatMoney(c.couriers_cents ?? 0, c.currency)} />
+              <Kpi label={t("Pourboires")} value={formatMoney(c.tips_cents, c.currency)} />
+              <Kpi label={t("Commandes terminées / annulées")} value={`${num(c.completed)} / ${num(c.cancelled)}`} />
+            </div>
+          </div>
+        ))}
+      </Section>
+
+      <Section title={t("Ce qui a été vendu")}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Kpi label={t("Portions vendues")} value={num(portions)} big />
+          <Kpi label={t("Plats vendus")} value={num(s.items_by_course.main ?? 0)} big />
+          <Kpi label={t("Desserts et pâtisseries vendus")} value={num(sweets)} big />
+          <Kpi label={t("Livraisons effectuées")} value={num(s.deliveries_completed)} big />
         </div>
-      ))}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Kpi label={t("Commandes en cours")} value={String(s.orders_active)} />
-        <Kpi label={t("Courses sans livreur")} value={String(s.deliveries_searching)} warn={s.deliveries_searching > 0} />
-        <Kpi label={t("Livreurs en ligne")} value={String(s.couriers_online)} />
-        <Kpi label={t("Signalements ouverts")} value={String(s.reports_open)} warn={s.reports_open > 0} />
-        <Kpi label={t("Cuisines actives")} value={`${s.cooks_approved} (+${s.cooks_pending} ${t("à valider")})`} />
-        <Kpi label={t("Livreurs validés")} value={`${s.couriers_approved} (+${s.couriers_pending} ${t("à valider")})`} />
-        <Kpi label={t("Nouveaux comptes")} value={String(s.new_users)} />
-        <Kpi label={t("Clients actifs")} value={String(s.customers_active)} />
-      </div>
+        <div className="flex flex-wrap gap-2">
+          {COURSES.map((c) => <Badge key={c.id} tone="muted" className="text-sm">{c.emoji} {t(c.label)} : {num(s.items_by_course[c.id] ?? 0)}</Badge>)}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="p-5">
+            <h3 className="mb-3 font-bold">{t("Meilleures ventes")}</h3>
+            {s.top_dishes.length === 0 ? <p className="text-sm text-muted-foreground">—</p> : (
+              <ol className="space-y-2 text-sm">{s.top_dishes.map((d, i) => (
+                <li key={d.title + d.kitchen_name} className="flex justify-between gap-3">
+                  <span className="min-w-0"><b>{i + 1}.</b> {COURSES.find((c) => c.id === d.course)?.emoji} {d.title} <span className="text-muted-foreground">· {d.kitchen_name}</span></span>
+                  <span className="shrink-0 tabular-nums">{t("{n} vendus", { n: d.qty })} · {formatMoney(d.sales_cents, d.currency)}</span>
+                </li>))}</ol>
+            )}
+          </Card>
+          <Card className="p-5">
+            <h3 className="mb-3 font-bold">{t("Meilleurs vendeurs")}</h3>
+            {s.top_cooks.length === 0 ? <p className="text-sm text-muted-foreground">—</p> : (
+              <ol className="space-y-2 text-sm">{s.top_cooks.map((c, i) => (
+                <li key={c.slug} className="flex justify-between gap-3">
+                  <Link to={`/cuisine/${c.slug}`} className="min-w-0 hover:underline"><b>{i + 1}.</b> {c.kitchen_name}</Link>
+                  <span className="shrink-0 tabular-nums">{t("{n} commandes", { n: c.orders })} · {formatMoney(c.sales_cents, c.currency)}</span>
+                </li>))}</ol>
+            )}
+          </Card>
+        </div>
+      </Section>
+
+      <Section title={t("Vendeurs, livreurs et clients")}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Kpi label={t("Vendeurs ayant vendu")} value={num(s.sellers_active)} />
+          <Kpi label={t("Cuisines actives")} value={`${num(s.cooks_approved)} (+${s.cooks_pending} ${t("à valider")})`} />
+          <Kpi label={t("Plats en ligne")} value={num(s.dishes_published)} />
+          <Kpi label={t("Livreurs validés")} value={`${num(s.couriers_approved)} (+${s.couriers_pending} ${t("à valider")})`} />
+          <Kpi label={t("Livreurs en ligne")} value={num(s.couriers_online)} />
+          <Kpi label={t("Utilisateurs inscrits")} value={num(s.users_total)} />
+          <Kpi label={t("Nouveaux comptes")} value={num(s.new_users)} />
+          <Kpi label={t("Clients actifs")} value={num(s.customers_active)} />
+        </div>
+      </Section>
+
+      <Section title={t("Appli mobile")}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <Kpi label={t("Installations")} value={num(s.installs.total)} big />
+          <Kpi label={t("iPhone")} value={num(s.installs.ios)} />
+          <Kpi label={t("Android")} value={num(s.installs.android)} />
+          <Kpi label={t("Nouvelles installations")} value={num(s.installs.new)} />
+          <Kpi label={t("Utilisées ces 30 derniers jours")} value={num(s.installs.active_30d)} />
+        </div>
+        <p className="text-xs text-muted-foreground">{t("Appareils où l'appli a été ouverte au moins une fois. Les chiffres officiels de téléchargement sont dans App Store Connect (Apple) et Google Play Console.")}</p>
+      </Section>
+
+      <Section title={t("À traiter")}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <Kpi label={t("Commandes en cours")} value={num(s.orders_active)} />
+          <Kpi label={t("Courses sans livreur")} value={num(s.deliveries_searching)} warn={s.deliveries_searching > 0} />
+          <Kpi label={t("Signalements ouverts")} value={num(s.reports_open)} warn={s.reports_open > 0} />
+          <Kpi label={t("Justificatifs à vérifier")} value={num(s.documents_to_review)} warn={s.documents_to_review > 0} />
+          <Kpi label={t("Versements en attente")} value={formatMoney(s.payouts_pending_cents, s.by_currency[0]?.currency ?? "EUR")} />
+        </div>
+      </Section>
+
       <Card className="p-5">
         <h2 className="mb-4 font-bold">{t("Commandes par jour")}</h2>
         <div className="flex h-40 items-end gap-1">{s.daily.map((d) => <div key={d.day} title={`${d.day} : ${d.orders}`} className="flex-1 rounded-t gradient-primary" style={{ height: `${(d.orders / max) * 100}%` }} />)}</div>
@@ -188,8 +264,12 @@ function Stats() {
   );
 }
 
-function Kpi({ label, value, accent, warn }: { label: string; value: string; accent?: boolean; warn?: boolean }) {
-  return <Card className={cn("p-4", accent && "border-primary/40 bg-primary/5", warn && "border-status-warn/50 bg-status-warn/10")}><p className="text-xs font-semibold text-muted-foreground">{label}</p><p className="mt-1 text-xl font-extrabold tabular-nums">{value}</p></Card>;
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return <section className="space-y-3"><h2 className="text-lg font-bold">{title}</h2>{children}</section>;
+}
+
+function Kpi({ label, value, accent, warn, big }: { label: string; value: string; accent?: boolean; warn?: boolean; big?: boolean }) {
+  return <Card className={cn("p-4", accent && "border-primary/40 bg-primary/5", warn && "border-status-warn/50 bg-status-warn/10")}><p className="text-xs font-semibold text-muted-foreground">{label}</p><p className={cn("mt-1 font-extrabold tabular-nums", big ? "text-2xl" : "text-xl")}>{value}</p></Card>;
 }
 
 // ------------------------------------------------------------------ livreurs à valider

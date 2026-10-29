@@ -76,3 +76,9 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 - Réalisé (#16, commit `4fbb98e`) : justificatifs obligatoires par pays, vérification par l'équipe, blocage de la validation, alerte et suspension à l'expiration, documents livreur selon le véhicule. Tests : SQL 162 ✓, E2E 22 ✓, typecheck/lint web et mobile, i18n 1191/1191.
 - Cahier des charges remis à jour (statuts dépassés corrigés).
 - **Point d'arrêt** : toujours en attente des secrets GitHub `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD` (aucune branche `deploy-status` sur GitHub). Ensuite : Stripe (#14), Vercel, relecture juridique.
+
+## 2026-10-29 — tableau de bord
+- Demandes : « total des vente ca va dans le dashboard … nombre de vendeur, de plats ou de dessert vendu, nombre de commande », puis « nombre de telechargement ».
+- Réalisé (#17) : migration `20261029000009_stats.sql` (statistiques v2, table `app_installs`, fonction `register_app_install`), écran de l'administration réorganisé (Ventes, Ce qui a été vendu, Vendeurs/livreurs/clients, Appli mobile, À traiter), chiffres d'exemple en démo, enregistrement des installations dans l'appli, politique de confidentialité complétée.
+- Tests : SQL 169 ✓, E2E 24 ✓, typecheck/lint web et mobile, i18n 1215/1215, capture d'écran vérifiée.
+- **Point d'arrêt** : inchangé, attente des secrets GitHub pour installer la base.

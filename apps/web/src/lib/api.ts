@@ -452,7 +452,50 @@ export interface CustomerDashboard {
 export const fetchCustomerDashboard = () => rpc<CustomerDashboard>("customer_dashboard");
 
 // ------------------------------------------------------------------ administration (suite)
-export const fetchPlatformStats = (days = 30) => rpc<PlatformStats>("platform_stats", { p_days: days });
+export const fetchPlatformStats = async (days = 30): Promise<PlatformStats> =>
+  DEMO_MODE ? demoPlatformStats(days) : rpc<PlatformStats>("platform_stats", { p_days: days });
+
+/** Chiffres d'exemple pour la démo (proportionnels à la période choisie). */
+function demoPlatformStats(days: number): PlatformStats {
+  const k = Math.max(1, days) / 30;
+  const n = (v: number) => Math.round(v * k);
+  const orders = n(1240);
+  const gmv = n(2_480_000);
+  const delivery = n(61_000);
+  const food = Math.round(gmv * 0.2 / 1.2);
+  const daily = Array.from({ length: Math.min(days, 90) }, (_, i) => {
+    const d = new Date(Date.now() - (Math.min(days, 90) - 1 - i) * 86_400_000);
+    const weekend = [0, 5, 6].includes(d.getDay());
+    return { day: d.toISOString().slice(0, 10), orders: Math.round((weekend ? 52 : 34) + 8 * Math.sin(i)), revenue_cents: weekend ? 11_000 : 7_000 };
+  });
+  return {
+    by_currency: [{
+      currency: "EUR", gmv_cents: gmv, revenue_cents: food + delivery, food_revenue_cents: food, delivery_revenue_cents: delivery,
+      cooks_cents: Math.round(gmv / 1.2) - n(120_000), couriers_cents: n(244_000), tips_cents: n(31_000),
+      orders, completed: Math.round(orders * 0.94), cancelled: Math.round(orders * 0.03), avg_basket_cents: Math.round(gmv / orders),
+    }],
+    items_by_course: { main: n(1630), dessert: n(540), pastry: n(210), starter: n(180), snack: n(150), drink: n(260) },
+    top_dishes: [
+      { title: "Lasagnes Maison Bolognaise", kitchen_name: "Chez Mami Nono", course: "main", qty: n(212), sales_cents: n(318_000), currency: "EUR" },
+      { title: "Phở Bò Traditionnel", kitchen_name: "Chez Mami Hương", course: "main", qty: n(187), sales_cents: n(235_620), currency: "EUR" },
+      { title: "Tiramisu Artisanal", kitchen_name: "Chez Nonna Lucia", course: "dessert", qty: n(164), sales_cents: n(137_760), currency: "EUR" },
+      { title: "Butter Chicken & Naan", kitchen_name: "Chez Mami Priya", course: "main", qty: n(151), sales_cents: n(196_300), currency: "EUR" },
+      { title: "Tarte aux Fruits Rouges", kitchen_name: "Chez Mamie Colette", course: "dessert", qty: n(128), sales_cents: n(99_840), currency: "EUR" },
+    ],
+    top_cooks: [
+      { kitchen_name: "Chez Mami Nono", slug: "mami-nono", orders: n(176), sales_cents: n(352_000), currency: "EUR" },
+      { kitchen_name: "Chez Mami Hương", slug: "mami-huong", orders: n(158), sales_cents: n(298_000), currency: "EUR" },
+      { kitchen_name: "Chez Mami Priya", slug: "mami-priya", orders: n(131), sales_cents: n(254_000), currency: "EUR" },
+      { kitchen_name: "Chez Nonna Lucia", slug: "nonna-lucia", orders: n(119), sales_cents: n(171_000), currency: "EUR" },
+      { kitchen_name: "Chez Abuela Rosa", slug: "abuela-rosa", orders: n(97), sales_cents: n(166_000), currency: "EUR" },
+    ],
+    sellers_active: Math.min(48, n(48)), dishes_published: 214, deliveries_completed: n(530),
+    orders_active: 23, deliveries_searching: 1, cooks_approved: 52, cooks_pending: 6, couriers_approved: 31, couriers_pending: 4, couriers_online: 9,
+    users_total: 4870, new_users: n(612), customers_active: n(1890), reports_open: 2, documents_to_review: 7, payouts_pending_cents: 184_000,
+    installs: { total: 3920, ios: 2210, android: 1710, new: n(540), active_30d: 2650 },
+    daily,
+  };
+}
 export const fetchDac7 = (year: number) => rpc<Dac7Row[]>("dac7_report", { _year: year });
 export const searchUsers = (q: string) => rpc<{
   id: string; email: string; display_name: string; created_at: string; is_cook: boolean; is_courier: boolean; roles: string[]; orders_count: number;

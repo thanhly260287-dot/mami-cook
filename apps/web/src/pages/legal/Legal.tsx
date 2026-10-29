@@ -203,10 +203,11 @@ const PAGES: Record<string, Doc> = {
         <ul>
           <li><b>Compte</b> : nom affiché, e-mail, téléphone (facultatif), photo (facultative).</li>
           <li><b>Commandes</b> : plats, adresse de livraison, messages, avis.</li>
-          <li><b>Cuisiniers et livreurs</b> : identité, date de naissance, numéro fiscal, statut, numéro d'entreprise, adresse (obligations DSA et DAC7) ; vérification d'identité par Stripe.</li>
+          <li><b>Cuisiniers et livreurs</b> : identité, date de naissance, numéro fiscal, statut, numéro d'entreprise, adresse (obligations DSA et DAC7) ; vérification d'identité par Stripe ; justificatifs exigés par la loi du pays (pièce d'identité, attestation de formation à l'hygiène, déclaration sanitaire, assurance, permis…), conservés dans un espace privé consultable uniquement par l'équipe de vérification.</li>
           <li><b>Livreurs</b> : position géographique, uniquement quand ils sont en ligne.</li>
           <li><b>Paiement</b> : traité exclusivement par Stripe ; nous ne voyons jamais vos numéros de carte.</li>
           <li><b>Localisation des clients</b> : uniquement pour afficher les plats proches, avec votre accord.</li>
+          <li><b>Appli mobile</b> : un identifiant anonyme créé à l'installation, le type de téléphone (iPhone ou Android) et la version de l'appli, pour compter les installations.</li>
         </ul>
         <h2>Finalités et bases légales</h2>
         <ul>

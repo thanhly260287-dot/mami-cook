@@ -11,6 +11,8 @@ export function RequireAuth({ children, cook, staff }: { children: ReactNode; co
   const { user, loading, cook: myCook, isStaff } = useAuth();
   const location = useLocation();
 
+  // Démo : le tableau de bord de l'équipe s'affiche avec des chiffres d'exemple (aucune donnée réelle).
+  if (DEMO_MODE && staff) return <>{children}</>;
   if (DEMO_MODE) {
     return <EmptyState icon="🔒" title={t("Fonctionnalité indisponible en mode démo")}>{t("Connectez une base Supabase pour créer des comptes et passer commande.")}</EmptyState>;
   }

@@ -102,3 +102,17 @@ test("langues : détection du navigateur, changement de langue et arabe de droit
   await expect(page.getByRole("heading", { level: 1 })).toContainText("في البيت");
   await ctx.close();
 });
+
+test("tableau de bord de l'équipe (démo) : ventes, plats et desserts, vendeurs, installations", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/admin");
+  await expect(page.getByText("Total des ventes (EUR)")).toBeVisible();
+  await expect(page.getByText("Nombre de commandes")).toBeVisible();
+  await expect(page.getByText("Desserts et pâtisseries vendus")).toBeVisible();
+  await expect(page.getByText("Vendeurs ayant vendu")).toBeVisible();
+  await expect(page.getByText("Installations", { exact: true })).toBeVisible();
+  await expect(page.getByText("Tiramisu Artisanal")).toBeVisible();
+  // En démo, les onglets qui exigent une vraie base sont masqués
+  await expect(page.getByRole("button", { name: "Candidatures" })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

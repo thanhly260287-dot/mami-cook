@@ -374,7 +374,20 @@ export interface Country {
 }
 
 export interface PlatformStats {
-  by_currency: { currency: string; gmv_cents: number | null; revenue_cents: number | null; cooks_cents: number | null; couriers_cents: number | null; completed: number; cancelled: number }[];
+  by_currency: {
+    currency: string; gmv_cents: number | null; revenue_cents: number | null; food_revenue_cents: number | null; delivery_revenue_cents: number;
+    cooks_cents: number | null; couriers_cents: number | null; tips_cents: number; orders: number; completed: number; cancelled: number; avg_basket_cents: number | null;
+  }[];
+  /** Portions vendues par type de plat (main, dessert, pastry…). */
+  items_by_course: Record<string, number>;
+  top_dishes: { title: string; kitchen_name: string; course: string; qty: number; sales_cents: number; currency: string }[];
+  top_cooks: { kitchen_name: string; slug: string; orders: number; sales_cents: number; currency: string }[];
+  sellers_active: number;
+  dishes_published: number;
+  deliveries_completed: number;
+  users_total: number;
+  documents_to_review: number;
+  installs: { total: number; ios: number; android: number; new: number; active_30d: number };
   orders_active: number;
   deliveries_searching: number;
   cooks_approved: number;
