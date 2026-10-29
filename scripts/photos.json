@@ -53,15 +53,17 @@
   "hero": {
     "_note": "Bannière d'accueil : une maman contente de cuisiner. queries = recherches ; title = fichier choisi après vérification visuelle (éviter les photos marquées « personality »).",
     "queries": [
-      "mother cooking kitchen smiling",
-      "grandmother cooking kitchen",
-      "woman cooking kitchen smiling",
-      "mom cooking dinner family",
-      "woman preparing food home kitchen happy",
-      "African woman cooking",
-      "Asian woman cooking kitchen",
-      "Italian grandmother cooking pasta"
+      "grandmother cooking kitchen smiling",
+      "elderly woman cooking stove",
+      "mother and daughter cooking together kitchen",
+      "family cooking together kitchen",
+      "woman cooking pot stove smiling",
+      "home cooking kitchen woman stirring pot",
+      "grandma baking kitchen",
+      "woman serving homemade food table",
+      "cooking class kitchen women",
+      "mother cooking for family"
     ],
-    "title": "File:Woman prepares breakfast in a modern kitchen while smiling and enjoying her cooking time.jpg"
+    "title": ""
   }
 }

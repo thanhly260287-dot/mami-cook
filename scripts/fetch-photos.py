@@ -89,7 +89,7 @@ elif mode == "hero":
                     seen.add(c["title"]); cands.append({**c, "query": q})
         except Exception as e:  # noqa: BLE001
             print(f"✗ {q} : {e}")
-    cands = cands[:16]
+    cands = cands[:24]
     for i, c in enumerate(cands):
         jpeg(c["thumb"], out / f"hero-{i}.jpg", 600)
     (out / "index.json").write_text(json.dumps({"hero": cands}, ensure_ascii=False, indent=1))
