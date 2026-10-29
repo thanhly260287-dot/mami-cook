@@ -32,4 +32,15 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 
 **Problèmes** : le dépôt GitHub est introuvable, le réseau bloque les photos, Docker est indisponible. Voir [CURRENT_STATUS.md](CURRENT_STATUS.md).
 
-**Arrêt / prochaine étape** : terminer #10. Écrire la migration `20261029000006_delivery.sql`, la tester avec `bash supabase/tests/run.sh`, puis passer aux fonctions Edge, aux pages (#11) et aux documents juridiques (#12). Détail dans [TASKS.md](TASKS.md).
+**Suite de la session**
+- #10, partie serveur : terminée et testée (120 tests SQL). Commit `4e75c54`.
+- L'utilisateur a fourni son compte Stripe (`acct_1UNYJHArjF3GfFcv`) et demandé de le brancher. Bloqué : il faut d'abord le projet Supabase et les clés (voir [TASKS.md](TASKS.md) #14).
+- Zip complet du projet envoyé à l'utilisateur ; guide [GITHUB.md](GITHUB.md) ajouté.
+- L'utilisateur veut que « rien ne se perde » et que Claude se souvienne de tout. Le dépôt GitHub n'existe toujours pas (`add_repo` : not found) : c'est la seule action qui manque pour une sauvegarde en ligne automatique.
+
+**Ancien point d'arrêt** (remplacé par ce qui suit) : terminer #10. Écrire la migration `20261029000006_delivery.sql`, la tester avec `bash supabase/tests/run.sh`, puis passer aux fonctions Edge, aux pages (#11) et aux documents juridiques (#12). Détail dans [TASKS.md](TASKS.md).
+
+**Point d'arrêt actuel** :
+1. Dès que le dépôt GitHub existe : `add_repo` puis push de `main`, et vérifier en ligne.
+2. Ensuite, #11 : écrans livreur, choix du livreur et du pourboire au panier, back-office, mode `courier` dans les écrans cuisinière.
+3. Stripe (#14) dès que l'utilisateur a créé le projet Supabase et fourni l'URL, la clé `anon` et la clé `pk_test`.
