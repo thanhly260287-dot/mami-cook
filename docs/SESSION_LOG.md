@@ -69,3 +69,10 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 - Supabase : projet `dxemjkfvaofijqptubfh` relié (clé publique uniquement). Le conteneur ne peut pas joindre supabase.co : déploiement automatique par GitHub Actions (`deploy-supabase.yml`).
 - Tests : typecheck et lint web et mobile OK, 22 E2E au vert, i18n 1154/1154, `check-docs.sh` OK.
 - **Point d'arrêt** : l'utilisateur ajoute les secrets GitHub `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD`, puis lance « Déployer Supabase ». Ensuite, lire la branche `deploy-status`, puis Stripe (#14) et Vercel.
+
+## 2026-10-29 — « atteindre 100 % »
+- Demande citée dans [REQUIREMENTS.md](REQUIREMENTS.md) : tout terminer, mémoire, base, paiement, vraies photos, vraie démo, mise en ligne, GPS livreur, commissions, lois par pays (formation hygiène en France).
+- Bilan : la plupart était déjà fait et testé (GPS en direct, commissions, photos, 11 documents juridiques). Manque trouvé : la conformité n'était que déclarative (case à cocher).
+- Réalisé (#16, commit `4fbb98e`) : justificatifs obligatoires par pays, vérification par l'équipe, blocage de la validation, alerte et suspension à l'expiration, documents livreur selon le véhicule. Tests : SQL 162 ✓, E2E 22 ✓, typecheck/lint web et mobile, i18n 1191/1191.
+- Cahier des charges remis à jour (statuts dépassés corrigés).
+- **Point d'arrêt** : toujours en attente des secrets GitHub `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD` (aucune branche `deploy-status` sur GitHub). Ensuite : Stripe (#14), Vercel, relecture juridique.

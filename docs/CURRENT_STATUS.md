@@ -8,6 +8,7 @@
 - **Rien n'est encore en ligne** : base Supabase pas encore installée, pas d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
 - **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 4, avec les vraies photos).
 - **Supabase** : projet créé (`https://dxemjkfvaofijqptubfh.supabase.co`, clé publique dans `apps/web/.env.supabase` et `apps/mobile/eas.json`). **Base pas encore installée** : il manque les secrets GitHub (voir [TASKS.md](TASKS.md)).
+- **Lois par pays** : justificatifs obligatoires (ex. France : formation hygiène 14 h, déclaration DDPP, identité, assurance) vérifiés par l'équipe avant la première vente ; suspension automatique si un document expire.
 - **Photos** : 12 vraies photos de plats (Wikimedia Commons, licences libres).
 - **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
 
@@ -17,12 +18,12 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Partie | Preuve |
 | --- | --- |
-| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques, quota IA | 135 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
+| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques, quota IA, justificatifs par pays | 162 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
 | Calcul des prix | 6 tests au vert (`pnpm --filter @mami/shared test`) |
 | Site web | Typecheck, lint et build OK ; 22 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes, 1154 textes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1191 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié
@@ -30,7 +31,8 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 - Paiements Stripe réels (aucune clé configurée).
 - Retouche photo IA réelle (pas de clé Gemini ; le réseau du conteneur bloque Google).
 - Mode livreur sur un vrai téléphone (géolocalisation).
-- Les textes des documents juridiques n'ont pas été relus par un juriste.
+- Les textes des documents juridiques et la liste des justificatifs par pays n'ont pas été relus par un juriste.
+- Écrans « Mes justificatifs » et vérification par l'équipe : compilés et contrôlés, mais pas encore essayés avec une vraie base (Supabase pas encore installée).
 - Applis sur un vrai téléphone (seule la compilation des bundles a été faite).
 - Notifications push réelles et envoi d'e-mails.
 - Montée en charge : non mesurée, seulement prévue dans la conception.

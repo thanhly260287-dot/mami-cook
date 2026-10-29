@@ -20,6 +20,7 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
   - relecture des documents juridiques par un avocat et compléter les champs entre crochets ;
   - trouver une agence partenaire en Suisse ;
   - choisir un médiateur de la consommation.
+- **Justificatifs (#16), reste à faire** : dépôt des documents directement dans l'appli mobile (aujourd'hui via le site) ; écran testé seulement par typecheck, pas encore avec une vraie base ; liste des documents par pays à faire valider par un juriste.
 - **Améliorations possibles** :
   - inscription livreur directement dans l'appli (aujourd'hui via le site) ;
   - position du livreur en arrière-plan sur mobile ;
@@ -43,4 +44,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 15 | Traduction des 404 nouveaux textes dans les 9 langues | `i18n-keys --missing` : 1152/1152 partout |
 | 6 | Code publié sur GitHub | `git push -u origin main` OK, `origin/main` = `4decdc4` |
 | 8 | Vraies photos des 12 plats de démo (Wikimedia Commons, licences libres, crédits affichés dans les mentions légales) | Commit `c40d068`, vérification visuelle des 12 photos, 22 tests E2E |
+| 16 | Justificatifs légaux obligatoires par pays (vérification avant validation, expiration, livreurs selon le véhicule) | Commit `4fbb98e` ; 162 vérifications SQL, 22 E2E, typecheck/lint web et mobile, i18n 1191/1191 |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

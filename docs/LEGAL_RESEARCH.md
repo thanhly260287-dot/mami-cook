@@ -78,7 +78,6 @@ Base de travail pour la tâche #12 (documents juridiques et guide par pays dans 
 
 Champs déjà prévus dans `cook_private` : nom légal, date de naissance, NIF, numéro de TVA, statut, numéro d'immatriculation, référence d'enregistrement sanitaire, date de formation à l'hygiène, déclaration d'assurance.
 
-Reste à faire (#11 et #12) :
-- un guide par pays affiché pendant l'inscription ;
-- la validation par l'équipe avant la première vente ;
-- le badge « particulier / professionnel ».
+Fait : guide par pays, badge « particulier / professionnel », et **justificatifs obligatoires par pays** (table `compliance_requirements`, migration `20261029000008_compliance.sql`) vérifiés par l'équipe avant la première vente.
+
+À vérifier par un juriste : la liste exacte des documents pour LU, AT, PT, IE (recherche moins approfondie) et les durées de validité.

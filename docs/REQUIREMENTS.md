@@ -28,30 +28,32 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 - ✅ Paiement Stripe (carte, Apple Pay, Google Pay).
 - ✅ Suivi de commande en temps réel, code de retrait, messagerie avec la cuisinière, avis, favoris, notifications push, signalements.
 - ✅ RGPD : export et suppression du compte, double authentification.
-- 🟡 Livraison par un livreur MAMI, pourboire, suivi du livreur en direct.
-- ⬜ Reçus et factures téléchargeables.
-- ⬜ Choix du pays et de la devise.
+- ✅ Livraison par un livreur MAMI, pourboire, suivi GPS du livreur en direct (tâches #10, #11).
+- ✅ Reçus téléchargeables (page reçu, #11).
+- 🟡 Devise automatique selon le pays de la cuisine (table `countries`) ; pas de sélecteur de pays pour le client.
 
 ### Cuisinières
 - ✅ Candidature avec engagements d'hygiène ; plats, photos, ventes programmées, stock.
 - ✅ Gestion des commandes, tableau de bord, versements Stripe Connect, réponses aux avis.
-- ⬜ Informations légales DSA/DAC7 à l'inscription (identité, numéro fiscal, statut, enregistrement sanitaire), guide légal selon le pays, badge « professionnel / particulier ».
+- ✅ Informations légales DSA/DAC7, guide légal selon le pays, badge « professionnel / particulier ».
+- ✅ **Justificatifs obligatoires par pays** (29/10/2026) : formation hygiène, déclaration sanitaire, identité, assurance… vérifiés par l'équipe avant la première vente ; suspension automatique à l'expiration (migration `0008_compliance`, 162 vérifications SQL).
 
 ### Livreurs
-- 🟡 Base de données et règles de sécurité (en cours).
-- ⬜ Espace livreur web et mobile : inscription, en ligne / hors ligne, missions librement acceptées ou refusées, étapes, carte, gains, Stripe.
+- ✅ Base de données, sécurité, commission sur la livraison (#10).
+- ✅ Espace livreur web et mobile : inscription, en ligne / hors ligne, missions librement acceptées ou refusées, étapes, carte, GPS, gains, Stripe (#11).
+- ✅ Justificatifs par pays (identité, statut, assurance ; permis et assurance du véhicule en scooter ou voiture). Mise en ligne refusée si le dossier est incomplet.
 
 ### Plateforme / équipe
 - ✅ Modération des cuisines et des signalements, suspension, codes promo, journal d'audit.
-- ⬜ Back-office complet : indicateurs, utilisateurs, validation des livreurs, commandes et remboursements, taux par pays, versements, export DAC7.
+- ✅ Back-office complet : indicateurs, utilisateurs, validation des livreurs, commandes et remboursements, taux par pays, versements, export DAC7 (#11), vérification des justificatifs.
 
 ### Juridique
 - ✅ Recherche réglementaire par pays : [LEGAL_RESEARCH.md](LEGAL_RESEARCH.md).
-- 🟡 Modèles CGU, confidentialité, cookies et mentions légales (français uniquement, dans `apps/web/src/pages/legal/Legal.tsx`).
-- ⬜ CGV, conditions vendeurs (P2B), conditions livreurs, politique de modération (DSA), transparence du classement, remboursements, charte d'hygiène, guide légal par pays dans l'appli.
+- ✅ 11 documents : CGU, CGV, conditions vendeurs (P2B), conditions livreurs, confidentialité, cookies, modération (DSA), classement, remboursements, charte d'hygiène, mentions légales (#12). **À faire relire par un avocat.**
+- ✅ Guide légal par pays dans le site.
 
 ### Transversal
 - ✅ 10 langues sur le site et les applis.
-- ⬜ Vraies photos des plats : bloqué, le réseau du conteneur refuse `images.unsplash.com`.
+- ✅ Vraies photos des 12 plats de démo (Wikimedia Commons, #8).
 - ✅ Sécurité (RLS, CSP, limitation de débit…) : voir [SECURITE.md](SECURITE.md).
 - ✅ Conception pour la montée en charge : voir [ARCHITECTURE.md](ARCHITECTURE.md).
