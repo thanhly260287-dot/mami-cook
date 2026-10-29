@@ -34,7 +34,7 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Blocage | Conséquence | Qui peut le lever |
 | --- | --- | --- |
-| **Le dépôt GitHub `mami-cook` n'est pas visible** (seuls `organiz` et `organiz-life` apparaissent) ; le jeton `gh` du conteneur est invalide | **Aucune sauvegarde en ligne du code.** Il n'existe que dans ce conteneur et dans les zip envoyés | L'utilisateur : créer le dépôt et autoriser l'appli Claude sur https://claude.ai/connect-github |
+| **Le dépôt GitHub `mami-cook` n'est pas visible** (seuls `organiz` et `organiz-life` apparaissent) ; le jeton `gh` du conteneur est invalide | **Aucune sauvegarde en ligne du code.** Il n'existe que dans ce conteneur et dans les zip envoyés | L'utilisateur : suivre [GITHUB.md](GITHUB.md) |
 | Le réseau du conteneur refuse `images.unsplash.com` | Pas de vraies photos de plats (illustrations générées à la place) | L'utilisateur : autoriser ce domaine dans les réglages réseau de l'environnement |
 | Le registre Docker est refusé | Impossible de lancer Supabase en local ; les tests SQL utilisent un Postgres 16 installé à part | Sans gravité |
 
