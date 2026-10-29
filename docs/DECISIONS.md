@@ -37,6 +37,8 @@ Format : date — décision — raison — qui l'a validée.
 | 29/10/2026 | Un livreur a au plus 2 courses en cours ; recherche relancée à 8 km après 10 min, équipe alertée après 30 min | Éviter les commandes bloquées |
 | 29/10/2026 | Le livreur voit le gain, la ville et la distance **avant** d'accepter ; adresses exactes seulement après acceptation | Transparence (directive 2024/2831) et sécurité des clients |
 | 29/10/2026 | Remise validée par le code à 4 chiffres du client, comme pour le retrait | Preuve de livraison, évite les litiges |
+| 29/10/2026 | Déploiement Supabase et téléchargement des photos **par GitHub Actions** | Le réseau de l'environnement de développement bloque Supabase et les banques d'images |
+| 29/10/2026 | Photos de démo issues de Wikimedia Commons (licences libres, crédits affichés) | Unsplash bloque les robots ; pas de clé Gemini |
 | 29/10/2026 | Documentation et mémoire **dans le dépôt** | Le conteneur cloud est effacé à chaque session |
 
 ## Provisoires / à confirmer par l'utilisateur

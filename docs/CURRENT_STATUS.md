@@ -5,8 +5,10 @@
 ## En bref
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
-- **Rien n'est encore en ligne** : pas de projet Supabase, d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
+- **Rien n'est encore en ligne** : base Supabase pas encore installée, pas d'hébergement ni de publication sur les stores ; le compte Stripe existe mais n'est pas branché. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
 - **Fonctionnellement complet en mode démo** : clients, cuisinières (plats et desserts, statistiques, retouche photo IA), livreurs, administration, documents juridiques, 10 langues. Aperçu : https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR (version 3).
+- **Supabase** : projet créé (`https://dxemjkfvaofijqptubfh.supabase.co`, clé publique dans `apps/web/.env.supabase` et `apps/mobile/eas.json`). **Base pas encore installée** : il manque les secrets GitHub (voir [TASKS.md](TASKS.md)).
+- **Photos** : 12 vraies photos de plats (Wikimedia Commons, licences libres).
 - **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
 
 ## Ce qui fonctionne (vérifié le 29/10/2026)
@@ -20,7 +22,7 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 | Site web | Typecheck, lint et build OK ; 22 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes, 1152 textes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1154 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié
@@ -37,7 +39,7 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Blocage | Conséquence | Qui peut le lever |
 | --- | --- | --- |
-| Le réseau du conteneur refuse `images.unsplash.com` | Pas de vraies photos de plats (illustrations générées à la place) | L'utilisateur : autoriser ce domaine dans les réglages réseau de l'environnement |
+| Le réseau du conteneur bloque Supabase, Unsplash, Google | Impossible de déployer ou de tester Supabase d'ici | Contourné : déploiement et téléchargement de photos par GitHub Actions |
 | Le registre Docker est refusé | Impossible de lancer Supabase en local ; les tests SQL utilisent un Postgres 16 installé à part | Sans gravité |
 
 ## Mémoire et outils

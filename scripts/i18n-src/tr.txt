@@ -1158,3 +1158,5 @@
 1157=onay bekliyor
 1158=size {d} uzaklıkta
 1159=⚡ MAMI COOK kuryesi
+1160=İllüstrasyonlar: MAMI COOK.
+1161=yazar bilinmiyor

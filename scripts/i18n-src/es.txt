@@ -1158,3 +1158,5 @@
 1157=por validar
 1158=a {d} de ti
 1159=⚡ Repartidor MAMI COOK
+1160=Ilustraciones: MAMI COOK.
+1161=autor desconocido

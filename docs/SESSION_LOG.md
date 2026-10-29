@@ -62,3 +62,10 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 - Mémoire relue, tests rapides OK (prix 6/6, i18n 1152/1152).
 - L'utilisateur a installé l'appli Claude sur GitHub : **premier push réussi**, `origin/main` = `4decdc4`, vérifié par `git fetch`.
 - Prochaine étape : Supabase et Stripe (#14).
+
+## 2026-10-29 — photos et Supabase
+- Demandes : « met des vrai image stp », « oui jai fait supabase ».
+- Photos : Unsplash bloque les robots (0 photo). Passage à Wikimedia Commons via GitHub Actions, tri visuel des candidates, 12 photos intégrées (commit `c40d068`), crédits affichés dans les mentions légales.
+- Supabase : projet `dxemjkfvaofijqptubfh` relié (clé publique uniquement). Le conteneur ne peut pas joindre supabase.co : déploiement automatique par GitHub Actions (`deploy-supabase.yml`).
+- Tests : typecheck et lint web et mobile OK, 22 E2E au vert, i18n 1154/1154, `check-docs.sh` OK.
+- **Point d'arrêt** : l'utilisateur ajoute les secrets GitHub `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD`, puis lance « Déployer Supabase ». Ensuite, lire la branche `deploy-status`, puis Stripe (#14) et Vercel.

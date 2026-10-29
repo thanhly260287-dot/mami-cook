@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { t } from "@mami/shared";
 import { Seo } from "@/components/Seo";
@@ -385,6 +386,8 @@ const PAGES: Record<string, Doc> = {
         <p>Éditeur : {COMPANY}, [forme juridique] au capital de [montant] €, RCS [ville] [numéro], TVA [numéro], {ADDRESS}. Directeur de la publication : [nom]. Contact : {EMAIL}.</p>
         <p>Hébergement : Supabase Inc. (base de données, région UE) et [hébergeur du site, ex. Vercel Inc. / Netlify Inc.].</p>
         <p>Point de contact DSA : {DSA_EMAIL}. Signalement d'une faille de sécurité : security@mamicook.fr.</p>
+        <h2>Crédits photos</h2>
+        <PhotoCredits />
       </>
     ),
   },
@@ -418,5 +421,20 @@ export default function Legal() {
       <p className="mb-6 rounded-xl bg-muted p-3 text-xs text-muted-foreground">{t("Document rédigé en français, version qui fait foi.")}</p>
       {p.body}
     </article>
+  );
+}
+
+/** Photos des plats de démonstration : auteurs et licences (Wikimedia Commons). */
+function PhotoCredits() {
+  const [credits, setCredits] = useState<Record<string, { title: string; page: string; license: string; author: string }>>({});
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}images/dishes/credits.json`).then((r) => (r.ok ? r.json() : {})).then(setCredits).catch(() => undefined);
+  }, []);
+  const rows = Object.values(credits);
+  if (!rows.length) return <p>{t("Illustrations : MAMI COOK.")}</p>;
+  return (
+    <ul>{rows.map((c) => (
+      <li key={c.page}><a href={c.page} target="_blank" rel="noopener noreferrer">{c.title.replace(/^File:/, "")}</a> — {c.author || t("auteur inconnu")}, {c.license}</li>
+    ))}</ul>
   );
 }

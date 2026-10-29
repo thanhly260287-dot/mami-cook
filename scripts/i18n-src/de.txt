@@ -1158,3 +1158,5 @@
 1157=zu prüfen
 1158={d} von dir entfernt
 1159=⚡ MAMI COOK Kurier
+1160=Illustrationen: MAMI COOK.
+1161=Urheber unbekannt

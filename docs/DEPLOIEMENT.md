@@ -8,6 +8,22 @@ Outils sur votre ordinateur : Node.js 22, pnpm (`npm i -g pnpm`), le CLI Supabas
 
 ---
 
+## 0. Déploiement automatique (recommandé)
+
+Le projet Supabase `dxemjkfvaofijqptubfh` est déjà relié au code. GitHub installe la base de données et les fonctions serveur tout seul (`.github/workflows/deploy-supabase.yml`), une fois ces deux secrets ajoutés :
+
+1. **Jeton Supabase** :
+   - sur supabase.com, cliquez sur votre avatar (en haut à droite), puis **Account preferences** → **Access Tokens** → **Generate new token** ;
+   - nommez-le « GitHub » et copiez-le.
+2. **Secrets GitHub** :
+   - sur le dépôt, ouvrez **Settings** → **Secrets and variables** → **Actions** → **New repository secret** ;
+   - `SUPABASE_ACCESS_TOKEN` = le jeton de l'étape 1 ;
+   - `SUPABASE_DB_PASSWORD` = le mot de passe de la base choisi à la création du projet (perdu ? Supabase → **Project Settings** → **Database** → **Reset database password**).
+3. **Lancement** : onglet **Actions** → « Déployer Supabase » → **Run workflow**.
+4. Plus tard, ajoutez de la même façon `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`, `CRON_SECRET` et `GEMINI_API_KEY`. Ils seront transmis aux fonctions serveur au prochain déploiement.
+
+Les étapes manuelles ci-dessous restent valables si vous préférez la ligne de commande.
+
 ## 1. Base de données (Supabase)
 
 1. Créez un projet sur supabase.com. **Choisissez une région en Europe** (ex. Paris ou Francfort) pour le RGPD.

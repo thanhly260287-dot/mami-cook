@@ -23,6 +23,7 @@ La CI GitHub (`.github/workflows/ci.yml`) lance tout cela à chaque push, plus C
 | 29/10/2026 | Mémoire : `check-docs.sh`, hooks testés avec une entrée simulée, `settings.json` valide | Voir [SESSION_LOG.md](SESSION_LOG.md) |
 | 29/10/2026 | SQL avec livraison (2 suites, une base neuve par suite) | **120 vérifications au vert** |
 | 29/10/2026 | `deno check` des 7 fonctions Edge, typecheck shared, web et mobile, tests shared | Au vert |
+| 29/10/2026 | Après les photos et la configuration Supabase : typecheck/lint web et mobile, E2E 22 ✓, i18n 1154/1154 | Au vert |
 | 29/10/2026 | Après l'écosystème : SQL 135 ✓, E2E 22 ✓ (guide légal, devenir livreur, filtre desserts), lint web et mobile, export iOS/Android, i18n 1152/1152 | Au vert |
 
 ## Tests à écrire

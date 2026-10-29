@@ -1158,3 +1158,5 @@
 1157=to approve
 1158={d} from you
 1159=⚡ MAMI COOK courier
+1160=Illustrations: MAMI COOK.
+1161=unknown author

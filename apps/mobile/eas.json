@@ -1,14 +1,39 @@
 {
-  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal", "environment": "development" },
-    "preview": { "distribution": "internal", "environment": "preview" },
-    "production": { "autoIncrement": true, "environment": "production" }
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dxemjkfvaofijqptubfh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Y3F7eWHumFQ5IMqcHQSz4A_OmHnHm81"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dxemjkfvaofijqptubfh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Y3F7eWHumFQ5IMqcHQSz4A_OmHnHm81"
+      }
+    }
   },
   "submit": {
     "production": {
-      "ios": { "ascAppId": "REMPLACER" },
-      "android": { "track": "internal" }
+      "ios": {
+        "ascAppId": "REMPLACER"
+      },
+      "android": {
+        "track": "internal"
+      }
     }
   }
 }

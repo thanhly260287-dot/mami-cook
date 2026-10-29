@@ -1158,3 +1158,5 @@
 1157=a validar
 1158=a {d} de si
 1159=⚡ Estafeta MAMI COOK
+1160=Ilustrações: MAMI COOK.
+1161=autor desconhecido

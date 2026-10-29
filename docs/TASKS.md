@@ -13,8 +13,9 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
   - il range lui-même la clé `sk_test` dans les secrets Supabase ;
   - il active Connect Express ;
   - puis test de paiement de bout en bout.
-- **#8 — Vraies photos (Nano Banana)** : `scripts/generate-images.mjs` et l'action GitHub « Générer les photos » sont prêts. Il manque une clé `GEMINI_API_KEY` (gratuite sur aistudio.google.com) ; le réseau de ce conteneur bloque Google.
-- **Mise en ligne** : Supabase, Vercel, EAS (voir [DEPLOIEMENT.md](DEPLOIEMENT.md)). Ajouter le secret `GEMINI_API_KEY` pour la fonction `ai-image`.
+- **Photos générées par IA (Nano Banana)**, facultatif : prêt (`scripts/generate-images.mjs`, fonction `ai-image`), il manque la clé `GEMINI_API_KEY`.
+- **Mise en ligne Supabase** : projet créé par l'utilisateur (`dxemjkfvaofijqptubfh`). Le déploiement automatique est prêt (`.github/workflows/deploy-supabase.yml`) ; il attend 2 secrets GitHub : `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD`. Après déploiement, lire le rapport sur la branche `deploy-status` (`git fetch origin deploy-status && git show origin/deploy-status:STATUS.md`).
+- **Mise en ligne du site et des applis** : Vercel (le build utilise `--mode supabase`), puis EAS (voir [DEPLOIEMENT.md](DEPLOIEMENT.md)).
 - **Avant le lancement** :
   - relecture des documents juridiques par un avocat et compléter les champs entre crochets ;
   - trouver une agence partenaire en Suisse ;
@@ -41,4 +42,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 12 | Documents juridiques (11 pages) | Commit `a415b65` |
 | 15 | Traduction des 404 nouveaux textes dans les 9 langues | `i18n-keys --missing` : 1152/1152 partout |
 | 6 | Code publié sur GitHub | `git push -u origin main` OK, `origin/main` = `4decdc4` |
+| 8 | Vraies photos des 12 plats de démo (Wikimedia Commons, licences libres, crédits affichés dans les mentions légales) | Commit `c40d068`, vérification visuelle des 12 photos, 22 tests E2E |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

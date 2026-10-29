@@ -1158,3 +1158,5 @@
 1157=da approvare
 1158=a {d} da te
 1159=⚡ Rider MAMI COOK
+1160=Illustrazioni: MAMI COOK.
+1161=autore sconosciuto

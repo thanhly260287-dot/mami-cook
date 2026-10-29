@@ -1158,3 +1158,5 @@
 1157=chờ duyệt
 1158=cách bạn {d}
 1159=⚡ Tài xế MAMI COOK
+1160=Hình minh họa: MAMI COOK.
+1161=không rõ tác giả
