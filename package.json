@@ -12,5 +12,13 @@
     "lint": "pnpm -r lint",
     "test:db": "bash supabase/tests/run.sh"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild"
+    ]
+  }
 }

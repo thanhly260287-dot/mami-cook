@@ -77,6 +77,7 @@ select pg_temp.act_as(null);
 select pg_temp.check((select count(*) = 1 from public.feed(48.8566, 2.3522, 5)), 'visiteur anonyme voit le plat dans le flux');
 select pg_temp.check((select count(*) = 0 from public.feed(43.2965, 5.3698, 5)), 'pas de plat à Marseille');
 select pg_temp.check((select count(*) = 1 from public.feed(48.8566, 2.3522, 5, null, 'lasagne')), 'recherche plein texte (pluriel, accents)');
+select pg_temp.check((select count(*) = 1 from public.feed(0, 0, p_drop_id => :'drop_id')), 'fiche d''un plat par identifiant (sans position)');
 select pg_temp.check((select count(*) = 0 from public.cook_private), 'anonyme ne voit pas les adresses');
 select pg_temp.expect_error($$insert into public.reports (reporter_id, target_type, target_id, reason) values (gen_random_uuid(), 'cook', gen_random_uuid(), 'other')$$, 'anonyme ne peut pas écrire');
 
@@ -126,7 +127,15 @@ select pg_temp.check((select status = 'paid' from public.orders where id = :'o1_
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 select pg_temp.check((select count(*) = 1 from public.notifications where type = 'order_new'), 'cuisinier notifié');
 select pg_temp.check((select note = 'Sans oignon' from public.orders where id = :'o1_id'), 'cuisinier voit la commande');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check(public.pickup_address(:'o1_id') is null, 'adresse de retrait cachée avant acceptation');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 select public.transition_order(:'o1_id', 'accepted');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check(public.pickup_address(:'o1_id') ->> 'line1' = '10 rue de Rivoli', 'adresse de retrait révélée au client après acceptation');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check(public.pickup_address(:'o1_id') is null, 'adresse de retrait invisible pour un tiers');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 select public.transition_order(:'o1_id', 'preparing');
 select public.transition_order(:'o1_id', 'ready');
 select pg_temp.expect_error(format($$select public.transition_order(%L, 'out_for_delivery')$$, :'o1_id'), 'livraison d''une commande à retirer');

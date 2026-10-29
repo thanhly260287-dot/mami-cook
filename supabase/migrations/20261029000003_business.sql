@@ -429,7 +429,8 @@ create or replace function public.feed(
   p_date date default null,
   p_cook_id uuid default null,
   p_limit integer default 24,
-  p_offset integer default 0
+  p_offset integer default 0,
+  p_drop_id uuid default null
 ) returns table (
   drop_id uuid, dish_id uuid, cook_id uuid,
   title text, description text, cuisine text, photos text[], price_cents integer,
@@ -465,10 +466,14 @@ as $$
        from public.menu_deals m where m.main_dish_id = d.id and m.is_active order by m.created_at limit 1)
   from origin o
   join public.cooks c on c.status = 'approved'
-       and extensions.st_dwithin(c.public_location, o.g, least(greatest(p_radius_km, 0.5), 50) * 1000)
+       and (p_drop_id is not null or p_cook_id is not null
+            or extensions.st_dwithin(c.public_location, o.g, least(greatest(p_radius_km, 0.5), 50) * 1000))
   join public.profiles p on p.id = c.id
   join public.drops dr on dr.cook_id = c.id and dr.status in ('open', 'sold_out')
-       and dr.available_on = coalesce(p_date, current_date)
+       and (p_drop_id is null or dr.id = p_drop_id)
+       and case when p_drop_id is not null then dr.available_on >= current_date
+                when p_date is null and p_cook_id is not null then dr.available_on between current_date and current_date + 7
+                else dr.available_on = coalesce(p_date, current_date) end
   join public.dishes d on d.id = dr.dish_id and d.is_active and not d.is_hidden_by_moderation
   where (p_cuisine is null or d.cuisine = p_cuisine or (p_cuisine = 'frozen' and d.temperature = 'frozen'))
     and (p_diets is null or d.diets @> p_diets)
@@ -478,10 +483,10 @@ as $$
          or d.search @@ websearch_to_tsquery('french', public.immutable_unaccent(p_query))
          or d.title operator(extensions.%) p_query
          or c.kitchen_name ilike '%' || replace(replace(p_query, '%', ''), '_', '') || '%')
-  order by (dr.status = 'sold_out'), extensions.st_distance(c.public_location, o.g), d.rating_avg desc
+  order by (dr.status = 'sold_out'), dr.available_on, extensions.st_distance(c.public_location, o.g), d.rating_avg desc
   limit least(greatest(p_limit, 1), 60) offset greatest(p_offset, 0)
 $$;
-grant execute on function public.feed(double precision, double precision, double precision, text, text, text[], public.temperature, date, uuid, integer, integer) to anon, authenticated;
+grant execute on function public.feed(double precision, double precision, double precision, text, text, text[], public.temperature, date, uuid, integer, integer, uuid) to anon, authenticated;
 
 -- ---------------------------------------------------------------- tableau de bord cuisinier
 create or replace function public.cook_dashboard(p_days integer default 30)

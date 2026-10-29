@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /compte
+Disallow: /commandes
+Disallow: /cuisine/tableau-de-bord
+Disallow: /admin
