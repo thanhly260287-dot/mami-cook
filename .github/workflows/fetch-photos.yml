@@ -25,5 +25,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add apps/web/public/images/dishes packages/shared/src/demo-data.ts
           git diff --cached --quiet && echo "Rien de nouveau" && exit 0
-          git commit -m "Vraies photos des plats (Unsplash)"
+          git commit -m "Vraies photos des plats (Unsplash) — $(grep -c '^- ' apps/web/public/images/dishes/CREDITS.md) photo(s)"
           git push
