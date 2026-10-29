@@ -17,9 +17,9 @@ API = "https://commons.wikimedia.org/w/api.php"
 UA = "MamiCookPhotoBot/1.0 (https://github.com/thanhly260287-dot/mami-cook; contact@mamicook.fr)"
 OK_LICENSES = re.compile(r"^(CC0|CC BY(-SA)? [0-9.]+|Public domain|PD)", re.I)
 
-def get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=60) as r:
+def get(url, timeout=60):
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json, image/*"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 
 def clean(html):
@@ -68,12 +68,11 @@ def ov_item(r):
             "restrictions": "", "label": (r.get("title") or "")[:100], "source": r.get("source")}
 
 def openverse_search(q):
-    params = urllib.parse.urlencode({"q": q, "license_type": "commercial,modification", "page_size": "20",
-                                     "aspect_ratio": "wide", "size": "large", "mature": "false"})
-    return [ov_item(r) for r in json.loads(get(OPENVERSE + "?" + params)).get("results", [])]
+    params = urllib.parse.urlencode({"q": q, "license_type": "commercial", "page_size": "20"})
+    return [ov_item(r) for r in json.loads(get(OPENVERSE + "?" + params, 150)).get("results", [])]
 
 def openverse_get(ident):
-    return ov_item(json.loads(get(OPENVERSE + ident + "/")))
+    return ov_item(json.loads(get(OPENVERSE + ident + "/", 150)))
 
 def jpeg(src, dest, size):
     tmp = dest.with_suffix(".tmp")
