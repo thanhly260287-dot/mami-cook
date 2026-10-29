@@ -82,3 +82,4 @@ Une entrée par session, de la plus récente à la plus ancienne. Chaque entrée
 - Réalisé (#17) : migration `20261029000009_stats.sql` (statistiques v2, table `app_installs`, fonction `register_app_install`), écran de l'administration réorganisé (Ventes, Ce qui a été vendu, Vendeurs/livreurs/clients, Appli mobile, À traiter), chiffres d'exemple en démo, enregistrement des installations dans l'appli, politique de confidentialité complétée.
 - Tests : SQL 169 ✓, E2E 24 ✓, typecheck/lint web et mobile, i18n 1215/1215, capture d'écran vérifiée.
 - **Point d'arrêt** : inchangé, attente des secrets GitHub pour installer la base.
+- 29/10, « c'est fait » : déploiement lancé à la main (run `40949506649`) → message « Secrets SUPABASE_ACCESS_TOKEN / SUPABASE_DB_PASSWORD absents », rien d'installé. Les secrets ne sont pas lisibles d'ici (proxy 403) : l'utilisateur doit vérifier l'emplacement (Actions → *Repository secrets*) et l'orthographe exacte.
