@@ -12,6 +12,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « crée-toi des images s'il le faut », puis « mets-moi des vraies images » |
 | 29/10/2026 | « mets le site et les apps dans toutes les langues » |
 | 29/10/2026 | « fais en sorte que mon application et mon SaaS soient extrêmement complets, fais toutes les pages qu'il faut, pense au système de livraison, fais en sorte que les livreurs soient payés, […] qu'on gagne un pourcentage sur les plats, sur chaque vente et aussi sur les livreurs […] regarde aussi au niveau des lois en Suisse, en France, dans toute l'Europe pour chaque pays et même pour le monde entier. Qu'est-ce que les gens doivent faire pour pouvoir cuisiner depuis chez eux ? Formation hygiène ? Micro-entrepreneur ? […] Et fais les CGU, les conditions générales, la politique de l'application, etc. » |
+| 29/10/2026 | « Ajoute-moi le système de moyen de paiement via Stripe » → déjà en place (paiement client, Apple/Google Pay, Stripe Connect pour les cuisinières) ; reste : versements aux livreurs (#10) et activation avec les vraies clés |
 | 29/10/2026 | Système de mémoire permanente : CLAUDE.md, docs, skills, hooks, Git (voir [SESSION_LOG.md](SESSION_LOG.md)) |
 
 ## Fonctionnalités

@@ -47,6 +47,7 @@ Reste à faire :
   - CGU, CGV, conditions vendeurs (P2B), conditions livreurs, confidentialité, cookies, mentions légales, modération (DSA), transparence du classement, remboursements, charte d'hygiène.
   - Guide légal par pays dans l'appli, affiché à l'inscription.
   - Base de travail : [LEGAL_RESEARCH.md](LEGAL_RESEARCH.md). Relecture par un juriste obligatoire.
+- **#14 — Stripe en conditions réelles** (demande du 29/10/2026) : le code de paiement existe ; il faut que l'utilisateur crée le compte Stripe et active Connect, puis tester un paiement en mode test de bout en bout. Le versement aux livreurs fait partie de #10.
 - **#6 — Publication du code** : pousser sur GitHub dès que le dépôt existe ; republier l'aperçu ; envoyer un nouveau zip.
 - **#8 — Vraies photos** : en attente de l'autorisation réseau de `images.unsplash.com`.
 
