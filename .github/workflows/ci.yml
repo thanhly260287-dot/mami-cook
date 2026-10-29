@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shared-web-mobile:
+    name: Code (types, lint, tests, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Logique partagée (prix, validation)
+        run: pnpm --filter @mami/shared test && pnpm --filter @mami/shared typecheck
+      - name: Traductions complètes dans les 10 langues
+        run: node scripts/i18n-keys.cjs --missing
+      - name: Site — types, lint, build
+        run: pnpm --filter @mami/web typecheck && pnpm --filter @mami/web lint && pnpm --filter @mami/web build
+      - name: Site — tests de bout en bout
+        run: pnpm --filter @mami/web exec playwright install --with-deps chromium && pnpm --filter @mami/web test:e2e
+      - name: Appli mobile — types, lint, bundles iOS/Android
+        working-directory: apps/mobile
+        env: { EXPO_OFFLINE: "1", CI: "1" }
+        run: npx tsc --noEmit && npx expo lint && npx expo export --platform android --platform ios --output-dir /tmp/expo-export
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: apps/web/test-results, retention-days: 7 }
+
+  database:
+    name: Base de données (migrations + tests de sécurité)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL 16 + PostGIS
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q postgresql-16 postgresql-16-postgis-3
+      - run: PGBIN=/usr/lib/postgresql/16/bin bash supabase/tests/run.sh
+
+  edge-functions:
+    name: Fonctions serveur (Deno)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - working-directory: supabase/functions
+        run: deno check */index.ts
+
+  secrets:
+    name: Aucun secret dans le code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
