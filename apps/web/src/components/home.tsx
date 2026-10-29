@@ -6,45 +6,43 @@ import { Button } from "@/components/ui/button";
 
 export function HeroSection({ openCount }: { openCount?: number }) {
   return (
-    // Grande photo en fond (Wikimedia Commons, crédit dans les mentions légales), texte posé dessus.
-    <section className="relative isolate overflow-hidden bg-neutral-900">
+    // Grande photo lumineuse en fond (Wikimedia Commons, crédit dans les mentions légales), texte posé dessus.
+    <section className="relative isolate overflow-hidden bg-card">
       <motion.img initial={{ scale: 1.06 }} animate={{ scale: 1 }} transition={{ duration: 1.2, ease: "easeOut" }}
         src={`${import.meta.env.BASE_URL}images/hero.jpg`} alt={t("Une maman souriante qui cuisine dans sa cuisine")}
         fetchPriority="high" decoding="async"
-        className="absolute inset-x-0 top-0 -z-10 h-[360px] w-full object-cover object-[75%_25%] sm:h-[440px] md:inset-0 md:h-full md:object-[68%_30%]" />
-      {/* Téléphone : photo en haut, fondue dans le fond sombre, texte dessous. Ordinateur : voile par la gauche. */}
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[360px] bg-gradient-to-b from-black/0 via-black/10 to-neutral-900 sm:h-[440px] md:inset-0 md:h-full md:bg-gradient-to-r md:from-black/85 md:via-black/50 md:to-black/0" />
-      <div className="container relative flex pb-10 pt-[280px] sm:pt-[360px] md:min-h-[640px] md:items-center md:py-20">
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="max-w-xl text-white">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-sm font-medium ring-1 ring-white/25 backdrop-blur">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+        className="absolute inset-x-0 top-0 -z-10 h-[340px] w-full object-cover object-[80%_30%] sm:h-[420px] md:inset-0 md:h-full md:object-[70%_35%]" />
+      {/* Fondu blanc : par le bas sur téléphone (photo en haut, texte dessous), par la gauche sur ordinateur */}
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[340px] bg-gradient-to-b from-white/0 via-white/0 to-card sm:h-[420px] md:inset-0 md:h-full md:bg-gradient-to-r md:from-card md:from-25% md:via-card/70 md:via-45% md:to-card/0 md:to-65%" />
+      <div className="container relative flex pb-10 pt-[300px] sm:pt-[380px] md:min-h-[620px] md:items-center md:py-20">
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="max-w-xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-card/90 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-border backdrop-blur">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-status-hot" />
             {openCount ? t(openCount > 1 ? "{n} plats disponibles près de chez vous" : "{n} plat disponible près de chez vous", { n: openCount }) : t("Des cuisines ouvertes près de chez vous")}
           </div>
-          <h1 className="mb-4 text-4xl font-extrabold leading-[1.05] tracking-tight drop-shadow-lg sm:text-5xl lg:text-6xl">
-            {t("Manger comme")}{" "}
-            <span className="bg-gradient-to-r from-sky-300 via-indigo-200 to-fuchsia-300 bg-clip-text text-transparent">{t("à la maison")}</span>
-            {t(", partout.")}
+          <h1 className="mb-4 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+            {t("Manger comme")}{" "}<span className="text-gradient">{t("à la maison")}</span>{t(", partout.")}
           </h1>
-          <p className="mb-8 max-w-lg text-lg leading-relaxed text-white/85 drop-shadow">
+          <p className="mb-8 max-w-lg text-lg leading-relaxed text-muted-foreground">
             {t("Des plats faits maison par nos mamans, nos tantes, nos voisins. Lasagnes, rouleaux de printemps, paella… livrés chez vous ou à retirer aujourd'hui.")}
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg" className="shadow-lg"><Link to="/explorer">{t("Trouver une cuisine")}</Link></Button>
-            <Button asChild size="lg" variant="secondary" className="bg-white text-neutral-900 hover:bg-white/90"><Link to="/devenir-cuisinier">{t("Devenir Mami Cook")}</Link></Button>
+            <Button asChild size="lg" variant="secondary" className="shadow-sm"><Link to="/devenir-cuisinier">{t("Devenir Mami Cook")}</Link></Button>
           </div>
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-white/90">
-            <Stat icon={<BadgeCheck className="h-5 w-5 text-sky-300" />} title={t("Cuisiniers vérifiés")} />
-            <div className="hidden h-8 w-px bg-white/30 sm:block" />
-            <Stat icon={<ShieldCheck className="h-5 w-5 text-emerald-300" />} title={t("Paiement sécurisé")} />
-            <div className="hidden h-8 w-px bg-white/30 sm:block" />
-            <Stat icon={<Star className="h-5 w-5 fill-amber-300 text-amber-300" />} title={t("Avis vérifiés")} />
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+            <Stat icon={<BadgeCheck className="h-5 w-5 text-primary" />} title={t("Cuisiniers vérifiés")} />
+            <div className="hidden h-8 w-px bg-border sm:block" />
+            <Stat icon={<ShieldCheck className="h-5 w-5 text-status-hot" />} title={t("Paiement sécurisé")} />
+            <div className="hidden h-8 w-px bg-border sm:block" />
+            <Stat icon={<Star className="h-5 w-5 fill-accent text-accent" />} title={t("Avis vérifiés")} />
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
-          className="absolute bottom-10 right-8 hidden rounded-2xl bg-white/90 p-4 text-neutral-900 shadow-2xl ring-1 ring-black/5 backdrop-blur lg:block">
-          <p className="text-xs text-neutral-500">{t("Dernière commande")}</p>
+          className="absolute bottom-10 right-8 hidden rounded-2xl bg-card/95 p-4 shadow-2xl ring-1 ring-border backdrop-blur lg:block">
+          <p className="text-xs text-muted-foreground">{t("Dernière commande")}</p>
           <p className="mt-0.5 text-sm font-bold">{t("Chez Mami Nono")}</p>
-          <p className="mt-0.5 text-xs text-neutral-500">{t("Lasagnes maison · 15,00 €")}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("Lasagnes maison · 15,00 €")}</p>
         </motion.div>
       </div>
     </section>

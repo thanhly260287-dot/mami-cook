@@ -23,6 +23,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « met une image dans au debut dans la landing page en haut » → ✅ 3 vraies photos de plats en haut de l'accueil, visibles aussi sur téléphone (#19) |
 | 29/10/2026 | « non je veux une image dune maman qui est contente de faire a manger » → ✅ photo d'une femme souriante qui cuisine (Wikimedia Commons, CC BY 2.0, auteur Shixart1985) en bannière d'accueil (#19) |
 | 29/10/2026 | « je veux une image et marquer un itre et du texte faut que se soit jolie et met une autre image » → ✅ bannière plein écran : photo d'une maman souriante qui prépare des gâteaux de fête (Wikimedia Commons, CC BY-SA 4.0, Hbegzee), titre et texte posés dessus (#19) |
+| 29/10/2026 | « non je veux une belle image propre dans une cuisine moderne qui donne envie la limage est sale » → ✅ maman souriante en tablier dans une cuisine blanche lumineuse (Wikimedia Commons, CC BY 2.0, Shixart1985), fondu blanc et texte foncé (#19) |
 
 ## Fonctionnalités
 
