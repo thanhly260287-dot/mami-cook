@@ -1230,3 +1230,4 @@
 1229=Ev yapımı lazanya
 1230=Ev yapımı phở bò
 1231=Ev yapımı tiramisu
+1232=Mutfağında yemek yapan gülümseyen bir anne

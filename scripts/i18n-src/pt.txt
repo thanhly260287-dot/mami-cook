@@ -1230,3 +1230,4 @@
 1229=Lasanha caseira
 1230=Phở bò caseiro
 1231=Tiramisu caseiro
+1232=Uma mãe sorridente a cozinhar na sua cozinha

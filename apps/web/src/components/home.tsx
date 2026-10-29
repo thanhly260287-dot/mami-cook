@@ -32,14 +32,11 @@ export function HeroSection({ openCount }: { openCount?: number }) {
               <Stat icon={<Star className="h-5 w-5 fill-accent text-accent" />} title={t("Avis vérifiés")} />
             </div>
           </motion.div>
-          {/* Photos de vrais plats (Wikimedia Commons, crédits dans les mentions légales) ; en premier sur téléphone */}
+          {/* Photo réelle (Wikimedia Commons, CC BY 2.0, crédit dans les mentions légales) ; en premier sur téléphone */}
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }} className="relative order-first md:order-none">
-            <div className="grid h-56 grid-cols-3 grid-rows-2 gap-2 sm:h-72 md:aspect-[4/3] md:h-auto md:gap-3">
-              {HERO_PHOTOS.map((p, i) => (
-                <img key={p.file} src={`${import.meta.env.BASE_URL}images/dishes/${p.file}`} alt={p.alt}
-                  fetchPriority={i === 0 ? "high" : "auto"} decoding="async"
-                  className={i === 0 ? "col-span-2 row-span-2 h-full w-full rounded-3xl object-cover shadow-card" : "h-full w-full rounded-2xl object-cover shadow-card"} />
-              ))}
+            <div className="relative h-64 overflow-hidden rounded-3xl shadow-card sm:h-80 md:aspect-[4/3] md:h-auto">
+              <img src={`${import.meta.env.BASE_URL}images/hero.jpg`} alt={t("Une maman souriante qui cuisine dans sa cuisine")}
+                fetchPriority="high" decoding="async" className="h-full w-full object-cover object-[45%_25%]" />
             </div>
             <div className="absolute -bottom-4 -left-4 hidden rounded-2xl border border-border bg-card p-4 shadow-xl md:block">
               <p className="text-xs text-muted-foreground">{t("Dernière commande")}</p>
@@ -52,12 +49,6 @@ export function HeroSection({ openCount }: { openCount?: number }) {
     </section>
   );
 }
-
-const HERO_PHOTOS = [
-  { file: "lasagna.jpg", alt: t("Lasagnes maison") },
-  { file: "pho.jpg", alt: t("Phở bò fait maison") },
-  { file: "tiramisu.jpg", alt: t("Tiramisu fait maison") },
-];
 
 function Stat({ icon, title }: { icon: React.ReactNode; title: string }) {
   return <div className="flex items-center gap-2 font-semibold">{icon}<span className="leading-tight">{title}</span></div>;

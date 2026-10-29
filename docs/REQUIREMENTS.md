@@ -21,6 +21,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « total des vente ca va dans le dashboard on veut le nombre de vendeur, de plats ou de dessert vendu, nombre de commande, etc », puis « nombre de telechargement » → ✅ tableau de bord v2 (#17) |
 | 29/10/2026 | « met aussi filtre par ville » → ✅ filtre par ville dans le tableau de bord + classement des villes (#18) |
 | 29/10/2026 | « met une image dans au debut dans la landing page en haut » → ✅ 3 vraies photos de plats en haut de l'accueil, visibles aussi sur téléphone (#19) |
+| 29/10/2026 | « non je veux une image dune maman qui est contente de faire a manger » → ✅ photo d'une femme souriante qui cuisine (Wikimedia Commons, CC BY 2.0, auteur Shixart1985) en bannière d'accueil (#19) |
 
 ## Fonctionnalités
 
