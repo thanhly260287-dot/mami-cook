@@ -49,6 +49,8 @@ export interface PriceBreakdown {
   discountCents: number;
   deliveryFeeCents: number;
   promoCents: number;
+  /** Pourboire pour le livreur (100 % reversé). */
+  tipCents: number;
   totalCents: number;
   /** Part de la plateforme (commission). */
   platformFeeCents: number;
@@ -59,7 +61,7 @@ export interface PriceBreakdown {
 
 export function computeOrderPrice(
   lines: PricedLine[],
-  opts: { deliveryFeeCents?: number; promoCents?: number } = {},
+  opts: { deliveryFeeCents?: number; promoCents?: number; tipCents?: number } = {},
 ): PriceBreakdown {
   let subtotal = 0;
   let cookBase = 0;
@@ -81,6 +83,7 @@ export function computeOrderPrice(
   const itemsAfterDiscount = subtotal - discount;
   const promo = Math.min(opts.promoCents ?? 0, itemsAfterDiscount);
   const delivery = opts.deliveryFeeCents ?? 0;
+  const tip = opts.tipCents ?? 0;
 
   // La remise volume est partagée au prorata entre cuisinière et plateforme ;
   // le code promo est entièrement à la charge de la plateforme.
@@ -92,7 +95,8 @@ export function computeOrderPrice(
     discountCents: discount,
     deliveryFeeCents: delivery,
     promoCents: promo,
-    totalCents: itemsAfterDiscount - promo + delivery,
+    totalCents: itemsAfterDiscount - promo + delivery + tip,
+    tipCents: tip,
     platformFeeCents: platformFee,
     cookPayoutCents: cookPayoutItems + delivery,
     totalPlates: plates,
@@ -111,3 +115,12 @@ export function formatMoney(cents: number, currency = "EUR"): string {
 /** Pourboires proposés au client pour son livreur (en centimes). Il reçoit 100 % du pourboire. */
 export const TIP_PRESETS_CENTS = [0, 100, 200, 300, 500] as const;
 export const MAX_TIP_CENTS = 5000;
+
+/** Estimation des frais de livraison par livreur (même formule que `courier_fee` en SQL). */
+export function estimateCourierFee(
+  distanceM: number,
+  c: { delivery_base_cents: number; delivery_per_km_cents: number; delivery_min_cents: number; delivery_max_cents: number },
+): number {
+  const raw = c.delivery_base_cents + Math.round((c.delivery_per_km_cents * distanceM * 1.3) / 1000);
+  return Math.min(c.delivery_max_cents, Math.max(c.delivery_min_cents, raw));
+}

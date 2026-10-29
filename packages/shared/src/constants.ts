@@ -1,4 +1,4 @@
-import { t } from "./i18n";
+import { intlLocale, t } from "./i18n";
 
 // Référentiels partagés entre le site, les applis et la base de données.
 // Toute modification ici doit être répercutée dans supabase/migrations (types enum / contraintes).
@@ -116,3 +116,60 @@ export const REPORT_REASONS = [
   { id: "other", label: "Autre" },
 ] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number]["id"];
+
+export const VEHICLES = [
+  { id: "bike", label: "Vélo", emoji: "🚲" },
+  { id: "ebike", label: "Vélo électrique", emoji: "🚴" },
+  { id: "scooter", label: "Scooter", emoji: "🛵" },
+  { id: "car", label: "Voiture", emoji: "🚗" },
+  { id: "foot", label: "À pied", emoji: "🚶" },
+] as const;
+
+export const DELIVERY_STATUS_LABELS: Record<string, string> = {
+  pending: "En attente de la cuisine",
+  searching: "Recherche d'un livreur",
+  assigned: "Livreur en route vers la cuisine",
+  at_pickup: "Livreur arrivé à la cuisine",
+  picked_up: "En route vers vous",
+  delivered: "Livrée",
+  cancelled: "Annulée",
+};
+
+/** Statut juridique déclaré (DSA / DAC7). */
+export const BUSINESS_STATUSES = [
+  { id: "individual_occasional", label: "Particulier (activité occasionnelle)" },
+  { id: "sole_trader", label: "Entrepreneur individuel (micro-entreprise, auto-entrepreneur…)" },
+  { id: "company", label: "Société" },
+] as const;
+
+/** Pays proposés à l'inscription (ceux ouverts sont réglés côté serveur, table `countries`). */
+export const COUNTRY_OPTIONS = [
+  { code: "FR", name: "France", flag: "🇫🇷", currency: "EUR" },
+  { code: "BE", name: "Belgique", flag: "🇧🇪", currency: "EUR" },
+  { code: "LU", name: "Luxembourg", flag: "🇱🇺", currency: "EUR" },
+  { code: "CH", name: "Suisse", flag: "🇨🇭", currency: "CHF" },
+  { code: "DE", name: "Allemagne", flag: "🇩🇪", currency: "EUR" },
+  { code: "AT", name: "Autriche", flag: "🇦🇹", currency: "EUR" },
+  { code: "ES", name: "Espagne", flag: "🇪🇸", currency: "EUR" },
+  { code: "PT", name: "Portugal", flag: "🇵🇹", currency: "EUR" },
+  { code: "IT", name: "Italie", flag: "🇮🇹", currency: "EUR" },
+  { code: "NL", name: "Pays-Bas", flag: "🇳🇱", currency: "EUR" },
+  { code: "IE", name: "Irlande", flag: "🇮🇪", currency: "EUR" },
+  { code: "GB", name: "Royaume-Uni", flag: "🇬🇧", currency: "GBP" },
+  { code: "US", name: "États-Unis", flag: "🇺🇸", currency: "USD" },
+  { code: "CA", name: "Canada", flag: "🇨🇦", currency: "CAD" },
+] as const;
+export type CountryCode = (typeof COUNTRY_OPTIONS)[number]["code"];
+
+/** Nom du pays dans la langue de l'utilisateur (sans fichier de traduction). */
+export function countryName(code: string): string {
+  try {
+    return new Intl.DisplayNames([intlLocale()], { type: "region" }).of(code) ?? code;
+  } catch {
+    return COUNTRY_OPTIONS.find((c) => c.code === code)?.name ?? code;
+  }
+}
+
+export function countryFlag(code: string): string {
+  return COUNTRY_OPTIONS.find((c) => c.code === code)?.flag ?? "🏳️";
+}

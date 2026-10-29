@@ -6,3 +6,4 @@ export * from "./format";
 export * from "./types";
 export * from "./demo-data";
 export * from "./i18n";
+export * from "./legal-guide";

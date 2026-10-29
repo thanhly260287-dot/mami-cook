@@ -744,4 +744,4 @@ export const DEMO_FEED: DemoItem[] = ([
   ],
   "menu_deal": null
  }
-] as unknown as DemoItem[]).map((d) => ({ ...d, available_on: today }));
+] as unknown as DemoItem[]).map((d, i) => ({ ...d, available_on: today, offers_courier: true, is_professional: i % 4 === 0, currency: "EUR" }));

@@ -51,6 +51,12 @@ export interface FeedItem {
   distance_m: number | null;
   extras: FeedExtra[];
   menu_deal: FeedMenuDeal | null;
+  /** Livraison par un livreur MAMI COOK proposée (pays + cuisine). */
+  offers_courier?: boolean;
+  /** Vendeur professionnel (directive Omnibus) ; sinon particulier. */
+  is_professional?: boolean;
+  /** Devise du pays de la cuisine (EUR, CHF…). */
+  currency?: string;
 }
 
 export interface FeedParams {
@@ -178,6 +184,10 @@ export interface Order {
   total_cents: number;
   platform_fee_cents: number;
   cook_payout_cents: number;
+  tip_cents?: number;
+  courier_payout_cents?: number;
+  cook_commission_cents?: number;
+  currency?: string;
   pickup_code: string;
   paid_at: string | null;
   accepted_at: string | null;
@@ -231,4 +241,166 @@ export interface CookDashboard {
   previous_revenue_cents: number;
   daily: { day: string; revenue_cents: number; orders: number }[];
   pending_payout_cents: number;
+}
+
+// ------------------------------------------------------------------ livraison par livreurs
+export type CookStatus = "draft" | "pending_review" | "approved" | "suspended" | "rejected";
+export type DeliveryStatus = "pending" | "searching" | "assigned" | "at_pickup" | "picked_up" | "delivered" | "cancelled";
+export type Vehicle = "foot" | "bike" | "ebike" | "scooter" | "car";
+
+export interface Courier {
+  id: string;
+  country: string;
+  city: string | null;
+  vehicle: Vehicle;
+  status: CookStatus;
+  status_reason: string | null;
+  is_online: boolean;
+  last_seen_at: string | null;
+  stripe_account_id: string | null;
+  stripe_payouts_enabled: boolean;
+  rating_avg: number;
+  rating_count: number;
+  deliveries_completed: number;
+  created_at: string;
+}
+
+export interface AvailableDelivery {
+  delivery_id: string;
+  order_number: number;
+  kitchen_name: string;
+  pickup_lat: number;
+  pickup_lng: number;
+  pickup_distance_m: number;
+  distance_m: number;
+  dropoff_city: string | null;
+  dropoff_postal_code: string | null;
+  payout_cents: number;
+  tip_cents: number;
+  currency: string;
+  order_status: OrderStatus;
+  ready_until: string | null;
+  searching_since: string | null;
+}
+
+export interface DeliveryAddressPoint {
+  line1: string | null;
+  line2?: string | null;
+  postal_code: string | null;
+  city: string | null;
+  instructions?: string | null;
+  customer_name?: string;
+  lat: number;
+  lng: number;
+}
+
+export interface DeliveryDetails {
+  delivery_id: string;
+  status: DeliveryStatus;
+  order_id: string;
+  order_number: number;
+  order_status: OrderStatus;
+  payout_cents: number;
+  tip_cents: number;
+  fee_cents: number;
+  currency: string;
+  distance_m: number;
+  kitchen_name: string;
+  note: string | null;
+  items: { title: string; quantity: number }[];
+  pickup: DeliveryAddressPoint | null;
+  dropoff: DeliveryAddressPoint | null;
+  assigned_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+}
+
+export interface DeliveryTracking {
+  status: DeliveryStatus;
+  distance_m: number;
+  assigned_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  courier: {
+    name: string; avatar_url: string | null; vehicle: Vehicle; rating: number; rating_count: number;
+    lat: number | null; lng: number | null; last_seen_at: string | null;
+  } | null;
+}
+
+export interface CourierDashboard {
+  earnings_cents: number;
+  tips_cents: number;
+  deliveries_count: number;
+  distance_m: number;
+  pending_payout_cents: number;
+  active: string[];
+  daily: { day: string; earnings_cents: number; deliveries: number }[];
+  currency: string | null;
+}
+
+export interface DeliveryQuote {
+  currency: string;
+  distance_m: number;
+  courier: { available: boolean; fee_cents: number };
+  cook_delivery: { available: boolean; fee_cents: number };
+  available?: false;
+  reason?: string;
+}
+
+export interface Country {
+  code: string;
+  name: string;
+  currency: string;
+  enabled: boolean;
+  service_rate: number;
+  cook_commission_rate: number;
+  courier_commission_rate: number;
+  delivery_base_cents: number;
+  delivery_per_km_cents: number;
+  delivery_min_cents: number;
+  delivery_max_cents: number;
+  courier_max_distance_km: number;
+  min_order_cents: number;
+  courier_mode: "independent" | "partner_agency" | "disabled";
+  payout_delay_hours: number;
+  vat_rate: number;
+}
+
+export interface PlatformStats {
+  by_currency: { currency: string; gmv_cents: number | null; revenue_cents: number | null; cooks_cents: number | null; couriers_cents: number | null; completed: number; cancelled: number }[];
+  orders_active: number;
+  deliveries_searching: number;
+  cooks_approved: number;
+  cooks_pending: number;
+  couriers_approved: number;
+  couriers_pending: number;
+  couriers_online: number;
+  new_users: number;
+  customers_active: number;
+  reports_open: number;
+  payouts_pending_cents: number;
+  daily: { day: string; orders: number; revenue_cents: number | null }[];
+}
+
+export interface Dac7Row {
+  seller_type: "cook" | "courier";
+  seller_id: string;
+  legal_name: string | null;
+  display_name: string;
+  birth_date: string | null;
+  tax_id: string | null;
+  vat_number: string | null;
+  business_status: string;
+  registration_number: string | null;
+  country: string;
+  address: string | null;
+  currency: string;
+  transactions: number;
+  consideration_cents: number;
+  fees_cents: number;
+  q1_cents: number | null;
+  q2_cents: number | null;
+  q3_cents: number | null;
+  q4_cents: number | null;
+  reportable: boolean;
 }

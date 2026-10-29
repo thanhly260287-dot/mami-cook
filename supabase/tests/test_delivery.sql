@@ -250,4 +250,31 @@ select pg_temp.act_as(null);
 select pg_temp.check((select currency = 'CHF' from public.feed(48.8650, 2.3700, 3) where drop_id = :'drop_id'), 'devise du pays de la cuisinière (CHF)');
 select pg_temp.act_as_admin_db();
 update public.cooks set country = 'FR' where id = :'cook';
+
+-- ------------------------------------------------------------------ écosystème : stats, desserts, quota IA
+select pg_temp.act_as(:'cook');
+select pg_temp.check((public.cook_stats(30) ->> 'completed')::int = 1 and (public.cook_stats(30) ->> 'plates_sold')::int = 2
+                     and (public.cook_stats(30) -> 'top_dishes' -> 0 ->> 'title') = 'Mafé de poulet', 'statistiques de la cuisinière');
+insert into public.dishes (cook_id, title, cuisine, course, price_cents) values (auth.uid(), 'Tiramisu', 'italian', 'dessert', 500) returning id \gset dess_
+insert into public.drops (dish_id, cook_id, available_on, ready_from, ready_until, quantity_total, quantity_remaining)
+values (:'dess_id', auth.uid(), current_date, '11:00', '22:00', 5, 5);
+select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, course, price_cents) values (auth.uid(), 'Xxx', 'italian', 'poison', 500)$$, 'type de plat inconnu');
+select pg_temp.act_as(null);
+select pg_temp.check((select count(*) = 1 and bool_and(title = 'Tiramisu') from public.feed(48.8650, 2.3700, 3, p_course => 'dessert')), 'filtre desserts');
+select pg_temp.act_as(:'client');
+select pg_temp.check((public.customer_dashboard() ->> 'orders')::int = 1 and (public.customer_dashboard() ->> 'tips_cents')::int = 300, 'tableau de bord client');
+select pg_temp.expect_error(format($$select public.consume_ai_quota(%L, 'enhance')$$, :'cook'), 'quota IA non appelable par un client');
+select pg_temp.act_as_admin_db();
+select pg_temp.expect_error(format($$select public.consume_ai_quota(%L, 'enhance')$$, :'client'), 'retouche IA réservée aux cuisinières');
+select pg_temp.check(public.consume_ai_quota(:'cook', 'enhance', 2) = 1, 'quota IA décompté');
+select public.consume_ai_quota(:'cook', 'background', 2);
+select pg_temp.expect_error(format($$select public.consume_ai_quota(%L, 'enhance', 2)$$, :'cook'), 'quota IA quotidien atteint');
+select pg_temp.act_as(:'intrus');
+select pg_temp.expect_error($$select public.admin_save_promo('HACK', 100)$$, 'création de code promo par un non-admin');
+select pg_temp.expect_error($$select * from public.admin_search_users('a')$$, 'recherche d''utilisateurs réservée');
+select pg_temp.act_as(:'admin');
+select pg_temp.check((select percent_off = 15 from public.admin_save_promo('bienvenue15', 15)), 'code promo créé par l''admin');
+select pg_temp.check((select count(*) = 1 from public.admin_search_users('rider1@')), 'recherche d''utilisateurs par e-mail');
+select public.suspend_courier(:'rider1', 'Test');
+select pg_temp.check((select status = 'suspended' and not is_online from public.couriers where id = :'rider1'), 'suspension d''un livreur');
 \echo '✔ test_delivery.sql'

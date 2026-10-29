@@ -841,7 +841,8 @@ create function public.feed(
   p_cook_id uuid default null,
   p_limit integer default 24,
   p_offset integer default 0,
-  p_drop_id uuid default null
+  p_drop_id uuid default null,
+  p_course text default null
 ) returns table (
   drop_id uuid, dish_id uuid, cook_id uuid,
   title text, description text, cuisine text, photos text[], price_cents integer,
@@ -852,7 +853,7 @@ create function public.feed(
   cook_name text, cook_slug text, cook_avatar text, cook_rating numeric, cook_rating_count integer,
   offers_pickup boolean, offers_delivery boolean, delivery_fee_cents integer,
   distance_m double precision, extras jsonb, menu_deal jsonb,
-  offers_courier boolean, is_professional boolean, currency char(3)
+  offers_courier boolean, is_professional boolean, currency char(3), course text
 )
 language sql stable security definer set search_path = ''
 as $$
@@ -875,7 +876,7 @@ as $$
     (select jsonb_build_object('id', m.id, 'name', m.name, 'items', m.items_description, 'price_cents', m.price_cents,
              'customer_price_cents', round(m.price_cents * (1 + ct.service_rate)))
        from public.menu_deals m where m.main_dish_id = d.id and m.is_active order by m.created_at limit 1),
-    c.offers_courier and ct.courier_mode <> 'disabled', c.is_professional, ct.currency
+    c.offers_courier and ct.courier_mode <> 'disabled', c.is_professional, ct.currency, d.course
   from origin o
   join public.cooks c on c.status = 'approved'
        and (p_drop_id is not null or p_cook_id is not null
@@ -892,6 +893,7 @@ as $$
     and (p_diets is null or d.diets @> p_diets)
     and (p_temperature is null or d.temperature = p_temperature)
     and (p_cook_id is null or c.id = p_cook_id)
+    and (p_course is null or d.course = p_course or (p_course = 'dessert' and d.course = 'pastry'))
     and (p_query is null or length(trim(p_query)) = 0
          or d.search @@ websearch_to_tsquery('french', public.immutable_unaccent(p_query))
          or d.title operator(extensions.%) p_query
@@ -899,7 +901,7 @@ as $$
   order by (dr.status = 'sold_out'), dr.available_on, extensions.st_distance(c.public_location, o.g), d.rating_avg desc
   limit least(greatest(p_limit, 1), 60) offset greatest(p_offset, 0)
 $$;
-grant execute on function public.feed(double precision, double precision, double precision, text, text, text[], public.temperature, date, uuid, integer, integer, uuid) to anon, authenticated;
+grant execute on function public.feed(double precision, double precision, double precision, text, text, text[], public.temperature, date, uuid, integer, integer, uuid, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------- RGPD : données livreur dans l'export
 create or replace function public.export_my_data()

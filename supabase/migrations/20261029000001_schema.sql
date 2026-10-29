@@ -194,6 +194,8 @@ create table public.dishes (
   description text check (description is null or char_length(description) <= 1500),
   ingredients text check (ingredients is null or char_length(ingredients) <= 1500),
   cuisine text not null,
+  -- Type de plat : permet de vendre aussi des desserts, pâtisseries, boissons…
+  course text not null default 'main' check (course in ('starter', 'main', 'dessert', 'pastry', 'drink', 'snack')),
   photos text[] not null default '{}' check (cardinality(photos) <= 8),
   price_cents integer not null check (price_cents between 100 and 20000),
   temperature public.temperature not null default 'hot',
