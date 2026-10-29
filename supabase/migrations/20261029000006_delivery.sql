@@ -483,6 +483,10 @@ begin
   if _online and (_lat is null or _lng is null or _lat not between -90 and 90 or _lng not between -180 and 180) then
     raise exception 'Position requise pour se mettre en ligne' using errcode = '22023';
   end if;
+  -- Justificatifs à jour pour le véhicule actuel (ex. permis si passage au scooter) : migration 0008
+  if _online and cardinality(public.compliance_missing(auth.uid(), 'courier')) > 0 then
+    raise exception 'Justificatifs manquants pour votre véhicule : complétez votre dossier' using errcode = '42501';
+  end if;
   update public.couriers set
     is_online = _online,
     last_location = case when _lat is null then last_location

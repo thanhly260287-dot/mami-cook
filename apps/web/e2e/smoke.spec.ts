@@ -63,6 +63,9 @@ test("guide légal par pays (France, Suisse)", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/guide-legal");
   await expect(page.getByText("Déclarer votre activité à la DDPP")).toBeVisible();
+  // France : formation hygiène et déclaration DDPP exigées avant la première vente
+  await expect(page.getByText("✅ Formation hygiène alimentaire (14 h)")).toBeVisible();
+  await expect(page.getByText("✅ Déclarer votre activité à la DDPP")).toBeVisible();
   await page.goto("/guide-legal/CH");
   await expect(page.getByText("Annonce au chimiste cantonal")).toBeVisible();
   await expect(page.getByText("Livraison via une agence partenaire")).toBeVisible();

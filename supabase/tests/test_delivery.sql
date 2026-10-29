@@ -22,6 +22,13 @@ begin
   raise notice '  ✓ %', _label;
 end $$;
 
+create or replace function pg_temp.verify_all_docs(_uid uuid, _role text) returns void language plpgsql as $$
+begin
+  insert into public.compliance_documents (user_id, role, code, reference, status)
+  select _uid, _role, s.code, 'TEST', 'verified' from public.compliance_status(_uid, _role) s where s.mandatory
+  on conflict (user_id, role, code) do update set status = 'verified';
+end $$;
+
 \set cook '00000000-0000-0000-0000-000000000101'
 \set client '00000000-0000-0000-0000-000000000102'
 \set rider1 '00000000-0000-0000-0000-000000000103'
@@ -49,6 +56,8 @@ insert into public.cook_private (cook_id, address_id, exact_location, legal_name
 values (auth.uid(), :'caddr_id', 'SRID=4326;POINT(2.3700 48.8650)', 'Lina Diallo', '1234567890123', 'sole_trader');
 insert into public.dishes (cook_id, title, cuisine, price_cents, allergens)
 values (auth.uid(), 'Mafé de poulet', 'african', 1000, '{peanuts}') returning id \gset dish_
+select pg_temp.act_as_admin_db();
+select pg_temp.verify_all_docs(:'cook', 'cook');
 select pg_temp.act_as(:'admin');
 select public.review_cook_application(:'cook', true);
 select pg_temp.act_as(:'cook');
@@ -84,6 +93,16 @@ update public.couriers set status = 'pending_review' where id = auth.uid();
 select pg_temp.act_as(:'intrus');
 select pg_temp.expect_error(format($$select public.review_courier_application(%L, true)$$, :'rider1'), 'validation d''un livreur par un non-modérateur');
 select pg_temp.check((select count(*) = 0 from public.courier_private), 'données privées des livreurs invisibles');
+select pg_temp.act_as(:'admin');
+select pg_temp.expect_error(format($$select public.review_courier_application(%L, true)$$, :'rider1'), 'livreur validé sans justificatifs');
+select pg_temp.check((select array['business_registration','identity','insurance'] = public.compliance_missing(:'rider1', 'courier')),
+  'livreur à vélo en France : SIRET, identité, assurance (pas de permis)');
+update public.couriers set vehicle = 'scooter' where id = :'rider2';
+select pg_temp.check((select 'driving_licence' = any (public.compliance_missing(:'rider2', 'courier'))), 'scooter : permis de conduire exigé');
+update public.couriers set vehicle = 'ebike' where id = :'rider2';
+select pg_temp.act_as_admin_db();
+select pg_temp.verify_all_docs(:'rider1', 'courier');
+select pg_temp.verify_all_docs(:'rider2', 'courier');
 select pg_temp.act_as(:'admin');
 select public.review_courier_application(:'rider1', true);
 select public.review_courier_application(:'rider2', true);
@@ -284,3 +303,20 @@ select pg_temp.check((select count(*) = 1 from public.admin_search_users('rider1
 select public.suspend_courier(:'rider1', 'Test');
 select pg_temp.check((select status = 'suspended' and not is_online from public.couriers where id = :'rider1'), 'suspension d''un livreur');
 \echo '✔ test_delivery.sql'
+
+-- ------------------------------------------------------------------ expiration des justificatifs
+select pg_temp.act_as_admin_db();
+update public.compliance_documents set expires_on = current_date + 10 where user_id = :'rider2' and code = 'insurance';
+select public.compliance_daily();
+select pg_temp.check((select count(*) = 1 from public.notifications where user_id = :'rider2' and title = 'Un justificatif expire bientôt'), 'alerte 30 jours avant expiration');
+select public.compliance_daily();
+select pg_temp.check((select count(*) = 1 from public.notifications where user_id = :'rider2' and title = 'Un justificatif expire bientôt'), 'alerte envoyée une seule fois');
+update public.compliance_documents set expires_on = current_date - 1 where user_id = :'rider2' and code = 'insurance';
+select pg_temp.check((select public.compliance_daily() = 1), 'un compte suspendu');
+select pg_temp.check((select status = 'suspended' and not is_online from public.couriers where id = :'rider2'), 'livreur suspendu et hors ligne : assurance expirée');
+select pg_temp.check((select status_reason = 'Test' from public.couriers where id = :'rider1'), 'autre livreur non touché (motif de suspension inchangé)');
+-- Passage au scooter après validation : permis exigé pour se remettre en ligne
+update public.compliance_documents set expires_on = current_date + 300 where user_id = :'rider2' and code = 'insurance';
+update public.couriers set status = 'approved', vehicle = 'scooter', is_online = false where id = :'rider2';
+select pg_temp.act_as(:'rider2');
+select pg_temp.expect_error($$select public.courier_set_online(true, 48.86, 2.36)$$, 'en ligne en scooter sans permis vérifié');

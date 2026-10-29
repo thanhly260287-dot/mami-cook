@@ -16,6 +16,8 @@ import {
   type DeliveryTracking,
   type PlatformStats,
   type CookDashboard,
+  type ComplianceItem,
+  type ComplianceRole,
   type Dish,
   type DishExtra,
   type Drop,
@@ -508,4 +510,44 @@ export async function adminPayouts(status = "pending") {
       id: string; amount_cents: number; status: string; available_at: string; created_at: string; cook_id: string | null; courier_id: string | null;
       orders: { number: number; currency: string } | null;
     }[];
+}
+
+// ------------------------------------------------------------------ justificatifs légaux (par pays)
+export const fetchCompliance = (userId: string, role: ComplianceRole) =>
+  rpc<ComplianceItem[]>("compliance_status", { _user: userId, _role: role });
+
+/** Envoie un justificatif (PDF ou photo, 10 Mo max.) dans le bucket privé, dossier de l'utilisateur. */
+export async function uploadComplianceFile(userId: string, file: File): Promise<string> {
+  const types: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  if (!types[file.type]) throw new Error(t("Format accepté : PDF, JPG, PNG ou WebP"));
+  if (file.size > 10 * 1024 * 1024) throw new Error(t("Fichier trop lourd (10 Mo maximum)"));
+  const path = `${userId}/${crypto.randomUUID()}.${types[file.type]}`;
+  const { error } = await requireSupabase().storage.from("compliance-docs").upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return path;
+}
+
+export const submitComplianceDocument = (v: { role: ComplianceRole; code: string; reference?: string; issuedOn?: string; expiresOn?: string; filePath?: string }) =>
+  rpc("submit_compliance_document", {
+    _role: v.role, _code: v.code, _reference: v.reference || null, _issued_on: v.issuedOn || null,
+    _expires_on: v.expiresOn || null, _file_path: v.filePath || null,
+  });
+
+export const reviewComplianceDocument = (id: string, approve: boolean, note?: string) =>
+  rpc<void>("review_compliance_document", { _doc_id: id, _approve: approve, _note: note || null });
+
+/** Lien temporaire (5 min) pour consulter un justificatif (équipe ou propriétaire). */
+export async function complianceFileUrl(path: string): Promise<string> {
+  const { data, error } = await requireSupabase().storage.from("compliance-docs").createSignedUrl(path, 300);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+/** Personnes ayant des justificatifs en attente de vérification (équipe). */
+export async function fetchComplianceQueue() {
+  const rows = unwrap(await requireSupabase().from("compliance_documents").select("user_id, role, created_at, profiles!compliance_documents_user_id_fkey(display_name)")
+    .eq("status", "submitted").order("created_at").limit(200)) as unknown as { user_id: string; role: ComplianceRole; profiles: { display_name: string } | null }[];
+  const seen = new Map<string, { user_id: string; role: ComplianceRole; name: string }>();
+  for (const r of rows) seen.set(`${r.user_id}:${r.role}`, { user_id: r.user_id, role: r.role, name: r.profiles?.display_name ?? "—" });
+  return [...seen.values()];
 }

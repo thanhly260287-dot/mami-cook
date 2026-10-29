@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BarChart3, Bike, Check, Download, FileText, Globe, Package, ShieldAlert, Tag, UserCheck, Users, Wallet, X } from "lucide-react";
+import { BarChart3, Bike, Check, Download, FileCheck, FileText, Globe, Package, ShieldAlert, Tag, UserCheck, Users, Wallet, X } from "lucide-react";
 import { BUSINESS_STATUSES, countryFlag, countryName, cuisineLabel, formatDate, formatMoney, ORDER_STATUS_LABELS, REPORT_REASONS, t, intlLocale, VEHICLES, type Country, type OrderStatus } from "@mami/shared";
 import {
   adminPayouts, adminSearchOrders, fetchCountries, fetchDac7, fetchPendingCooks, fetchPendingCouriers, fetchPlatformStats, fetchPromoCodes,
-  fetchReports, orderAction, reviewCourier, savePromo, searchUsers, updateCountry,
+  fetchComplianceQueue, fetchReports, orderAction, reviewCourier, savePromo, searchUsers, updateCountry,
 } from "@/lib/api";
+import { ComplianceChecklist } from "@/components/Compliance";
 import { requireSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, errorMessage } from "@/lib/utils";
@@ -20,6 +21,7 @@ const TABS = [
   { id: "stats", label: "Tableau de bord", icon: BarChart3 },
   { id: "cooks", label: "Candidatures", icon: UserCheck },
   { id: "couriers", label: "Livreurs", icon: Bike },
+  { id: "docs", label: "Justificatifs", icon: FileCheck },
   { id: "orders", label: "Commandes", icon: Package },
   { id: "users", label: "Utilisateurs", icon: Users },
   { id: "reports", label: "Signalements", icon: ShieldAlert },
@@ -55,6 +57,7 @@ export default function Admin() {
       {tab === "promos" && <Promos />}
       {tab === "payouts" && <PayoutsAdmin />}
       {tab === "countries" && <Countries />}
+      {tab === "docs" && <ComplianceQueue />}
       {tab === "dac7" && <Dac7 />}
     </div>
   );
@@ -88,6 +91,8 @@ function Applications() {
               <div><dt className="inline font-semibold">{t("SIRET :")}{" "}</dt><dd className="inline">{priv?.siret ?? t("non renseigné")}</dd></div>
               <div><dt className="inline font-semibold">{t("Engagements hygiène et légaux :")}{" "}</dt><dd className="inline">{t("acceptés")}</dd></div>
             </dl>
+            <h3 className="mb-2 mt-4 text-sm font-bold">{countryFlag(c.country ?? "FR")} {t("Justificatifs")}</h3>
+            <ComplianceChecklist userId={c.id} role="cook" mode="review" />
             <Textarea className="mt-3 min-h-[60px]" placeholder={t("Motif (obligatoire en cas de refus)")} value={reasons[c.id] ?? ""} onChange={(e) => setReasons({ ...reasons, [c.id]: e.target.value })} />
             <div className="mt-3 flex gap-2">
               <Button onClick={() => decide.mutate({ id: c.id, approve: true })} loading={decide.isPending}><Check />{" "}{t("Valider")}</Button>
@@ -215,7 +220,8 @@ function CourierApplications() {
             <Row k={t("Adresse :")} v={p?.address} />
             <Row k={t("Assurance déclarée :")} v={p?.insurance_declared_at ? "✅" : "❌"} />
           </dl>
-          <p className="mt-2 text-xs text-muted-foreground">{t("Vérifiez la pièce d'identité et le numéro d'entreprise avant de valider.")}</p>
+          <h3 className="mb-2 mt-4 text-sm font-bold">{t("Justificatifs")}</h3>
+          <ComplianceChecklist userId={c.id} role="courier" mode="review" />
           <Textarea className="mt-3 min-h-[60px]" placeholder={t("Motif (obligatoire en cas de refus)")} value={reasons[c.id] ?? ""} onChange={(e) => setReasons({ ...reasons, [c.id]: e.target.value })} />
           <div className="mt-3 flex gap-2">
             <Button onClick={() => decide.mutate({ id: c.id, approve: true })} loading={decide.isPending}><Check />{t("Valider")}</Button>
@@ -224,6 +230,21 @@ function CourierApplications() {
         </Card>
       );
     })}</div>
+  );
+}
+
+// Justificatifs déposés en attente (nouveaux comptes, renouvellements, comptes suspendus).
+function ComplianceQueue() {
+  const q = useQuery({ queryKey: ["compliance-queue"], queryFn: fetchComplianceQueue });
+  if (q.isLoading) return <Spinner />;
+  if (!q.data?.length) return <EmptyState icon="✅" title={t("Aucun justificatif à vérifier")} />;
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">{q.data.map((u) => (
+      <Card key={`${u.user_id}:${u.role}`} className="p-5">
+        <div className="mb-3 flex justify-between"><p className="text-lg font-bold">{u.name}</p><Badge tone="muted">{u.role === "cook" ? t("Cuisine") : t("Livreur")}</Badge></div>
+        <ComplianceChecklist userId={u.user_id} role={u.role} mode="review" />
+      </Card>
+    ))}</div>
   );
 }
 

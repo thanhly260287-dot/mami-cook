@@ -11,6 +11,7 @@ import { errorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, Spinner } from "@/components/ui/misc";
 import { Field, Input, Select } from "@/components/ui/input";
+import { ComplianceChecklist } from "@/components/Compliance";
 
 const FIELDS = ["legal_name", "birth_date", "tax_id", "vat_number", "business_status", "registration_number", "food_registration_ref", "hygiene_training_at"] as const;
 
@@ -39,6 +40,14 @@ export default function CookLegalPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+      <div className="space-y-6">
+      <Card className="space-y-4 p-6">
+        <div>
+          <h2 className="text-lg font-bold">{t("Mes justificatifs")}</h2>
+          <p className="text-sm text-muted-foreground">{t("MAMI COOK vérifie ces documents avant votre première vente, comme l'exige la loi de votre pays. Ils restent confidentiels et ne sont visibles que par l'équipe de vérification.")}</p>
+        </div>
+        <ComplianceChecklist userId={user!.id} role="cook" mode="owner" />
+      </Card>
       <Card className="space-y-4 p-6">
         <div>
           <h2 className="text-lg font-bold">{t("Mes informations légales")}</h2>
@@ -65,6 +74,7 @@ export default function CookLegalPage() {
         <label className="flex gap-3 text-sm"><input type="checkbox" checked={insured} onChange={(e) => setInsured(e.target.checked)} className="mt-1" />{t("Je déclare être couvert(e) par une assurance responsabilité civile.")}</label>
         <Button onClick={() => save.mutate()} loading={save.isPending}>{t("Enregistrer")}</Button>
       </Card>
+      </div>
       <div className="space-y-4">
         <Card className="p-5">
           <h2 className="mb-3 font-bold">{countryFlag(country)} {t("Vos démarches en {country}", { country: countryName(country) })}</h2>

@@ -53,7 +53,7 @@ export default function CookLayout() {
 
 function StatusBadge() {
   const { cook } = useAuth();
-  const map = { draft: ["Brouillon", "muted"], pending_review: [t("En cours de validation"), "warn"], approved: [t("Cuisine ouverte"), "success"], suspended: ["Suspendue", "danger"], rejected: [t("À compléter"), "danger"] } as const;
+  const map = { draft: [t("Brouillon"), "muted"], pending_review: [t("En cours de validation"), "warn"], approved: [t("Cuisine ouverte"), "success"], suspended: [t("Suspendue"), "danger"], rejected: [t("À compléter"), "danger"] } as const;
   const [label, tone] = map[cook!.status];
   return <Badge tone={tone} className="text-sm">{label}</Badge>;
 }
@@ -62,9 +62,9 @@ function StatusBanner() {
   const { cook } = useAuth();
   if (cook!.status === "approved" && cook!.stripe_charges_enabled) return null;
   let msg: React.ReactNode;
-  if (cook!.status === "pending_review") msg = "Votre candidature est en cours de vérification (48 h max). En attendant, préparez vos plats et connectez votre compte bancaire.";
+  if (cook!.status === "pending_review") msg = <>{t("Votre candidature est en cours de vérification (48 h max). En attendant, préparez vos plats et connectez votre compte bancaire.")}{" "}<NavLink to="legal" className="font-bold underline">{t("Déposez vos justificatifs")}</NavLink></>;
   else if (cook!.status === "rejected") msg = <>{t("Candidature à compléter :")}{" "}{cook!.status_reason ?? t("contactez le support.")}</>;
-  else if (cook!.status === "suspended") msg = <>{t("Cuisine suspendue :")}{" "}{cook!.status_reason ?? t("contactez le support.")}</>;
+  else if (cook!.status === "suspended") msg = <>{t("Cuisine suspendue :")}{" "}{cook!.status_reason ?? t("contactez le support.")}{" "}<NavLink to="legal" className="font-bold underline">{t("Déposez vos justificatifs")}</NavLink></>;
   else if (!cook!.stripe_charges_enabled) msg = <>{t("Dernière étape :")}{" "}<NavLink to="paiements" className="font-bold underline">{t("connectez votre compte bancaire")}</NavLink>{" "}{t("pour recevoir des commandes.")}</>;
   return <Card className="mb-5 flex items-start gap-3 border-status-warn/30 bg-status-warn/5 p-4 text-sm"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-status-warn" /><p>{msg}</p></Card>;
 }

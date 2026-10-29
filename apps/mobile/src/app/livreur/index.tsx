@@ -66,8 +66,8 @@ export default function CourierScreen() {
     return <Empty emoji="🛵" title={t("Devenir livreur")} text={t("Livrez des plats faits maison près de chez vous, quand vous voulez.")}
       action={<Button title={t("Postuler")} onPress={() => Linking.openURL(`${SITE_URL}/devenir-livreur`)} />} />;
   }
-  if (courier.status === "pending_review") return <Empty emoji="⏳" title={t("Candidature en cours d'examen")} text={t("Notre équipe vérifie vos informations (48 h maximum). Vous recevrez une notification.")} />;
-  if (courier.status === "suspended") return <Empty emoji="⛔" title={t("Compte suspendu")} text={courier.status_reason ?? t("Contactez le support pour en savoir plus.")} />;
+  if (courier.status === "pending_review") return <Empty emoji="⏳" title={t("Candidature en cours d'examen")} text={t("Notre équipe vérifie vos informations (48 h maximum). Vous recevrez une notification.")} action={<Button title={t("Déposez vos justificatifs")} onPress={() => Linking.openURL(`${SITE_URL}/livreur`)} />} />;
+  if (courier.status === "suspended") return <Empty emoji="⛔" title={t("Compte suspendu")} text={courier.status_reason ?? t("Contactez le support pour en savoir plus.")} action={<Button title={t("Déposez vos justificatifs")} onPress={() => Linking.openURL(`${SITE_URL}/livreur`)} />} />;
 
   const cur = dash.data?.currency ?? "EUR";
   const active = dash.data?.active ?? [];

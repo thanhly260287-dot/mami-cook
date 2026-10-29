@@ -58,10 +58,45 @@ select pg_temp.expect_error(format($$insert into public.dishes (cook_id, title, 
 insert into public.dish_extras (dish_id, name, price_cents) values (:'dish_id', 'Sauce pesto', 150) returning id \gset extra_
 select pg_temp.expect_error(format($$insert into public.drops (dish_id, cook_id, available_on, ready_from, ready_until, quantity_total, quantity_remaining) values (%L, auth.uid(), current_date, '11:00', '14:00', 10, 10)$$, :'dish_id'), 'mise en vente avant validation');
 
--- Validation par la modération
+-- Conformité légale (France) : documents obligatoires avant validation
+select pg_temp.check((select array['food_registration','hygiene_training','identity','insurance'] = public.compliance_missing(auth.uid(), 'cook')),
+  'France : formation hygiène, déclaration DDPP, identité et assurance exigées');
+select pg_temp.check((select not mandatory from public.compliance_status(auth.uid(), 'cook') where code = 'business_registration'),
+  'SIRET conseillé mais pas bloquant');
+select pg_temp.expect_error($$select public.submit_compliance_document('cook', 'hygiene_training', 'X', null, null, '00000000-0000-0000-0000-00000000000c/vol.pdf')$$,
+  'justificatif pointant vers le dossier d''un autre utilisateur');
+select pg_temp.expect_error($$select public.submit_compliance_document('cook', 'hygiene_training')$$, 'justificatif vide');
+select pg_temp.expect_error($$select public.submit_compliance_document('cook', 'gewerbe', 'X')$$, 'document non demandé dans le pays');
+select pg_temp.expect_error($$select public.submit_compliance_document('cook', 'insurance', 'X', current_date - 400)$$, 'assurance expirée (validité 12 mois)');
+select public.submit_compliance_document('cook', 'hygiene_training', 'Attestation 2026-118', current_date - 30, null, '00000000-0000-0000-0000-00000000000a/hygiene.pdf');
+select public.submit_compliance_document('cook', 'food_registration', 'DDPP-75-2026-0042');
+select public.submit_compliance_document('cook', 'identity', null, null, null, '00000000-0000-0000-0000-00000000000a/id.jpg');
+select public.submit_compliance_document('cook', 'insurance', 'AXA RC 99812', current_date - 10);
+select pg_temp.check((select expires_on = (current_date - 10 + interval '12 months')::date from public.compliance_documents where user_id = auth.uid() and code = 'insurance'),
+  'date d''expiration de l''assurance calculée (12 mois)');
+select pg_temp.check((select hygiene_training_at = current_date - 30 from public.cook_private where cook_id = auth.uid()), 'date de formation recopiée dans la fiche légale');
+select pg_temp.expect_error($$update public.compliance_documents set status = 'verified' where user_id = auth.uid()$$, 'auto-vérification de ses justificatifs');
+select pg_temp.check((select count(*) = 4 from public.compliance_documents where status = 'submitted' and user_id = auth.uid()), 'justificatifs en attente de vérification');
+
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) = 0 from public.compliance_documents), 'justificatifs d''autrui invisibles');
+select pg_temp.expect_error($$select * from public.compliance_status('00000000-0000-0000-0000-00000000000a', 'cook')$$, 'état de conformité d''autrui');
+select pg_temp.expect_error(format($$select public.review_compliance_document(%L, true)$$, (select id from public.compliance_documents limit 1)), 'vérification par un non-modérateur');
+
+-- Validation par la modération
 select pg_temp.expect_error($$select public.review_cook_application('00000000-0000-0000-0000-00000000000a', true)$$, 'validation par un non-modérateur');
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
+select pg_temp.expect_error($$select public.review_cook_application('00000000-0000-0000-0000-00000000000a', true)$$, 'validation avec des justificatifs non vérifiés');
+select pg_temp.expect_error(format($$select public.review_compliance_document(%L, false)$$, (select id from public.compliance_documents where code = 'identity')), 'refus sans motif');
+select public.review_compliance_document(id, false, 'Photo illisible') from public.compliance_documents where code = 'identity';
+select public.review_compliance_document(id, true) from public.compliance_documents where code <> 'identity';
+select pg_temp.expect_error($$select public.review_cook_application('00000000-0000-0000-0000-00000000000a', true)$$, 'validation avec une pièce d''identité refusée');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) = 1 from public.notifications where user_id = auth.uid() and type = 'compliance'), 'cuisinière prévenue du refus');
+select public.submit_compliance_document('cook', 'identity', null, null, null, '00000000-0000-0000-0000-00000000000a/id-net.jpg');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
+select public.review_compliance_document(id, true) from public.compliance_documents where code = 'identity';
+select pg_temp.check((select cardinality(public.compliance_missing('00000000-0000-0000-0000-00000000000a', 'cook')) = 0), 'dossier complet');
 select public.review_cook_application('00000000-0000-0000-0000-00000000000a', true);
 
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');

@@ -36,8 +36,8 @@ export function getCountryGuide(code: string): CountryGuide {
       return {
         code, eu: true,
         cook: [
-          { required: false, title: t("Déclarer votre activité à la DDPP"), detail: t("Formulaire Cerfa 13984, gratuit, dès que vous vendez régulièrement."), link: "https://www.service-public.fr/professionnels-entreprises/vosdroits/R17578" },
-          { required: false, title: t("Formation hygiène alimentaire (14 h)"), detail: t("Obligatoire pour une activité régulière de restauration. Environ 200 à 400 €, souvent finançable.") },
+          { required: true, title: t("Déclarer votre activité à la DDPP"), detail: t("Formulaire Cerfa 13984, gratuit, dès que vous vendez régulièrement."), link: "https://www.service-public.fr/professionnels-entreprises/vosdroits/R17578" },
+          { required: true, title: t("Formation hygiène alimentaire (14 h)"), detail: t("Obligatoire pour une activité régulière de restauration. Environ 200 à 400 €, souvent finançable.") },
           { required: false, title: t("Créer une micro-entreprise"), detail: t("Nécessaire dès que l'activité devient régulière. Plafond 2026 : 203 100 € de chiffre d'affaires pour la vente de repas. Gratuit sur le guichet unique."), link: "https://formalites.entreprises.gouv.fr" },
           { required: false, title: t("TVA"), detail: t("Pas de TVA à facturer sous 85 000 € de chiffre d'affaires par an (franchise en base).") },
         ],
@@ -117,7 +117,7 @@ export function getCountryGuide(code: string): CountryGuide {
         code, eu: false,
         cook: [
           { required: true, title: t("Enregistrement auprès du council"), detail: t("Gratuit, au moins 28 jours avant de commencer. Une inspection peut avoir lieu."), link: "https://www.gov.uk/food-business-registration" },
-          { required: false, title: t("Formation à l'hygiène alimentaire"), detail: t("Recommandée (Level 2 Food Hygiene).") },
+          { required: true, title: t("Formation à l'hygiène alimentaire"), detail: t("Recommandée (Level 2 Food Hygiene).") },
           { required: false, title: t("Déclaration aux impôts (HMRC)"), detail: t("Au-delà de 1 000 £ de revenus par an (trading allowance).") },
         ],
         courier: [{ required: true, title: t("Statut de self-employed"), detail: t("Inscription auprès du HMRC.") }],
@@ -148,5 +148,52 @@ export function getCountryGuide(code: string): CountryGuide {
         ],
         courier: [{ required: true, title: t("Statut d'indépendant"), detail: t("Renseignez-vous auprès de l'administration fiscale de votre pays.") }],
       };
+  }
+}
+
+// ---------------------------------------------------------------- justificatifs exigés (table compliance_requirements)
+export type ComplianceRole = "cook" | "courier";
+export type ComplianceDocStatus = "missing" | "submitted" | "verified" | "rejected";
+
+export interface ComplianceItem {
+  code: string;
+  official_name: string;
+  mandatory: boolean;
+  document_required: boolean;
+  validity_months: number | null;
+  link: string | null;
+  doc_id: string | null;
+  status: ComplianceDocStatus;
+  reference: string | null;
+  issued_on: string | null;
+  expires_on: string | null;
+  file_path: string | null;
+  review_note: string | null;
+  ok: boolean | null;
+}
+
+/** Libellé traduit d'un type de justificatif (le nom officiel du pays est affiché en dessous). */
+export function complianceLabel(code: string): string {
+  switch (code) {
+    case "identity": return t("Pièce d'identité");
+    case "insurance": return t("Assurance responsabilité civile");
+    case "hygiene_training": return t("Formation à l'hygiène alimentaire");
+    case "food_registration": return t("Déclaration aux autorités sanitaires");
+    case "business_registration": return t("Immatriculation de l'activité");
+    case "work_permit": return t("Autorisation de travail");
+    case "driving_licence": return t("Permis de conduire");
+    case "vehicle_insurance": return t("Assurance du véhicule");
+    case "agency_contract": return t("Contrat avec l'agence partenaire");
+    default: return code;
+  }
+}
+
+export function complianceStatusLabel(status: ComplianceDocStatus, expired = false): string {
+  if (expired) return t("Expiré");
+  switch (status) {
+    case "verified": return t("Vérifié");
+    case "submitted": return t("En cours de vérification");
+    case "rejected": return t("Refusé");
+    default: return t("À fournir");
   }
 }

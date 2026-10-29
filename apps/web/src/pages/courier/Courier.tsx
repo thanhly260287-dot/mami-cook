@@ -15,6 +15,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtime } from "@/hooks/useRealtime";
+import { ComplianceChecklist } from "@/components/Compliance";
 import { DEMO_MODE } from "@/lib/supabase";
 import { cn, errorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -125,10 +126,10 @@ export function CourierLayout() {
   const { courier } = useAuth();
   if (!courier || courier.status === "draft" || courier.status === "rejected") return <Navigate to="/devenir-livreur" replace />;
   if (courier.status === "pending_review") {
-    return <EmptyState icon="⏳" title={t("Candidature en cours d'examen")}>{t("Notre équipe vérifie vos informations (48 h maximum). Vous recevrez une notification.")}</EmptyState>;
+    return <CourierDocs icon="⏳" title={t("Candidature en cours d'examen")} text={t("Notre équipe vérifie vos informations (48 h maximum). Vous recevrez une notification.")} />;
   }
   if (courier.status === "suspended") {
-    return <EmptyState icon="⛔" title={t("Compte suspendu")}>{courier.status_reason ?? t("Contactez le support pour en savoir plus.")}</EmptyState>;
+    return <CourierDocs icon="⛔" title={t("Compte suspendu")} text={courier.status_reason ?? t("Contactez le support pour en savoir plus.")} />;
   }
   const tabs = [
     { to: "/livreur", label: t("Courses"), icon: <Package />, end: true },
@@ -152,6 +153,20 @@ export function CourierLayout() {
 }
 
 // ------------------------------------------------------------------ courses : en ligne / hors ligne + liste
+function CourierDocs({ icon, title, text }: { icon: string; title: string; text: string }) {
+  const { user } = useAuth();
+  return (
+    <div className="container max-w-3xl space-y-6 py-6">
+      <EmptyState icon={icon} title={title}>{text}</EmptyState>
+      <Card className="space-y-3 p-6">
+        <h2 className="text-lg font-bold">{t("Mes justificatifs")}</h2>
+        <p className="text-sm text-muted-foreground">{t("Votre compte est activé dès que tous les documents obligatoires de votre pays sont vérifiés.")}</p>
+        <ComplianceChecklist userId={user!.id} role="courier" mode="owner" />
+      </Card>
+    </div>
+  );
+}
+
 export function CourierMissions() {
   const { courier, user, refreshCourier } = useAuth();
   const qc = useQueryClient();
@@ -476,6 +491,10 @@ export function CourierProfile() {
           </dl>
         ) : <Spinner />}
         <p className="text-muted-foreground">{t("Pour modifier ces informations, contactez le support.")}</p>
+      </Card>
+      <Card className="space-y-3 p-6 md:col-span-2">
+        <h2 className="text-lg font-bold">{t("Mes justificatifs")}</h2>
+        <ComplianceChecklist userId={user!.id} role="courier" mode="owner" />
       </Card>
       <Card className="p-6 text-sm md:col-span-2">
         <h2 className="mb-2 flex items-center gap-2 text-lg font-bold"><Bike className="h-5 w-5" />{t("Vos droits de livreur indépendant")}</h2>
