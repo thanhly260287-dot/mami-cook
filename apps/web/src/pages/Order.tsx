@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bike, Check, ChefHat, CircleCheck, Clock, Flag, MapPin, MessageCircle, Package, Send, Store, X } from "lucide-react";
-import { formatDate, formatEuros, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale } from "@mami/shared";
-import { createReview, fetchMessages, fetchMyReviewForOrder, fetchOrder, fetchPickupAddress, orderAction, sendMessage } from "@/lib/api";
+import { Bike, Check, ChefHat, CircleCheck, Clock, Flag, MapPin, MessageCircle, Package, Receipt, Send, Store, X, Zap } from "lucide-react";
+import { DELIVERY_STATUS_LABELS, formatDate, formatMoney, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale, VEHICLES } from "@mami/shared";
+import { createReview, fetchDeliveryTracking, fetchMessages, fetchMyReviewForOrder, fetchOrder, fetchPickupAddress, orderAction, sendMessage } from "@/lib/api";
+import { RouteMap } from "@/components/RouteMap";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtime } from "@/hooks/useRealtime";
 import { cn, errorMessage } from "@/lib/utils";
@@ -52,6 +53,9 @@ export default function OrderPage() {
   const isCustomer = o.customer_id === user?.id;
   const idx = ORDER_FLOW.indexOf(o.status);
   const finished = ["cancelled", "refunded", "expired"].includes(o.status);
+  const formatEuros = (c: number) => formatMoney(c, o.currency ?? "EUR");
+  const modeIcon = o.fulfillment === "pickup" ? <Store className="h-3.5 w-3.5" /> : o.fulfillment === "courier" ? <Zap className="h-3.5 w-3.5" /> : <Bike className="h-3.5 w-3.5" />;
+  const modeLabel = o.fulfillment === "pickup" ? t("Retrait") : o.fulfillment === "courier" ? t("Livreur MAMI COOK") : t("Livraison");
 
   return (
     <div className="container max-w-4xl py-8">
@@ -63,8 +67,8 @@ export default function OrderPage() {
           {o.cooks && <Link to={`/cuisine/${o.cooks.slug}`} className="text-sm font-semibold text-primary hover:underline">{o.cooks.kitchen_name}</Link>}
         </div>
         <Badge tone={finished ? "danger" : o.status === "completed" ? "success" : "primary"} className="text-sm">
-          {o.fulfillment === "pickup" ? <Store className="h-3.5 w-3.5" /> : <Bike className="h-3.5 w-3.5" />}
-          {o.fulfillment === "pickup" ? t("Retrait") : t("Livraison")} · {relativeDay(o.scheduled_for)}
+          {modeIcon}
+          {modeLabel} · {relativeDay(o.scheduled_for)}
         </Badge>
       </div>
 
@@ -99,6 +103,8 @@ export default function OrderPage() {
         </Card>
       )}
 
+      {o.fulfillment === "courier" && !finished && o.status !== "pending_payment" && <CourierTracking order={o} isCustomer={isCustomer} />}
+
       {o.cancel_reason && <Card className="mb-6 border-destructive/30 bg-destructive/5 p-4 text-sm"><b>{t("Motif :")}</b> {o.cancel_reason}</Card>}
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -116,6 +122,7 @@ export default function OrderPage() {
             {o.discount_cents > 0 && <div className="flex justify-between text-status-hot"><dt>{t("Remise volume")}</dt><dd>−{formatEuros(o.discount_cents)}</dd></div>}
             {o.promo_cents > 0 && <div className="flex justify-between text-status-hot"><dt>{t("Code promo")}</dt><dd>−{formatEuros(o.promo_cents)}</dd></div>}
             {o.delivery_fee_cents > 0 && <div className="flex justify-between"><dt>{t("Livraison")}</dt><dd>{formatEuros(o.delivery_fee_cents)}</dd></div>}
+            {(o.tip_cents ?? 0) > 0 && <div className="flex justify-between"><dt>{t("Pourboire livreur")}</dt><dd>{formatEuros(o.tip_cents!)}</dd></div>}
             <div className="flex justify-between text-base font-extrabold"><dt>{t("Total payé")}</dt><dd>{formatEuros(o.total_cents)}</dd></div>
           </dl>
           {o.delivery_address && <p className="mt-4 rounded-xl bg-muted p-3 text-sm"><MapPin className="mr-1 inline h-4 w-4" />{o.delivery_address.line1}, {o.delivery_address.postal_code} {o.delivery_address.city}</p>}
@@ -127,8 +134,9 @@ export default function OrderPage() {
 
       {isCustomer && (
         <div className="mt-6 flex flex-wrap gap-3">
-          {["ready", "out_for_delivery"].includes(o.status) && <Button onClick={() => action.mutate({ to: "completed" })} loading={action.isPending}><CircleCheck />{" "}{t("J'ai bien reçu ma commande")}</Button>}
+          {(o.fulfillment === "courier" ? o.status === "out_for_delivery" : ["ready", "out_for_delivery"].includes(o.status)) && <Button onClick={() => action.mutate({ to: "completed" })} loading={action.isPending}><CircleCheck />{" "}{t("J'ai bien reçu ma commande")}</Button>}
           {["pending_payment", "paid"].includes(o.status) && <Button variant="outline" onClick={() => setCancelOpen(true)}><X />{" "}{t("Annuler la commande")}</Button>}
+          {o.paid_at && <Button variant="ghost" asChild><Link to={`/commande/${o.id}/recu`}><Receipt />{t("Reçu")}</Link></Button>}
           <Button variant="ghost" onClick={() => setReportOpen(true)}><Flag />{" "}{t("Signaler un problème")}</Button>
         </div>
       )}
@@ -184,10 +192,11 @@ function ReviewBox({ order }: { order: Order }) {
   const qc = useQueryClient();
   const existing = useQuery({ queryKey: ["review", order.id], queryFn: () => fetchMyReviewForOrder(order.id) });
   const [rating, setRating] = useState(0);
+  const [courierRating, setCourierRating] = useState(0);
   const [comment, setComment] = useState("");
   const submit = useMutation({
     mutationFn: () => createReview({
-      orderId: order.id, customerId: user!.id, cookId: order.cook_id, rating, comment,
+      orderId: order.id, customerId: user!.id, cookId: order.cook_id, rating, comment, courierRating: courierRating || undefined,
       dishRatings: Object.fromEntries((order.order_items ?? []).map((i) => [i.dish_id, rating])),
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["review", order.id] }); toast.success(t("Merci pour votre avis ! ⭐")); },
@@ -200,6 +209,9 @@ function ReviewBox({ order }: { order: Order }) {
       <h2 className="mb-1 text-lg font-bold">{t("Comment était votre repas ?")}</h2>
       <p className="mb-4 text-sm text-muted-foreground">{t("Votre avis aide la communauté et la cuisinière.")}</p>
       <StarInput value={rating} onChange={setRating} />
+      {order.fulfillment === "courier" && (
+        <div className="mt-4"><p className="mb-1 text-sm font-semibold">{t("Et la livraison ?")}</p><StarInput value={courierRating} onChange={setCourierRating} size={24} /></div>
+      )}
       <Textarea className="mt-4" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder={t("Racontez-nous (facultatif)")} />
       <Button className="mt-4" disabled={!rating} loading={submit.isPending} onClick={() => submit.mutate()}>{t("Publier mon avis")}</Button>
     </Card>
@@ -217,5 +229,31 @@ function PickupAddress({ orderId, status }: { orderId: string; status: Order["st
       <p className="font-semibold"><MapPin className="mr-1 inline h-4 w-4" />{a.line1}{a.line2 ? `, ${a.line2}` : ""}, {a.postal_code} {a.city}</p>
       <a className="mt-1 inline-block text-xs font-semibold text-primary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/directions?to=${a.lat}%2C${a.lng}`}>{t("Itinéraire →")}</a>
     </div>
+  );
+}
+
+function CourierTracking({ order, isCustomer }: { order: Order; isCustomer: boolean }) {
+  const q = useQuery({ queryKey: ["tracking", order.id], queryFn: () => fetchDeliveryTracking(order.id), refetchInterval: 15_000 });
+  const tr = q.data;
+  if (!tr) return null;
+  const c = tr.courier;
+  const vehicle = VEHICLES.find((v) => v.id === c?.vehicle);
+  return (
+    <Card className="mb-6 overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+        <div>
+          <p className="text-xs font-semibold uppercase text-muted-foreground">{t("Livraison")}</p>
+          <p className="text-lg font-extrabold">{t(DELIVERY_STATUS_LABELS[tr.status])}</p>
+          {c && <p className="text-sm text-muted-foreground">{vehicle?.emoji} {c.name}{c.rating_count > 0 && ` · ⭐ ${Number(c.rating).toFixed(1)}`}</p>}
+        </div>
+        {isCustomer && ["assigned", "at_pickup", "picked_up"].includes(tr.status) && (
+          <div className="rounded-2xl bg-primary/10 px-4 py-2 text-center">
+            <p className="text-xs font-semibold text-muted-foreground">{t("Code à donner au livreur")}</p>
+            <p className="text-3xl font-extrabold tracking-[0.25em] tabular-nums">{order.pickup_code}</p>
+          </div>
+        )}
+      </div>
+      {c?.lat != null && c.lng != null && <RouteMap className="h-56 w-full z-0" points={[{ lat: c.lat, lng: c.lng, kind: "courier" }]} />}
+    </Card>
   );
 }

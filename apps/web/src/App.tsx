@@ -35,6 +35,19 @@ const CookPayments = lazy(() => import("@/pages/cook/Payments"));
 const CookReviews = lazy(() => import("@/pages/cook/Reviews"));
 const CookSettings = lazy(() => import("@/pages/cook/Settings"));
 const Admin = lazy(() => import("@/pages/admin/Admin"));
+const courier = () => import("@/pages/courier/Courier");
+const BecomeCourier = lazy(() => courier().then((m) => ({ default: m.BecomeCourier })));
+const CourierLayout = lazy(() => courier().then((m) => ({ default: m.CourierLayout })));
+const CourierMissions = lazy(() => courier().then((m) => ({ default: m.CourierMissions })));
+const CourierDelivery = lazy(() => courier().then((m) => ({ default: m.CourierDelivery })));
+const CourierEarnings = lazy(() => courier().then((m) => ({ default: m.CourierEarnings })));
+const CourierHistory = lazy(() => courier().then((m) => ({ default: m.CourierHistory })));
+const CourierProfile = lazy(() => courier().then((m) => ({ default: m.CourierProfile })));
+const CookStats = lazy(() => import("@/pages/cook/Stats"));
+const CookLegal = lazy(() => import("@/pages/cook/Legal"));
+const LegalGuide = lazy(() => import("@/pages/LegalGuide"));
+const Receipt = lazy(() => import("@/pages/Receipt"));
+const MySpace = lazy(() => import("@/pages/MySpace"));
 const Legal = lazy(() => import("@/pages/legal/Legal"));
 const Help = lazy(() => import("@/pages/Help"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -67,6 +80,22 @@ const router = createRouter([
       { path: "/devenir-cuisinier", element: page(<BecomeCook />) },
       { path: "/commandes", element: auth(<Orders />) },
       { path: "/commande/:id", element: auth(<Order />) },
+      { path: "/commande/:id/recu", element: auth(<Receipt />) },
+      { path: "/mon-espace", element: auth(<MySpace />) },
+      { path: "/devenir-livreur", element: page(<BecomeCourier />) },
+      { path: "/guide-legal", element: page(<LegalGuide />) },
+      { path: "/guide-legal/:country", element: page(<LegalGuide />) },
+      {
+        path: "/livreur",
+        element: auth(<CourierLayout />),
+        children: [
+          { index: true, element: page(<CourierMissions />) },
+          { path: "course/:id", element: page(<CourierDelivery />) },
+          { path: "gains", element: page(<CourierEarnings />) },
+          { path: "historique", element: page(<CourierHistory />) },
+          { path: "profil", element: page(<CourierProfile />) },
+        ],
+      },
       { path: "/compte", element: auth(<Account />) },
       { path: "/favoris", element: auth(<Favorites />) },
       { path: "/notifications", element: auth(<Notifications />) },
@@ -79,6 +108,8 @@ const router = createRouter([
           { path: "plats", element: page(<CookDishes />) },
           { path: "ventes", element: page(<CookDrops />) },
           { path: "paiements", element: page(<CookPayments />) },
+          { path: "statistiques", element: page(<CookStats />) },
+          { path: "legal", element: page(<CookLegal />) },
           { path: "avis", element: page(<CookReviews />) },
           { path: "parametres", element: page(<CookSettings />) },
         ],

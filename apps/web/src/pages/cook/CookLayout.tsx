@@ -1,7 +1,7 @@
 import { t } from "@mami/shared";
 import { NavLink, Outlet } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, BarChart3, CalendarDays, CreditCard, MessageSquareQuote, Package, Settings, UtensilsCrossed } from "lucide-react";
+import { AlertCircle, BarChart3, CalendarDays, CreditCard, LineChart, MessageSquareQuote, Package, Scale, Settings, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtime } from "@/hooks/useRealtime";
 import { fetchCookOrders } from "@/lib/api";
@@ -14,9 +14,11 @@ const tabs = [
   { to: "commandes", label: t("Commandes"), icon: Package },
   { to: "plats", label: t("Mes plats"), icon: UtensilsCrossed },
   { to: "ventes", label: t("Ventes"), icon: CalendarDays },
+  { to: "statistiques", label: t("Statistiques"), icon: LineChart },
   { to: "paiements", label: t("Paiements"), icon: CreditCard },
   { to: "avis", label: t("Avis"), icon: MessageSquareQuote },
   { to: "parametres", label: t("Ma cuisine"), icon: Settings },
+  { to: "legal", label: t("Légal"), icon: Scale },
 ];
 
 export default function CookLayout() {

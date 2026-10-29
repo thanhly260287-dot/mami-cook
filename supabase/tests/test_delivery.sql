@@ -56,9 +56,15 @@ insert into public.drops (dish_id, cook_id, available_on, ready_from, ready_unti
 values (:'dish_id', auth.uid(), current_date, '11:00', '22:00', 20, 20) returning id \gset drop_
 
 select pg_temp.act_as(null);
-select pg_temp.check((select currency = 'EUR' and customer_price_cents = 1200 and offers_courier and not is_professional
+select pg_temp.check((select currency = 'EUR' and customer_price_cents = 1200 and offers_courier and is_professional
                         from public.feed(48.8650, 2.3700, 3) where drop_id = :'drop_id'),
-  'flux : devise du pays, majoration 20 %, livreur proposé, vendeur particulier');
+  'flux : devise du pays, majoration 20 %, livreur proposé, badge pro (statut déclaré : entrepreneur individuel)');
+select pg_temp.act_as(:'cook');
+update public.cooks set is_professional = false where id = auth.uid();
+update public.cook_private set business_status = 'individual_occasional' where cook_id = auth.uid();
+select pg_temp.check((select not is_professional from public.cooks where id = auth.uid()), 'badge particulier si statut « particulier »');
+update public.cook_private set business_status = 'sole_trader' where cook_id = auth.uid();
+select pg_temp.check((select is_professional from public.cooks where id = auth.uid()), 'badge pro suit le statut déclaré');
 
 -- ------------------------------------------------------------------ inscription livreurs
 select pg_temp.act_as(:'rider1');

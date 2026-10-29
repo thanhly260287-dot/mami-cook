@@ -20,6 +20,8 @@ export interface CartLine {
   offersPickup: boolean;
   offersDelivery: boolean;
   deliveryFeeCents: number;
+  offersCourier?: boolean;
+  currency?: string;
 }
 
 interface CartState {
@@ -30,7 +32,7 @@ interface CartState {
   setQuantity: (key: string, q: number) => void;
   remove: (key: string) => void;
   clear: () => void;
-  price: (opts?: { delivery?: boolean }) => ReturnType<typeof computeOrderPrice>;
+  price: (opts?: { delivery?: boolean; deliveryFeeCents?: number; tipCents?: number }) => ReturnType<typeof computeOrderPrice>;
 }
 
 const CartContext = createContext<CartState | null>(null);
@@ -80,6 +82,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity: Math.min(quantity, item.quantity_remaining, MAX_QTY_PER_LINE),
         maxQuantity: Math.min(item.quantity_remaining, MAX_QTY_PER_LINE),
         offersPickup: item.offers_pickup, offersDelivery: item.offers_delivery, deliveryFeeCents: item.delivery_fee_cents,
+        offersCourier: item.offers_courier ?? false, currency: item.currency ?? "EUR",
       }];
     });
     return { replaced };
@@ -100,7 +103,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity: l.quantity,
         isMenuDeal: !!l.menuDeal,
       })),
-      { deliveryFeeCents: opts?.delivery ? lines[0]?.deliveryFeeCents ?? 0 : 0 },
+      {
+        deliveryFeeCents: opts?.deliveryFeeCents ?? (opts?.delivery ? lines[0]?.deliveryFeeCents ?? 0 : 0),
+        tipCents: opts?.tipCents ?? 0,
+      },
     ),
   }), [lines, add]);
 

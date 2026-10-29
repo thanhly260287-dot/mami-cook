@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bike, Lock, Plus, Store, Tag, Trash2 } from "lucide-react";
-import { formatEuros, MIN_ORDER_CENTS, relativeDay, t } from "@mami/shared";
+import { Bike, Lock, Plus, Store, Tag, Trash2, Zap } from "lucide-react";
+import { formatMoney, MIN_ORDER_CENTS, relativeDay, t, TIP_PRESETS_CENTS } from "@mami/shared";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { checkout, fetchAddresses, type CheckoutResult } from "@/lib/api";
+import { checkout, fetchAddresses, fetchDeliveryQuote, type CheckoutResult } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/supabase";
 import { cn, errorMessage, photoUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,8 @@ export default function CartPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const first = cart.lines[0];
-  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">(first?.offersPickup === false ? "delivery" : "pickup");
+  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery" | "courier">(first?.offersPickup === false ? (first?.offersCourier ? "courier" : "delivery") : "pickup");
+  const [tip, setTip] = useState(0);
   const [addressId, setAddressId] = useState<string | null>(null);
   const [addrOpen, setAddrOpen] = useState(false);
   const [note, setNote] = useState("");
@@ -32,9 +33,23 @@ export default function CartPage() {
 
   const addresses = useQuery({ queryKey: ["addresses", user?.id], enabled: !!user && !DEMO_MODE, queryFn: fetchAddresses });
   const selectedAddress = addressId ?? addresses.data?.[0]?.id ?? null;
-  const price = cart.price({ delivery: fulfillment === "delivery" });
+  const needsAddress = fulfillment !== "pickup";
+  // Frais de livraison par livreur : calculés par le serveur selon la distance réelle.
+  const quote = useQuery({
+    queryKey: ["delivery-quote", first?.cookId, selectedAddress],
+    enabled: !!first && !!selectedAddress && !DEMO_MODE && !!user,
+    queryFn: () => fetchDeliveryQuote(first!.cookId, selectedAddress!),
+  });
+  const courierFee = quote.data?.courier?.fee_cents ?? 390;
+  const cur = first?.currency ?? quote.data?.currency ?? "EUR";
+  const money = (c: number) => formatMoney(c, cur);
+  const price = cart.price({
+    delivery: fulfillment === "delivery",
+    deliveryFeeCents: fulfillment === "courier" ? courierFee : undefined,
+    tipCents: fulfillment === "courier" ? tip : 0,
+  });
   // Une clé par contenu de panier : un double clic ne crée pas deux commandes.
-  const idempotencyKey = useMemo(() => crypto.randomUUID(), [cart.lines, fulfillment, selectedAddress, promo]); // eslint-disable-line react-hooks/exhaustive-deps
+  const idempotencyKey = useMemo(() => crypto.randomUUID(), [cart.lines, fulfillment, selectedAddress, promo, tip]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!first) {
     return <EmptyState icon="🛍️" title={t("Votre panier est vide")} action={<Button asChild><Link to="/explorer">{t("Découvrir les plats")}</Link></Button>}>{t("Les plats faits maison de votre quartier vous attendent.")}</EmptyState>;
@@ -43,12 +58,13 @@ export default function CartPage() {
   const pay = async () => {
     if (DEMO_MODE) return toast.info(t("Mode démo : le paiement sera actif une fois Supabase et Stripe configurés."));
     if (!user) return navigate("/connexion?redirect=/panier");
-    if (fulfillment === "delivery" && !selectedAddress) return setAddrOpen(true);
+    if (needsAddress && !selectedAddress) return setAddrOpen(true);
+    if (fulfillment === "courier" && quote.data && !quote.data.courier?.available) return toast.error(t("Adresse trop éloignée pour la livraison par livreur"));
     setLoading(true);
     try {
       const res = await checkout({
         lines: cart.lines.map((l) => ({ drop_id: l.dropId, quantity: l.quantity, extra_ids: l.extras.map((e) => e.id), menu_deal_id: l.menuDeal?.id ?? null })),
-        fulfillment, address_id: fulfillment === "delivery" ? selectedAddress : null,
+        fulfillment, address_id: needsAddress ? selectedAddress : null, tip_cents: fulfillment === "courier" ? tip : 0,
         note: note.trim() || undefined, promo_code: promo.trim() || undefined, idempotency_key: idempotencyKey,
       });
       if (res.client_secret) setPayment(res);
@@ -89,11 +105,15 @@ export default function CartPage() {
 
           <Card className="p-5">
             <h2 className="mb-3 font-bold">{t("Mode de remise")}</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               <ModeButton active={fulfillment === "pickup"} disabled={!first.offersPickup} onClick={() => setFulfillment("pickup")} icon={<Store />} title={t("Retrait")} sub={t("Gratuit · adresse communiquée après paiement")} />
-              <ModeButton active={fulfillment === "delivery"} disabled={!first.offersDelivery} onClick={() => setFulfillment("delivery")} icon={<Bike />} title={t("Livraison")} sub={first.offersDelivery ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : t("Offerte")) : t("Non proposée")} />
+              <ModeButton active={fulfillment === "courier"} disabled={!first.offersCourier} onClick={() => setFulfillment("courier")} icon={<Zap />} title={t("Livreur MAMI COOK")} sub={first.offersCourier ? (quote.data ? money(courierFee) : t("Selon la distance")) + " · " + t("suivi en direct") : t("Non proposée")} />
+              <ModeButton active={fulfillment === "delivery"} disabled={!first.offersDelivery} onClick={() => setFulfillment("delivery")} icon={<Bike />} title={t("Livrée par la cuisinière")} sub={first.offersDelivery ? (first.deliveryFeeCents ? money(first.deliveryFeeCents) : t("Offerte")) : t("Non proposée")} />
             </div>
-            {fulfillment === "delivery" && (
+            {fulfillment === "courier" && quote.data && !quote.data.courier?.available && (
+              <p className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{t("Cette adresse est trop éloignée pour un livreur. Choisissez le retrait ou une autre adresse.")}</p>
+            )}
+            {needsAddress && (
               <div className="mt-4 space-y-2">
                 {(addresses.data ?? []).map((a) => (
                   <label key={a.id} className={cn("flex cursor-pointer items-start gap-3 rounded-xl border p-3", selectedAddress === a.id ? "border-primary bg-primary/5" : "border-border")}>
@@ -106,6 +126,21 @@ export default function CartPage() {
             )}
           </Card>
 
+          {fulfillment === "courier" && (
+            <Card className="p-5">
+              <h2 className="mb-1 font-bold">{t("Pourboire pour le livreur")}</h2>
+              <p className="mb-3 text-sm text-muted-foreground">{t("100 % du pourboire est reversé au livreur.")}</p>
+              <div className="flex flex-wrap gap-2">
+                {TIP_PRESETS_CENTS.map((c) => (
+                  <button key={c} type="button" onClick={() => setTip(c)} aria-pressed={tip === c}
+                    className={cn("rounded-xl border-2 px-4 py-2 text-sm font-semibold", tip === c ? "border-primary bg-primary/5" : "border-border")}>
+                    {c === 0 ? t("Pas cette fois") : money(c)}
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
+
           <Card className="p-5">
             <label htmlFor="note" className="mb-2 block font-bold">{t("Un mot pour la cuisinière ?")}</label>
             <Textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder={t("Ex : sans coriandre svp, je passe vers 19h…")} />
@@ -116,10 +151,11 @@ export default function CartPage() {
           <Card className="sticky top-24 p-5">
             <h2 className="mb-4 font-bold">{t("Récapitulatif")}</h2>
             <dl className="space-y-2 text-sm">
-              <Row label={t(price.totalPlates > 1 ? "Sous-total ({n} plats)" : "Sous-total ({n} plat)", { n: price.totalPlates })} value={formatEuros(price.subtotalCents)} />
-              {price.discountCents > 0 && <Row label={t("Remise volume")} value={`−${formatEuros(price.discountCents)}`} tone="success" />}
-              {fulfillment === "delivery" && <Row label={t("Livraison")} value={price.deliveryFeeCents ? formatEuros(price.deliveryFeeCents) : t("Offerte")} />}
-              <div className="flex items-center justify-between border-t border-border pt-3 text-base font-extrabold"><dt>{t("Total")}</dt><dd className="tabular-nums">{formatEuros(price.totalCents)}</dd></div>
+              <Row label={t(price.totalPlates > 1 ? "Sous-total ({n} plats)" : "Sous-total ({n} plat)", { n: price.totalPlates })} value={money(price.subtotalCents)} />
+              {price.discountCents > 0 && <Row label={t("Remise volume")} value={`−${money(price.discountCents)}`} tone="success" />}
+              {fulfillment !== "pickup" && <Row label={t("Livraison")} value={price.deliveryFeeCents ? money(price.deliveryFeeCents) : t("Offerte")} />}
+              {price.tipCents > 0 && <Row label={t("Pourboire livreur")} value={money(price.tipCents)} />}
+              <div className="flex items-center justify-between border-t border-border pt-3 text-base font-extrabold"><dt>{t("Total")}</dt><dd className="tabular-nums">{money(price.totalCents)}</dd></div>
             </dl>
             {price.totalPlates < 5 && <p className="mt-3 rounded-xl bg-status-hot/10 p-2.5 text-xs font-medium text-status-hot">{t(5 - price.totalPlates > 1 ? "Plus que {n} plats pour profiter de −10 % !" : "Plus que {n} plat pour profiter de −10 % !", { n: 5 - price.totalPlates })}</p>}
             <div className="mt-4 flex gap-2">
@@ -130,9 +166,9 @@ export default function CartPage() {
             </div>
             {promo && <p className="mt-1 text-xs text-muted-foreground">{t("Le code sera vérifié au paiement.")}</p>}
             <Button size="lg" className="mt-4 w-full" loading={loading} onClick={pay} disabled={price.subtotalCents - price.discountCents < MIN_ORDER_CENTS}>
-              <Lock />{" "}{t("Payer")}{" "}{formatEuros(price.totalCents)}
+              <Lock />{" "}{t("Payer")}{" "}{money(price.totalCents)}
             </Button>
-            {price.subtotalCents - price.discountCents < MIN_ORDER_CENTS && <p className="mt-2 text-center text-xs text-destructive">{t("Minimum de commande :")}{" "}{formatEuros(MIN_ORDER_CENTS)}</p>}
+            {price.subtotalCents - price.discountCents < MIN_ORDER_CENTS && <p className="mt-2 text-center text-xs text-destructive">{t("Minimum de commande :")}{" "}{money(MIN_ORDER_CENTS)}</p>}
             <p className="mt-3 text-center text-xs text-muted-foreground">{t("Paiement sécurisé par Stripe · Carte, Apple Pay, Google Pay")}</p>
           </Card>
         </div>

@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Check, ChefHat, ClipboardCheck, Euro, ShieldCheck, Store } from "lucide-react";
-import { CUISINES, cookApplicationSchema, formatEuros, t } from "@mami/shared";
+import { BUSINESS_STATUSES, COUNTRY_OPTIONS, countryFlag, countryName, CUISINES, cookApplicationSchema, formatEuros, getCountryGuide, t } from "@mami/shared";
 import { requireSupabase, DEMO_MODE } from "@/lib/supabase";
 import { createAddress } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, errorMessage, slugify } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Textarea } from "@/components/ui/input";
+import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import { Steps } from "@/pages/cook/Legal";
 import { Card, Switch } from "@/components/ui/misc";
 import { AddressAutocomplete, type AddressSuggestion } from "@/components/AddressAutocomplete";
 import { Seo } from "@/components/Seo";
@@ -33,6 +34,9 @@ export default function BecomeCook() {
   const [radius, setRadius] = useState(3);
   const [fee, setFee] = useState(250);
   const [siret, setSiret] = useState("");
+  const [country, setCountry] = useState("FR");
+  const [offersCourier, setOffersCourier] = useState(true);
+  const [legalInfo, setLegalInfo] = useState({ legal_name: "", birth_date: "", tax_id: "", business_status: "individual_occasional" });
   const [legal, setLegal] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -62,11 +66,13 @@ export default function BecomeCook() {
       const r1 = await sb.from("cooks").insert({
         id: user.id, slug, kitchen_name: kitchenName.trim(), bio: bio.trim() || null, cuisines, city: address!.city,
         offers_pickup: offersPickup, offers_delivery: offersDelivery, delivery_radius_km: radius, delivery_fee_cents: fee,
-        hygiene_declared_at: new Date().toISOString(),
+        hygiene_declared_at: new Date().toISOString(), country, offers_courier: offersCourier,
       });
       if (r1.error) throw r1.error;
       const addr = await createAddress(user.id, { label: t("Ma cuisine"), line1: address!.line1, postal_code: address!.postal_code, city: address!.city, lat: address!.lat, lng: address!.lng });
-      const r2 = await sb.from("cook_private").insert({ cook_id: user.id, address_id: addr.id, exact_location: `SRID=4326;POINT(${address!.lng} ${address!.lat})`, siret: siret || null });
+      const r2 = await sb.from("cook_private").insert({ cook_id: user.id, address_id: addr.id, exact_location: `SRID=4326;POINT(${address!.lng} ${address!.lat})`, siret: /^\d{14}$/.test(siret) ? siret : null,
+        legal_name: legalInfo.legal_name.trim() || null, birth_date: legalInfo.birth_date || null, tax_id: legalInfo.tax_id.trim() || null,
+        business_status: legalInfo.business_status, registration_number: siret || null });
       if (r2.error) throw r2.error;
       const r3 = await sb.from("cooks").update({ status: "pending_review" }).eq("id", user.id);
       if (r3.error) throw r3.error;
@@ -125,12 +131,18 @@ export default function BecomeCook() {
         )}
         {step === 1 && (
           <div className="space-y-5">
+            <Field label={t("Pays")} htmlFor="country">
+              <Select id="country" value={country} onChange={(e) => setCountry(e.target.value)}>
+                {COUNTRY_OPTIONS.map((c) => <option key={c.code} value={c.code}>{c.flag} {countryName(c.code)}</option>)}
+              </Select>
+            </Field>
             <Field label={t("Adresse de votre cuisine")} hint={t("Jamais affichée publiquement : les clients voient une position approximative. L'adresse exacte n'est donnée qu'aux clients dont vous acceptez la commande.")}>
               <AddressAutocomplete onSelect={setAddress} />
             </Field>
             {address && <p className="text-sm text-status-hot">✓ {address.label}</p>}
             <label className="flex items-center justify-between rounded-xl border border-border p-4"><span><b>{t("Retrait sur place")}</b><br /><span className="text-sm text-muted-foreground">{t("Les clients viennent chercher leur plat")}</span></span><Switch checked={offersPickup} onCheckedChange={setOffersPickup} /></label>
-            <label className="flex items-center justify-between rounded-xl border border-border p-4"><span><b>{t("Livraison")}</b><br /><span className="text-sm text-muted-foreground">{t("Vous livrez dans votre quartier")}</span></span><Switch checked={offersDelivery} onCheckedChange={setOffersDelivery} /></label>
+            <label className="flex items-center justify-between rounded-xl border border-border p-4"><span><b>{t("Livreurs MAMI COOK")}</b><br /><span className="text-sm text-muted-foreground">{t("Un livreur vient chercher la commande : vous n'avez rien à faire")}</span></span><Switch checked={offersCourier} onCheckedChange={setOffersCourier} /></label>
+            <label className="flex items-center justify-between rounded-xl border border-border p-4"><span><b>{t("Je livre moi-même")}</b><br /><span className="text-sm text-muted-foreground">{t("Vous livrez dans votre quartier")}</span></span><Switch checked={offersDelivery} onCheckedChange={setOffersDelivery} /></label>
             {offersDelivery && (
               <div className="grid grid-cols-2 gap-4">
                 <Field label={`Rayon : ${radius} km`}><input type="range" min={1} max={15} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="w-full accent-[hsl(var(--primary))]" /></Field>
@@ -141,14 +153,26 @@ export default function BecomeCook() {
         )}
         {step === 2 && (
           <div className="space-y-4">
-            <p className="flex items-center gap-2 font-bold"><ClipboardCheck className="h-5 w-5 text-primary" />{" "}{t("Vendre des plats faits maison en France")}</p>
+            <p className="flex items-center gap-2 font-bold"><ClipboardCheck className="h-5 w-5 text-primary" />{" "}{t("Vendre des plats faits maison en {country}", { country: `${countryName(country)} ${countryFlag(country)}` })}</p>
+            <div className="rounded-xl bg-muted/60 p-4"><Steps steps={getCountryGuide(country).cook} /></div>
+            <p className="pt-2 text-sm font-semibold">{t("Informations légales")} <span className="font-normal text-muted-foreground">{t("(confidentielles, exigées par la loi européenne)")}</span></p>
+            <Field label={t("Nom et prénom (comme sur la pièce d'identité)")} htmlFor="lname"><Input id="lname" value={legalInfo.legal_name} onChange={(e) => setLegalInfo({ ...legalInfo, legal_name: e.target.value })} maxLength={120} /></Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label={t("Date de naissance")} htmlFor="lbirth"><Input id="lbirth" type="date" value={legalInfo.birth_date} onChange={(e) => setLegalInfo({ ...legalInfo, birth_date: e.target.value })} /></Field>
+              <Field label={t("Numéro fiscal")} htmlFor="ltax"><Input id="ltax" value={legalInfo.tax_id} onChange={(e) => setLegalInfo({ ...legalInfo, tax_id: e.target.value })} maxLength={40} /></Field>
+            </div>
+            <Field label={t("Statut")} htmlFor="lstatus">
+              <Select id="lstatus" value={legalInfo.business_status} onChange={(e) => setLegalInfo({ ...legalInfo, business_status: e.target.value })}>
+                {BUSINESS_STATUSES.map((b) => <option key={b.id} value={b.id}>{t(b.label)}</option>)}
+              </Select>
+            </Field>
             {LEGAL.map((l) => (
               <label key={l.id} className="flex items-start gap-3 rounded-xl border border-border p-3 text-sm">
                 <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[hsl(var(--primary))]" checked={legal.includes(l.id)} onChange={(e) => setLegal(e.target.checked ? [...legal, l.id] : legal.filter((x) => x !== l.id))} />
                 {t(l.label)}
               </label>
             ))}
-            <Field label={t("Numéro SIRET (facultatif pour l'instant)")} htmlFor="siret" hint={t("Obligatoire au-delà d'une activité occasionnelle")}><Input id="siret" value={siret} onChange={(e) => setSiret(e.target.value.replace(/\D/g, "").slice(0, 14))} inputMode="numeric" /></Field>
+            <Field label={t("Numéro d'entreprise (SIRET, BCE…)")} htmlFor="siret" hint={t("Obligatoire au-delà d'une activité occasionnelle")}><Input id="siret" value={siret} onChange={(e) => setSiret(e.target.value.replace(/[^0-9A-Za-z .-]/g, "").slice(0, 40))} /></Field>
             <p className="text-xs text-muted-foreground">{t("Après validation, vous connecterez votre compte bancaire via Stripe (vérification d'identité sécurisée) pour recevoir vos paiements.")}{" "}<Link to="/aide/hygiene" className="text-primary">{t("En savoir plus sur les règles")}</Link></p>
           </div>
         )}

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, Bike, Check, Clock, Flag, Flame, MapPin, ShoppingBag, Store, UtensilsCrossed } from "lucide-react";
-import { ALLERGENS, DIETS, cuisineLabel, customerPrice, formatDistance, formatEuros, formatTime, relativeDay, t } from "@mami/shared";
+import { ALLERGENS, DIETS, cuisineLabel, customerPrice, formatDistance, formatMoney, formatTime, relativeDay, t } from "@mami/shared";
 import { fetchDrop } from "@/lib/api";
 import { useCart } from "@/hooks/useCart";
 import { useGeo } from "@/hooks/useGeo";
@@ -71,6 +71,9 @@ export default function DishPage() {
           <Link to={`/cuisine/${item.cook_slug}`} className="mt-2 inline-flex items-center gap-2 text-sm font-semibold hover:underline">
             <span className="flex h-7 w-7 items-center justify-center rounded-full gradient-primary text-xs text-white">{item.cook_name.replace(/^Chez /, "").slice(0, 1)}</span>
             {item.cook_name} <Stars value={item.cook_rating} size={12} /> <span className="text-muted-foreground">({item.cook_rating_count})</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground" title={item.is_professional ? t("Vendeur professionnel : vous bénéficiez des droits des consommateurs.") : t("Vendeur particulier : les règles de protection des consommateurs ne s'appliquent pas à la vente, mais le support MAMI COOK vous aide en cas de problème.")}>
+              {item.is_professional ? t("Pro") : t("Particulier")}
+            </span>
           </Link>
           {item.description && <p className="mt-4 leading-relaxed text-muted-foreground">{item.description}</p>}
 
@@ -78,7 +81,8 @@ export default function DishPage() {
             <Info icon={<Clock />} label={`${relativeDay(item.available_on)}, ${formatTime(item.ready_from)}–${formatTime(item.ready_until)}`} />
             {item.distance_m != null && <Info icon={<MapPin />} label={`À ${formatDistance(item.distance_m)}`} />}
             {item.offers_pickup && <Info icon={<Store />} label={t("Retrait sur place")} />}
-            {item.offers_delivery && <Info icon={<Bike />} label={item.delivery_fee_cents ? t("Livraison {price}", { price: formatEuros(item.delivery_fee_cents) }) : t("Livraison offerte")} />}
+            {item.offers_courier && <Info icon={<Bike />} label={t("Livreur MAMI COOK disponible")} />}
+            {item.offers_delivery && <Info icon={<Bike />} label={item.delivery_fee_cents ? t("Livraison {price}", { price: formatMoney(item.delivery_fee_cents, item.currency) }) : t("Livraison offerte")} />}
             {item.portion_grams && <Info icon={<UtensilsCrossed />} label={t("Portion ~{g} g", { g: item.portion_grams })} />}
           </div>
 
@@ -97,7 +101,7 @@ export default function DishPage() {
                 <p className="text-sm text-muted-foreground">{item.menu_deal.items}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-bold tabular-nums text-accent">{formatEuros(item.menu_deal.customer_price_cents)}</span>
+                <span className="font-bold tabular-nums text-accent">{formatMoney(item.menu_deal.customer_price_cents, item.currency)}</span>
                 <span className={cn("flex h-6 w-6 items-center justify-center rounded-full border-2", menu ? "border-accent bg-accent text-white" : "border-border")}>{menu && <Check className="h-4 w-4" />}</span>
               </div>
             </button>
@@ -112,7 +116,7 @@ export default function DishPage() {
                   return (
                     <label key={e.id} className={cn("flex cursor-pointer items-center justify-between rounded-xl border p-3", on ? "border-primary bg-primary/5" : "border-border")}>
                       <span className="flex items-center gap-2 text-sm"><input type="checkbox" checked={on} onChange={() => setExtras(on ? extras.filter((x) => x !== e.id) : [...extras, e.id])} className="h-4 w-4 accent-[hsl(var(--primary))]" />{e.emoji} {e.name}</span>
-                      <span className="text-sm font-semibold tabular-nums">+{formatEuros(e.customer_price_cents)}</span>
+                      <span className="text-sm font-semibold tabular-nums">+{formatMoney(e.customer_price_cents, item.currency)}</span>
                     </label>
                   );
                 })}
@@ -123,7 +127,7 @@ export default function DishPage() {
           <div className="sticky bottom-20 z-20 mt-6 flex items-center gap-3 rounded-2xl border border-border bg-card/95 p-3 shadow-xl backdrop-blur md:bottom-4">
             <QuantityStepper value={qty} onChange={setQty} max={Math.max(1, Math.min(item.quantity_remaining, 20))} />
             <Button size="lg" className="flex-1" disabled={soldOut} onClick={add}>
-              <ShoppingBag /> {soldOut ? t("Épuisé") : t("Ajouter · {price}", { price: formatEuros(total) })}
+              <ShoppingBag /> {soldOut ? t("Épuisé") : t("Ajouter · {price}", { price: formatMoney(total, item.currency) })}
             </Button>
           </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">{t(item.quantity_remaining > 1 ? "{n} portions restantes sur {total}" : "{n} portion restante sur {total}", { n: item.quantity_remaining, total: item.quantity_total })} {t("· −10 % dès 5 plats")}</p>

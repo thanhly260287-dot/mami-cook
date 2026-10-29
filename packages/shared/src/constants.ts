@@ -173,3 +173,14 @@ export function countryName(code: string): string {
 export function countryFlag(code: string): string {
   return COUNTRY_OPTIONS.find((c) => c.code === code)?.flag ?? "🏳️";
 }
+
+/** Types de plats proposés à la vente (le serveur accepte les mêmes valeurs). */
+export const COURSES = [
+  { id: "main", label: "Plat", emoji: "🍲" },
+  { id: "starter", label: "Entrée", emoji: "🥗" },
+  { id: "dessert", label: "Dessert", emoji: "🍰" },
+  { id: "pastry", label: "Pâtisserie / gâteau", emoji: "🎂" },
+  { id: "snack", label: "Snack / apéro", emoji: "🥟" },
+  { id: "drink", label: "Boisson", emoji: "🥤" },
+] as const;
+export type CourseId = (typeof COURSES)[number]["id"];

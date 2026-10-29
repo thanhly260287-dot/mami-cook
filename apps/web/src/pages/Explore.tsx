@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
-import { DIETS, TEMPERATURES, type Temperature, t, intlLocale } from "@mami/shared";
+import { DIETS, TEMPERATURES, type Temperature, t, intlLocale, COURSES } from "@mami/shared";
 import { fetchFeed } from "@/lib/api";
 import { useGeo } from "@/hooks/useGeo";
 import { CuisineFilter } from "@/components/CuisineFilter";
@@ -32,6 +32,7 @@ export default function Explore() {
 
   const q = params.get("q") ?? "";
   const cuisine = params.get("cuisine") ?? "";
+  const course = params.get("type") ?? "";
   const temperature = (params.get("temperature") as Temperature | null) ?? null;
   const diets = params.getAll("diet");
   const radius = Number(params.get("rayon") ?? 10);
@@ -46,10 +47,10 @@ export default function Explore() {
   };
 
   const feed = useInfiniteQuery({
-    queryKey: ["explore", geo.lat, geo.lng, q, cuisine, temperature, diets.join(","), radius, date],
+    queryKey: ["explore", geo.lat, geo.lng, q, cuisine, course, temperature, diets.join(","), radius, date],
     queryFn: ({ pageParam }) => fetchFeed({
       lat: geo.lat, lng: geo.lng, radiusKm: radius, query: q, cuisine: cuisine === "frozen" ? null : cuisine || null,
-      temperature: cuisine === "frozen" ? "frozen" : temperature, diets, date, limit: PAGE, offset: pageParam,
+      temperature: cuisine === "frozen" ? "frozen" : temperature, diets, date, limit: PAGE, offset: pageParam, course: course || null,
     }),
     initialPageParam: 0,
     getNextPageParam: (last, all) => (last.length === PAGE ? all.length * PAGE : undefined),
@@ -66,6 +67,14 @@ export default function Explore() {
         </form>
       </div>
       <CuisineFilter value={cuisine} onChange={(c) => set("cuisine", c || null)} />
+      <div className="scrollbar-hide -mx-1 mt-1 flex gap-2 overflow-x-auto px-1" role="tablist" aria-label={t("Type de plat")}>
+        {[{ id: "", label: "Tout", emoji: "🍽️" }, ...COURSES].map((c) => (
+          <button key={c.id || "all"} role="tab" aria-selected={course === c.id} onClick={() => set("type", c.id || null)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${course === c.id ? "bg-foreground text-background" : "bg-muted"}`}>
+            {c.emoji} {t(c.label)}
+          </button>
+        ))}
+      </div>
 
       <div className="my-4 flex flex-wrap items-center justify-between gap-3">
         <div>

@@ -162,3 +162,14 @@ begin
 end $$;
 revoke execute on function public.suspend_courier(uuid, text) from anon, public;
 grant execute on function public.suspend_courier(uuid, text) to authenticated;
+
+-- Le badge « professionnel / particulier » affiché aux clients suit le statut déclaré par la cuisinière.
+create or replace function public.sync_cook_professional()
+returns trigger language plpgsql security definer set search_path = ''
+as $$
+begin
+  update public.cooks set is_professional = (new.business_status <> 'individual_occasional') where id = new.cook_id;
+  return new;
+end $$;
+create trigger cook_private_professional after insert or update of business_status on public.cook_private
+  for each row execute function public.sync_cook_professional();

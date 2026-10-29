@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Camera, Eye, EyeOff, Pencil, Plus, Trash2, X } from "lucide-react";
-import { ALLERGENS, CUISINES, DIETS, TEMPERATURES, customerPrice, dishSchema, formatEuros, type Dish, type DishExtra, t } from "@mami/shared";
-import { fetchMyDishes, uploadImage } from "@/lib/api";
+import { Camera, Eye, EyeOff, Pencil, Plus, Sparkles, Trash2, Wand2, X } from "lucide-react";
+import { ALLERGENS, COURSES, CUISINES, DIETS, TEMPERATURES, customerPrice, dishSchema, formatEuros, type Dish, type DishExtra, t } from "@mami/shared";
+import { aiImage, fetchMyDishes, uploadImage } from "@/lib/api";
 import { requireSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, errorMessage, photoUrl } from "@/lib/utils";
@@ -68,7 +68,7 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
   const qc = useQueryClient();
   const [f, setF] = useState({
     title: dish?.title ?? "", description: dish?.description ?? "", ingredients: dish?.ingredients ?? "",
-    cuisine: dish?.cuisine ?? cook!.cuisines[0] ?? "french", price: dish ? (dish.price_cents / 100).toFixed(2) : "",
+    cuisine: dish?.cuisine ?? cook!.cuisines[0] ?? "french", course: dish?.course ?? "main", price: dish ? (dish.price_cents / 100).toFixed(2) : "",
     temperature: dish?.temperature ?? "hot", allergens: dish?.allergens ?? [], diets: dish?.diets ?? [],
     spiceLevel: dish?.spice_level ?? 0, portion: dish?.portion_grams ? String(dish.portion_grams) : "", photos: dish?.photos ?? [],
   });
@@ -83,6 +83,20 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
     if (menuQ.data) setMenu({ id: menuQ.data.id, name: menuQ.data.name, items: menuQ.data.items_description, price: (menuQ.data.price_cents / 100).toFixed(2) });
   }, [menuQ.data]);
   const [uploading, setUploading] = useState(false);
+  const [aiBusy, setAiBusy] = useState<string | null>(null);
+  const runAi = async (mode: "enhance" | "background" | "generate", path?: string) => {
+    if (mode === "generate" && f.title.trim().length < 3) return toast.error(t("Donnez d'abord un nom au plat"));
+    setAiBusy(path ?? mode);
+    try {
+      const res = await aiImage(mode, mode === "generate" ? { description: `${f.title}. ${f.description}`.slice(0, 300) } : { path });
+      setF((p) => ({ ...p, photos: [...p.photos, res.path].slice(0, 8) }));
+      toast.success(t("Nouvelle photo ajoutée ({n} retouches restantes aujourd'hui)", { n: res.remaining_today }));
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setAiBusy(null);
+    }
+  };
   const cents = (s: string) => Math.round(parseFloat(s.replace(",", ".")) * 100);
 
   const upload = async (files: FileList) => {
@@ -104,7 +118,7 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
   const save = useMutation({
     mutationFn: async () => {
       const parsed = dishSchema.safeParse({
-        title: f.title, description: f.description, ingredients: f.ingredients, cuisine: f.cuisine, priceCents: cents(f.price),
+        title: f.title, description: f.description, ingredients: f.ingredients, cuisine: f.cuisine, course: f.course, priceCents: cents(f.price),
         temperature: f.temperature, allergens: f.allergens, diets: f.diets, spiceLevel: f.spiceLevel,
         portionGrams: f.portion ? Number(f.portion) : undefined,
         extras: extras.filter((e) => e.name.trim()).map((e) => ({ name: e.name, emoji: e.emoji || undefined, priceCents: cents(e.price || "0") })),
@@ -114,7 +128,7 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
       const sb = requireSupabase();
       const row = {
         cook_id: cook!.id, title: parsed.data.title, description: parsed.data.description || null, ingredients: parsed.data.ingredients || null,
-        cuisine: parsed.data.cuisine, price_cents: parsed.data.priceCents, temperature: parsed.data.temperature, allergens: parsed.data.allergens,
+        cuisine: parsed.data.cuisine, course: parsed.data.course, price_cents: parsed.data.priceCents, temperature: parsed.data.temperature, allergens: parsed.data.allergens,
         diets: parsed.data.diets, spice_level: parsed.data.spiceLevel, portion_grams: parsed.data.portionGrams ?? null, photos: f.photos,
       };
       const res = dish ? await sb.from("dishes").update(row).eq("id", dish.id).select("id").single() : await sb.from("dishes").insert(row).select("id").single();
@@ -155,6 +169,13 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
               <div key={p} className="relative">
                 <img src={photoUrl(p)} alt="" className="aspect-square w-full rounded-xl object-cover" />
                 {i === 0 && <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">{t("Principale")}</span>}
+                {p.includes("/ia-illustration") && <span className="absolute left-1 top-1 rounded bg-accent px-1 text-[10px] text-white">{t("Illustration IA")}</span>}
+                {!p.includes("/ia-") && f.photos.length < 8 && (
+                  <div className="absolute bottom-1 right-1 flex gap-1">
+                    <button type="button" title={t("Améliorer la photo (IA)")} aria-label={t("Améliorer la photo (IA)")} disabled={!!aiBusy} onClick={() => runAi("enhance", p)} className="rounded-full bg-white/90 p-1 text-primary shadow">{aiBusy === p ? <Spinner className="h-3 w-3 border-2" /> : <Sparkles className="h-3 w-3" />}</button>
+                    <button type="button" title={t("Changer le fond (IA)")} aria-label={t("Changer le fond (IA)")} disabled={!!aiBusy} onClick={() => runAi("background", p)} className="rounded-full bg-white/90 p-1 text-primary shadow"><Wand2 className="h-3 w-3" /></button>
+                  </div>
+                )}
                 <button type="button" onClick={() => setF({ ...f, photos: f.photos.filter((x) => x !== p) })} className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white" aria-label={t("Retirer la photo")}><X className="h-3 w-3" /></button>
               </div>
             ))}
@@ -165,7 +186,15 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
               </label>
             )}
           </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span>✨ {t("Retouche IA : touchez ✨ (lumière, couleurs) ou 🪄 (fond) sur une photo. Le plat n'est jamais modifié.")}</span>
+            {f.photos.length < 8 && <Button type="button" size="sm" variant="outline" loading={aiBusy === "generate"} disabled={!!aiBusy} onClick={() => runAi("generate")}><Wand2 />{t("Créer une illustration")}</Button>}
+          </div>
+          {f.photos.some((p) => p.includes("/ia-illustration")) && <p className="mt-2 rounded-xl bg-accent/10 p-2 text-xs">{t("Une illustration générée est signalée aux clients. Ajoutez une vraie photo dès que possible : elle rassure et vend mieux.")}</p>}
         </div>
+        <Field label={t("Type")} htmlFor="course">
+          <div className="flex flex-wrap gap-1.5" id="course">{COURSES.map((c) => <Chip key={c.id} on={f.course === c.id} onClick={() => setF({ ...f, course: c.id })}>{c.emoji} {t(c.label)}</Chip>)}</div>
+        </Field>
         <Field label={t("Nom du plat")} htmlFor="t"><Input id="t" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={80} placeholder={t("Ex : Lasagnes bolognaise maison")} /></Field>
         <Field label={t("Description")} htmlFor="d"><Textarea id="d" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={1500} /></Field>
         <Field label={t("Ingrédients")} htmlFor="ing"><Textarea id="ing" value={f.ingredients} onChange={(e) => setF({ ...f, ingredients: e.target.value })} maxLength={1500} className="min-h-[70px]" /></Field>

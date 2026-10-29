@@ -57,6 +57,7 @@ export interface FeedItem {
   is_professional?: boolean;
   /** Devise du pays de la cuisine (EUR, CHF…). */
   currency?: string;
+  course?: string;
 }
 
 export interface FeedParams {
@@ -69,6 +70,8 @@ export interface FeedParams {
   temperature?: Temperature | null;
   date?: string | null;
   cookId?: string | null;
+  /** Type de plat (dessert, boisson…). */
+  course?: string | null;
   limit?: number;
   offset?: number;
 }
@@ -77,6 +80,9 @@ export interface Cook {
   id: string;
   slug: string;
   kitchen_name: string;
+  country?: string;
+  is_professional?: boolean;
+  offers_courier?: boolean;
   bio: string | null;
   cover_url: string | null;
   cuisines: string[];
@@ -103,6 +109,7 @@ export interface Dish {
   description: string | null;
   ingredients: string | null;
   cuisine: string;
+  course?: string;
   photos: string[];
   price_cents: number;
   temperature: Temperature;

@@ -2,7 +2,7 @@ import { t } from "@mami/shared";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { Bell, ChefHat, Heart, LogOut, MapPin, Package, Search, Shield, ShoppingBag, User } from "lucide-react";
+import { Bell, Bike, ChefHat, Heart, LayoutDashboard, LogOut, MapPin, Package, Search, Shield, ShoppingBag, User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
@@ -13,7 +13,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
-  const { user, displayName, cook, isStaff, signOut } = useAuth();
+  const { user, displayName, cook, courier, isStaff, signOut } = useAuth();
   const { count } = useCart();
   const geo = useGeo();
   const navigate = useNavigate();
@@ -76,12 +76,15 @@ export function Navbar() {
                 <Dropdown.Content align="end" sideOffset={8} className="z-50 min-w-[230px] rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
                   <div className="px-3 py-2 text-sm"><p className="font-bold">{displayName}</p><p className="truncate text-xs text-muted-foreground">{user.email}</p></div>
                   <Dropdown.Separator className="my-1 h-px bg-border" />
+                  <MenuItem to="/mon-espace" icon={<LayoutDashboard />}>{t("Mon espace")}</MenuItem>
                   <MenuItem to="/commandes" icon={<Package />}>{t("Mes commandes")}</MenuItem>
                   <MenuItem to="/favoris" icon={<Heart />}>{t("Mes cuisines favorites")}</MenuItem>
                   <MenuItem to="/compte" icon={<User />}>{t("Mon compte")}</MenuItem>
                   <Dropdown.Separator className="my-1 h-px bg-border" />
                   {cook ? <MenuItem to="/cuisine/tableau-de-bord" icon={<ChefHat />}>{t("Ma cuisine")}</MenuItem>
                     : <MenuItem to="/devenir-cuisinier" icon={<ChefHat />}>{t("Devenir Mami Cook")}</MenuItem>}
+                  {courier && courier.status !== "draft" ? <MenuItem to="/livreur" icon={<Bike />}>{t("Espace livreur")}</MenuItem>
+                    : <MenuItem to="/devenir-livreur" icon={<Bike />}>{t("Devenir livreur")}</MenuItem>}
                   {isStaff && <MenuItem to="/admin" icon={<Shield />}>{t("Administration")}</MenuItem>}
                   <Dropdown.Separator className="my-1 h-px bg-border" />
                   <Dropdown.Item onSelect={() => signOut().then(() => navigate("/"))}

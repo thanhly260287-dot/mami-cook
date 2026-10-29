@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const cols = [
-  { title: t("Découvrir"), links: [[t("Cuisines près de moi"), "/explorer"], [t("Le Labo"), "/explorer?cuisine=lab"], [t("Plats congelés"), "/explorer?temperature=frozen"], [t("Desserts"), "/explorer?cuisine=dessert"]] },
-  { title: t("Devenir Cook"), links: [[t("Comment ça marche"), "/devenir-cuisinier"], [t("Règles d'hygiène"), "/aide/hygiene"], [t("Commissions & versements"), "/aide#paiements"]] },
+  { title: t("Découvrir"), links: [[t("Cuisines près de moi"), "/explorer"], [t("Le Labo"), "/explorer?cuisine=lab"], [t("Plats congelés"), "/explorer?temperature=frozen"], [t("Desserts"), "/explorer?type=dessert"]] },
+  { title: t("Rejoindre"), links: [[t("Vendre mes plats"), "/devenir-cuisinier"], [t("Devenir livreur"), "/devenir-livreur"], [t("Règles par pays"), "/guide-legal"], [t("Commissions & versements"), "/aide#paiements"]] },
   { title: t("Aide"), links: [[t("Centre d'aide"), "/aide"], [t("Contact"), "/aide#contact"], [t("Signaler un problème"), "/aide#signaler"]] },
-  { title: t("Légal"), links: [[t("CGU"), "/legal/cgu"], [t("Confidentialité"), "/legal/confidentialite"], [t("Cookies"), "/legal/cookies"], [t("Mentions légales"), "/legal/mentions"]] },
+  { title: t("Légal"), links: [[t("CGU"), "/legal/cgu"], [t("Confidentialité"), "/legal/confidentialite"], [t("CGV"), "/legal/cgv"], [t("Vendeurs"), "/legal/vendeurs"], [t("Livreurs"), "/legal/livreurs"], [t("Cookies"), "/legal/cookies"], [t("Mentions légales"), "/legal/mentions"]] },
 ] as const;
 
 export function Footer() {

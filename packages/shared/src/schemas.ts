@@ -57,7 +57,8 @@ export const cookApplicationSchema = z.object({
   siret: z
     .string()
     .trim()
-    .regex(/^[0-9]{14}$/, "Le SIRET comporte 14 chiffres")
+    // SIRET (France), BCE (Belgique), IDE (Suisse)… : format libre, vérifié par l'équipe.
+    .regex(/^[0-9A-Za-z .-]{4,40}$/, "Numéro d'entreprise invalide")
     .optional()
     .or(z.literal("")),
   address: addressSchema,
@@ -70,6 +71,7 @@ export const dishSchema = z.object({
   title: trimmed(3, 80),
   description: z.string().trim().max(1500).optional().or(z.literal("")),
   cuisine: z.enum(CUISINE_IDS),
+  course: z.enum(["main", "starter", "dessert", "pastry", "snack", "drink"]).default("main"),
   priceCents: z.number().int().min(100, "Prix minimum 1 €").max(20000, "Prix maximum 200 €"),
   temperature: z.enum(TEMPERATURE_IDS),
   allergens: z.array(z.enum(ALLERGEN_IDS)).max(14),

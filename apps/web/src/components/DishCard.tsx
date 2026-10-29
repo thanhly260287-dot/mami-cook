@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, Clock, Flame, MapPin, Snowflake, Star, UtensilsCrossed } from "lucide-react";
-import { cuisineLabel, formatDistance, formatEuros, formatTime, relativeDay, type FeedItem, t } from "@mami/shared";
+import { cuisineLabel, formatDistance, formatMoney, formatTime, relativeDay, type FeedItem, t } from "@mami/shared";
 import { photoUrl } from "@/lib/utils";
 
 const TEMP = {
@@ -39,12 +39,13 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
           </span>
         )}
         <span className={`absolute bottom-3 right-3 rounded-full px-2 py-1 text-xs font-semibold text-white ${temp.cls}`}>{t(temp.label)}</span>
+        {item.photos[0]?.includes("/ia-illustration") && <span className="absolute left-3 top-12 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white">{t("Illustration IA")}</span>}
       </div>
 
       <div className="p-4">
         <div className="mb-1 flex items-start justify-between gap-2">
           <h3 className="text-base font-bold leading-tight">{item.title}</h3>
-          <p className="shrink-0 text-base font-bold tabular-nums">{formatEuros(item.customer_price_cents)}</p>
+          <p className="shrink-0 text-base font-bold tabular-nums">{formatMoney(item.customer_price_cents, item.currency)}</p>
         </div>
         <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
@@ -58,7 +59,7 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
               <span key={e.id} className="flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-xs">
                 <span aria-hidden>{e.emoji}</span>
                 <span className="text-muted-foreground">{e.name}</span>
-                <span className="font-semibold tabular-nums">+{formatEuros(e.customer_price_cents)}</span>
+                <span className="font-semibold tabular-nums">+{formatMoney(e.customer_price_cents, item.currency)}</span>
               </span>
             ))}
           </div>
@@ -71,7 +72,7 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
                 <p className="flex items-center gap-1 text-xs font-bold text-accent"><UtensilsCrossed className="h-3 w-3" />{item.menu_deal.name}</p>
                 <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{item.menu_deal.items}</p>
               </div>
-              <span className="text-sm font-bold tabular-nums text-accent">{formatEuros(item.menu_deal.customer_price_cents)}</span>
+              <span className="text-sm font-bold tabular-nums text-accent">{formatMoney(item.menu_deal.customer_price_cents, item.currency)}</span>
             </div>
           </div>
         )}

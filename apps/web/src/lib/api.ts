@@ -5,7 +5,16 @@ import {
   haversineKm,
   type Address,
   type AppNotification,
+  type AvailableDelivery,
   type Cook,
+  type Country,
+  type Courier,
+  type CourierDashboard,
+  type Dac7Row,
+  type DeliveryDetails,
+  type DeliveryQuote,
+  type DeliveryTracking,
+  type PlatformStats,
   type CookDashboard,
   type Dish,
   type DishExtra,
@@ -33,6 +42,7 @@ export async function fetchFeed(p: FeedParams): Promise<FeedItem[]> {
       .filter((d) => !p.cuisine || d.cuisine === p.cuisine || (p.cuisine === "frozen" && d.temperature === "frozen"))
       .filter((d) => !p.diets?.length || p.diets.every((x) => d.diets.includes(x)))
       .filter((d) => !p.temperature || d.temperature === p.temperature)
+      .filter((d) => !p.course || (p.course === "dessert" ? d.cuisine === "dessert" : d.cuisine !== "dessert"))
       .filter((d) => !q || `${d.title} ${d.description} ${d.cook_name}`.toLowerCase().includes(q))
       .filter((d) => p.cookId || (d.distance_m ?? 0) <= (p.radiusKm ?? 10) * 1000)
       .sort((a, b) => (a.distance_m ?? 0) - (b.distance_m ?? 0));
@@ -50,6 +60,7 @@ export async function fetchFeed(p: FeedParams): Promise<FeedItem[]> {
       p_cook_id: p.cookId ?? null,
       p_limit: p.limit ?? 48,
       p_offset: p.offset ?? 0,
+      p_course: p.course ?? null,
     }),
   ) as FeedItem[];
 }
@@ -162,10 +173,11 @@ export interface CheckoutResult {
 
 export function checkout(body: {
   lines: { drop_id: string; quantity: number; extra_ids: string[]; menu_deal_id?: string | null }[];
-  fulfillment: "delivery" | "pickup";
+  fulfillment: "delivery" | "pickup" | "courier";
   address_id?: string | null;
   note?: string;
   promo_code?: string;
+  tip_cents?: number;
   idempotency_key: string;
 }) {
   return callFunction<CheckoutResult>("checkout", body);
@@ -220,10 +232,11 @@ export async function sendMessage(orderId: string, senderId: string, body: strin
 }
 
 // ------------------------------------------------------------------ avis & signalements
-export async function createReview(input: { orderId: string; customerId: string; cookId: string; rating: number; comment?: string; dishRatings: Record<string, number> }) {
+export async function createReview(input: { orderId: string; customerId: string; cookId: string; rating: number; comment?: string; courierRating?: number; dishRatings: Record<string, number> }) {
   const sb = requireSupabase();
   const review = unwrap(await sb.from("reviews").insert({
     order_id: input.orderId, customer_id: input.customerId, cook_id: input.cookId, rating: input.rating, comment: input.comment || null,
+    courier_rating: input.courierRating ?? null,
   }).select("id").single()) as { id: string };
   const rows = Object.entries(input.dishRatings).map(([dish_id, rating]) => ({ review_id: review.id, dish_id, rating }));
   if (rows.length) unwrap(await sb.from("review_dishes").insert(rows));
@@ -329,4 +342,170 @@ export async function fetchMyRoles(): Promise<string[]> {
 export async function fetchPickupAddress(orderId: string) {
   return unwrap(await requireSupabase().rpc("pickup_address", { _order_id: orderId })) as
     { line1: string | null; line2: string | null; postal_code: string | null; city: string | null; lat: number; lng: number } | null;
+}
+
+// ------------------------------------------------------------------ livraison (client)
+const rpc = async <T>(fn: string, args: Record<string, unknown> = {}): Promise<T> =>
+  unwrap(await requireSupabase().rpc(fn, args)) as T;
+
+export const fetchDeliveryQuote = (cookId: string, addressId: string) =>
+  rpc<DeliveryQuote>("delivery_quote", { _cook_id: cookId, _address_id: addressId });
+export const fetchDeliveryTracking = (orderId: string) =>
+  rpc<DeliveryTracking | null>("delivery_tracking", { _order_id: orderId });
+
+// ------------------------------------------------------------------ espace livreur
+export async function fetchMyCourier(userId: string): Promise<Courier | null> {
+  if (DEMO_MODE) return null;
+  return unwrap(await supabase!.from("couriers").select("*").eq("id", userId).maybeSingle()) as Courier | null;
+}
+
+export async function fetchMyCourierPrivate(userId: string) {
+  return unwrap(await requireSupabase().from("courier_private").select("*").eq("courier_id", userId).maybeSingle()) as {
+    legal_name: string | null; birth_date: string | null; tax_id: string | null; business_status: string;
+    registration_number: string | null; address: string | null; insurance_declared_at: string | null; documents_verified_at: string | null;
+  } | null;
+}
+
+/** Inscription livreur : profil + informations légales, puis envoi pour validation. */
+export async function applyAsCourier(userId: string, v: {
+  country: string; city: string; vehicle: string; legal_name: string; birth_date: string; tax_id: string;
+  business_status: string; registration_number?: string; address: string; insurance: boolean;
+}) {
+  const sb = requireSupabase();
+  unwrap(await sb.from("couriers").upsert({ id: userId, country: v.country, city: v.city, vehicle: v.vehicle }));
+  unwrap(await sb.from("courier_private").upsert({
+    courier_id: userId, legal_name: v.legal_name, birth_date: v.birth_date, tax_id: v.tax_id, business_status: v.business_status,
+    registration_number: v.registration_number || null, address: v.address, insurance_declared_at: v.insurance ? new Date().toISOString() : null,
+  }));
+  unwrap(await sb.from("couriers").update({ status: "pending_review" }).eq("id", userId));
+}
+
+export async function updateCourierProfile(userId: string, v: { city?: string; vehicle?: string }) {
+  unwrap(await requireSupabase().from("couriers").update(v).eq("id", userId));
+}
+
+export const setCourierOnline = (online: boolean, lat?: number, lng?: number) =>
+  rpc<Courier>("courier_set_online", { _online: online, _lat: lat ?? null, _lng: lng ?? null });
+export const fetchAvailableDeliveries = () => rpc<AvailableDelivery[]>("available_deliveries");
+export const acceptDelivery = (id: string) => rpc<DeliveryDetails>("accept_delivery", { _delivery_id: id });
+export const declineDelivery = (id: string) => rpc<void>("decline_delivery", { _delivery_id: id });
+export const deliveryStep = (id: string, step: "at_pickup" | "picked_up" | "delivered", code?: string) =>
+  rpc<DeliveryDetails>("delivery_step", { _delivery_id: id, _step: step, _code: code ?? null });
+export const courierCancel = (id: string, reason?: string) => rpc<void>("courier_cancel", { _delivery_id: id, _reason: reason ?? null });
+export const fetchDeliveryDetails = (id: string) => rpc<DeliveryDetails | null>("delivery_details", { _delivery_id: id });
+export const fetchCourierDashboard = (days = 30) => rpc<CourierDashboard>("courier_dashboard", { p_days: days });
+
+export async function fetchCourierHistory(courierId: string) {
+  return unwrap(await requireSupabase().from("deliveries")
+    .select("id, status, distance_m, fee_cents, tip_cents, courier_payout_cents, assigned_at, delivered_at, orders(number, currency)")
+    .eq("courier_id", courierId).order("created_at", { ascending: false }).limit(100)) as unknown as {
+      id: string; status: string; distance_m: number; tip_cents: number; courier_payout_cents: number;
+      assigned_at: string | null; delivered_at: string | null; orders: { number: number; currency: string } | null;
+    }[];
+}
+
+export async function fetchCourierPayouts(courierId: string) {
+  return unwrap(await requireSupabase().from("payouts").select("*, orders(number, currency)").eq("courier_id", courierId)
+    .order("created_at", { ascending: false }).limit(100)) as {
+      id: string; amount_cents: number; status: string; available_at: string; created_at: string; orders: { number: number; currency: string } | null;
+    }[];
+}
+
+export function stripeConnect(role: "cook" | "courier", mode: "onboarding" | "dashboard") {
+  return callFunction<{ url: string }>("connect-onboarding", { role, mode, return_url: window.location.href });
+}
+
+// ------------------------------------------------------------------ cuisinière : statistiques, légal, IA
+export interface CookStats {
+  currency: string | null; orders: number; completed: number; cancelled: number; revenue_cents: number; avg_basket_cents: number;
+  plates_sold: number; customers: number; repeat_customers: number; by_fulfillment: Record<string, number>;
+  top_dishes: { dish_id: string; title: string; qty: number; sales_cents: number }[];
+  by_weekday: { dow: number; orders: number }[]; by_hour: { hour: number; orders: number }[];
+  ratings: { avg: number; count: number; distribution: Record<string, number> };
+  stock: { offered: number; sold: number }; favorites: number;
+}
+export const fetchCookStats = (days = 30) => rpc<CookStats>("cook_stats", { p_days: days });
+
+export async function fetchCookLegal(userId: string) {
+  return unwrap(await requireSupabase().from("cook_private")
+    .select("legal_name, birth_date, tax_id, vat_number, business_status, registration_number, food_registration_ref, hygiene_training_at, insurance_declared_at, siret")
+    .eq("cook_id", userId).maybeSingle()) as Record<string, string | null> | null;
+}
+
+export async function saveCookLegal(userId: string, v: Record<string, string | null>) {
+  unwrap(await requireSupabase().from("cook_private").update(v).eq("cook_id", userId));
+}
+
+export function aiImage(mode: "enhance" | "background" | "generate", opts: { path?: string; description?: string }) {
+  return callFunction<{ path: string; remaining_today: number }>("ai-image", { mode, ...opts });
+}
+
+// ------------------------------------------------------------------ client : tableau de bord
+export interface CustomerDashboard {
+  orders: number; active: number; spent: { currency: string; cents: number }[]; saved_cents: number; plates: number; cooks: number;
+  tips_cents: number; reviews: number; favorites: number;
+  top_cuisines: { cuisine: string; n: number }[]; top_cooks: { kitchen_name: string; slug: string; n: number }[];
+  monthly: { month: string; orders: number }[];
+}
+export const fetchCustomerDashboard = () => rpc<CustomerDashboard>("customer_dashboard");
+
+// ------------------------------------------------------------------ administration (suite)
+export const fetchPlatformStats = (days = 30) => rpc<PlatformStats>("platform_stats", { p_days: days });
+export const fetchDac7 = (year: number) => rpc<Dac7Row[]>("dac7_report", { _year: year });
+export const searchUsers = (q: string) => rpc<{
+  id: string; email: string; display_name: string; created_at: string; is_cook: boolean; is_courier: boolean; roles: string[]; orders_count: number;
+}[]>("admin_search_users", { _q: q });
+export const reviewCourier = (id: string, approve: boolean, reason?: string) =>
+  rpc<void>("review_courier_application", { _courier_id: id, _approve: approve, _reason: reason ?? null });
+export const suspendCourier = (id: string, reason: string) => rpc<void>("suspend_courier", { _courier_id: id, _reason: reason });
+export const savePromo = (v: { code: string; percent_off?: number | null; amount_off_cents?: number | null; description?: string; min_order_cents?: number; max_redemptions?: number | null; first_order_only?: boolean; ends_at?: string | null; is_active?: boolean }) =>
+  rpc("admin_save_promo", {
+    _code: v.code, _percent_off: v.percent_off ?? null, _amount_off_cents: v.amount_off_cents ?? null, _description: v.description ?? null,
+    _min_order_cents: v.min_order_cents ?? 0, _max_redemptions: v.max_redemptions ?? null, _first_order_only: v.first_order_only ?? false,
+    _ends_at: v.ends_at ?? null, _is_active: v.is_active ?? true,
+  });
+
+export async function fetchPendingCouriers() {
+  return unwrap(await requireSupabase().from("couriers").select("*, profiles(display_name), courier_private(*)")
+    .in("status", ["pending_review"]).order("updated_at")) as (Courier & {
+      profiles: { display_name: string } | null;
+      courier_private: { legal_name: string | null; birth_date: string | null; tax_id: string | null; business_status: string; registration_number: string | null; address: string | null; insurance_declared_at: string | null } | null;
+    })[];
+}
+
+export async function fetchCountries(): Promise<Country[]> {
+  if (DEMO_MODE) return [];
+  return unwrap(await supabase!.from("countries").select("*").order("enabled", { ascending: false }).order("code")) as Country[];
+}
+
+export async function updateCountry(code: string, v: Partial<Country>) {
+  unwrap(await requireSupabase().from("countries").update(v).eq("code", code));
+}
+
+export async function fetchPromoCodes() {
+  return unwrap(await requireSupabase().from("promo_codes").select("*").order("created_at", { ascending: false }).limit(200)) as {
+    id: string; code: string; description: string | null; percent_off: number | null; amount_off_cents: number | null; min_order_cents: number;
+    max_redemptions: number | null; redemptions: number; first_order_only: boolean; ends_at: string | null; is_active: boolean;
+  }[];
+}
+
+export async function adminSearchOrders(q: { number?: number; status?: string }) {
+  let query = requireSupabase().from("orders")
+    .select("id, number, status, fulfillment, total_cents, currency, platform_fee_cents, created_at, cooks(kitchen_name), customer:profiles!orders_customer_id_profiles_fkey(display_name)")
+    .order("created_at", { ascending: false }).limit(50);
+  if (q.number) query = query.eq("number", q.number);
+  if (q.status) query = query.eq("status", q.status);
+  return unwrap(await query) as unknown as {
+    id: string; number: number; status: string; fulfillment: string; total_cents: number; currency: string; platform_fee_cents: number; created_at: string;
+    cooks: { kitchen_name: string } | null; customer: { display_name: string } | null;
+  }[];
+}
+
+export async function adminPayouts(status = "pending") {
+  return unwrap(await requireSupabase().from("payouts")
+    .select("id, amount_cents, status, available_at, created_at, cook_id, courier_id, orders(number, currency)")
+    .eq("status", status).order("available_at").limit(100)) as unknown as {
+      id: string; amount_cents: number; status: string; available_at: string; created_at: string; cook_id: string | null; courier_id: string | null;
+      orders: { number: number; currency: string } | null;
+    }[];
 }

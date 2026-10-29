@@ -55,7 +55,8 @@ Deno.serve(handler(async (req) => {
     throw new HttpError(502, "La retouche n'a pas abouti, réessayez dans un instant");
   }
   const ext = out.mimeType.includes("png") ? "png" : out.mimeType.includes("webp") ? "webp" : "jpg";
-  const newPath = `${userId}/ia-${crypto.randomUUID()}.${ext}`;
+  // Préfixe visible par les clients : une illustration générée n'est pas une vraie photo du plat.
+  const newPath = `${userId}/${mode === "generate" ? "ia-illustration" : "ia-retouche"}-${crypto.randomUUID()}.${ext}`;
   const { error: upErr } = await admin.storage.from("dish-photos").upload(newPath, out.data, { contentType: out.mimeType, cacheControl: "31536000" });
   if (upErr) throw upErr;
   return json(req, { path: `dish-photos/${newPath}`, remaining_today: left, ai_generated: true });

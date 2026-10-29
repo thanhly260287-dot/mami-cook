@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Cook } from "@mami/shared";
+import type { Cook, Courier } from "@mami/shared";
 import { supabase } from "@/lib/supabase";
-import { fetchMyCook, fetchMyRoles } from "@/lib/api";
+import { fetchMyCook, fetchMyCourier, fetchMyRoles } from "@/lib/api";
 
 interface AuthState {
   session: Session | null;
@@ -11,9 +11,11 @@ interface AuthState {
   loading: boolean;
   displayName: string;
   cook: Cook | null;
+  courier: Courier | null;
   roles: string[];
   isStaff: boolean;
   refreshCook: () => void;
+  refreshCourier: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -39,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const userId = session?.user.id;
   const cookQuery = useQuery({ queryKey: ["my-cook", userId], queryFn: () => fetchMyCook(userId!), enabled: !!userId });
+  const courierQuery = useQuery({ queryKey: ["my-courier", userId], queryFn: () => fetchMyCourier(userId!), enabled: !!userId });
   const rolesQuery = useQuery({ queryKey: ["my-roles", userId], queryFn: fetchMyRoles, enabled: !!userId });
   const profileQuery = useQuery({
     queryKey: ["my-profile", userId],
@@ -52,13 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     displayName: profileQuery.data?.display_name ?? session?.user.email?.split("@")[0] ?? "",
     cook: cookQuery.data ?? null,
+    courier: courierQuery.data ?? null,
     roles: rolesQuery.data ?? [],
     isStaff: (rolesQuery.data ?? []).length > 0,
     refreshCook: () => qc.invalidateQueries({ queryKey: ["my-cook", userId] }),
+    refreshCourier: () => qc.invalidateQueries({ queryKey: ["my-courier", userId] }),
     signOut: async () => {
       await supabase?.auth.signOut();
     },
-  }), [session, loading, profileQuery.data, cookQuery.data, rolesQuery.data, qc, userId]);
+  }), [session, loading, profileQuery.data, cookQuery.data, courierQuery.data, rolesQuery.data, qc, userId]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

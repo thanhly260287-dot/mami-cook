@@ -59,6 +59,28 @@ test("pages légales et 404", async ({ page }) => {
   await expect(page.getByText(/pas au menu/)).toBeVisible();
 });
 
+test("guide légal par pays (France, Suisse)", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/guide-legal");
+  await expect(page.getByText("Déclarer votre activité à la DDPP")).toBeVisible();
+  await page.goto("/guide-legal/CH");
+  await expect(page.getByText("Annonce au chimiste cantonal")).toBeVisible();
+  await expect(page.getByText("Livraison via une agence partenaire")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("devenir livreur : avantages, droits et démarches", async ({ page }) => {
+  await page.goto("/devenir-livreur");
+  await expect(page.getByText("Refuser une course n'a aucune conséquence")).toBeVisible();
+  await expect(page.getByText("Statut de micro-entrepreneur")).toBeVisible();
+});
+
+test("filtre desserts", async ({ page }) => {
+  await page.goto("/explorer?type=dessert");
+  await expect(page.getByRole("tablist", { name: "Type de plat" }).getByRole("tab", { name: /^🍰 Dessert$/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("Lasagnes Maison Bolognaise")).toHaveCount(0);
+});
+
 test("en-têtes de sécurité présents", async ({ request }) => {
   const res = await request.get("/");
   const h = res.headers();

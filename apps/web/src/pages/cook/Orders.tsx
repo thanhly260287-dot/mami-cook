@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bike, Check, ChefHat, MessageCircle, Package, Store, X } from "lucide-react";
-import { formatEuros, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale } from "@mami/shared";
-import { fetchCookOrders, orderAction } from "@/lib/api";
+import { Bike, Check, ChefHat, MessageCircle, Package, Store, X, Zap } from "lucide-react";
+import { DELIVERY_STATUS_LABELS, formatMoney, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale } from "@mami/shared";
+import { fetchCookOrders, fetchDeliveryTracking, orderAction } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { errorMessage, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,9 @@ function OrderCard({ order: o }: { order: CookOrder }) {
     accepted: { to: "preparing", label: t("Commencer la préparation"), icon: <ChefHat /> },
     preparing: { to: "ready", label: t("Commande prête"), icon: <Package /> },
     ready: o.fulfillment === "delivery" ? { to: "out_for_delivery", label: t("Partir en livraison"), icon: <Bike /> } : null,
-    out_for_delivery: { to: "completed", label: t("Livrée"), icon: <Check /> },
+    out_for_delivery: o.fulfillment === "delivery" ? { to: "completed", label: t("Livrée"), icon: <Check /> } : null,
   };
+  const courier = o.fulfillment === "courier";
   const n = next[o.status];
 
   return (
@@ -78,7 +79,7 @@ function OrderCard({ order: o }: { order: CookOrder }) {
           <p className="text-sm text-muted-foreground">{relativeDay(o.scheduled_for)} · {new Date(o.paid_at ?? o.created_at).toLocaleTimeString(intlLocale(), { hour: "2-digit", minute: "2-digit" })}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <Badge tone="primary">{o.fulfillment === "pickup" ? <><Store className="h-3 w-3" />{" "}{t("Retrait")}</> : <><Bike className="h-3 w-3" />{" "}{t("Livraison")}</>}</Badge>
+          <Badge tone="primary">{o.fulfillment === "pickup" ? <><Store className="h-3 w-3" />{" "}{t("Retrait")}</> : courier ? <><Zap className="h-3 w-3" />{" "}{t("Livreur MAMI COOK")}</> : <><Bike className="h-3 w-3" />{" "}{t("Livraison")}</>}</Badge>
           <Badge tone={o.status === "completed" ? "success" : ["cancelled", "refunded"].includes(o.status) ? "danger" : "muted"}>{t(ORDER_STATUS_LABELS[o.status])}</Badge>
         </div>
       </div>
@@ -86,8 +87,9 @@ function OrderCard({ order: o }: { order: CookOrder }) {
         {o.order_items?.map((i) => <li key={i.id}><b>{i.quantity}×</b> {i.title}{i.extras.length > 0 && <span className="text-muted-foreground"> (+ {i.extras.map((e) => e.name).join(", ")})</span>}</li>)}
       </ul>
       {o.note && <p className="mb-3 rounded-xl bg-status-warn/10 p-3 text-sm">📝 « {o.note} »</p>}
-      {o.delivery_address && <p className="mb-3 rounded-xl bg-muted p-3 text-sm">📍 {o.delivery_address.line1}{o.delivery_address.line2 ? `, ${o.delivery_address.line2}` : ""}, {o.delivery_address.postal_code} {o.delivery_address.city}{o.delivery_address.instructions ? ` — ${o.delivery_address.instructions}` : ""}</p>}
-      <p className="mb-4 text-sm">{t("Vous recevrez")}{" "}<b>{formatEuros(o.cook_payout_cents)}</b></p>
+      {courier && ["accepted", "preparing", "ready", "out_for_delivery"].includes(o.status) && <CourierStatus orderId={o.id} />}
+      {o.delivery_address && !courier && <p className="mb-3 rounded-xl bg-muted p-3 text-sm">📍 {o.delivery_address.line1}{o.delivery_address.line2 ? `, ${o.delivery_address.line2}` : ""}, {o.delivery_address.postal_code} {o.delivery_address.city}{o.delivery_address.instructions ? ` — ${o.delivery_address.instructions}` : ""}</p>}
+      <p className="mb-4 text-sm">{t("Vous recevrez")}{" "}<b>{formatMoney(o.cook_payout_cents, o.currency ?? "EUR")}</b></p>
       <div className="flex flex-wrap gap-2">
         {n && <Button onClick={() => act.mutate({ to: n.to })} loading={act.isPending}>{n.icon}{n.label}</Button>}
         {o.status === "ready" && o.fulfillment === "pickup" && <Button onClick={() => setCodeOpen(true)}><Check />{" "}{t("Remise au client")}</Button>}
@@ -107,5 +109,16 @@ function OrderCard({ order: o }: { order: CookOrder }) {
         <ChatPanel orderId={o.id} />
       </Dialog>
     </Card>
+  );
+}
+
+function CourierStatus({ orderId }: { orderId: string }) {
+  const q = useQuery({ queryKey: ["tracking", orderId], queryFn: () => fetchDeliveryTracking(orderId), refetchInterval: 20_000 });
+  if (!q.data) return null;
+  return (
+    <p className="mb-3 rounded-xl bg-primary/5 p-3 text-sm">
+      🛵 {t(DELIVERY_STATUS_LABELS[q.data.status])}{q.data.courier ? ` · ${q.data.courier.name}` : ""}
+      {q.data.status === "searching" && <span className="block text-xs text-muted-foreground">{t("Préparez la commande : un livreur viendra la chercher quand elle sera prête.")}</span>}
+    </p>
   );
 }
