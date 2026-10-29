@@ -11,10 +11,15 @@ $RUNAS $PGBIN/initdb -D "$DATA" -U postgres -A trust >/dev/null
 $RUNAS $PGBIN/pg_ctl -D "$DATA" -o "-p $PORT -k /tmp" -l "$DATA/log" start >/dev/null
 trap '$RUNAS $PGBIN/pg_ctl -D "$DATA" stop -m immediate >/dev/null; rm -rf "$DATA"' EXIT
 PSQL="psql -h /tmp -p $PORT -U postgres -v ON_ERROR_STOP=1 -q"
-$PSQL -c "create database test" postgres
-$PSQL -f tests/stubs.sql test
-for f in migrations/*.sql; do echo "→ $f"; $PSQL -f "$f" test; done
-for f in tests/test_*.sql; do echo "→ $f"; $PSQL -t -f "$f" test >/dev/null; done
+# Chaque fichier de test a sa propre base neuve (pas d'interférence entre suites).
+i=0
+for t in tests/test_*.sql; do
+  i=$((i + 1)); db="test$i"
+  $PSQL -c "create database $db" postgres
+  $PSQL -f tests/stubs.sql "$db"
+  for f in migrations/*.sql; do [ $i = 1 ] && echo "→ $f"; $PSQL -f "$f" "$db"; done
+  echo "→ $t"; $PSQL -t -f "$t" "$db" >/dev/null
+done
 echo "→ seed.sql (base neuve)"
 $PSQL -c "create database seedtest" postgres
 $PSQL -f tests/stubs.sql seedtest

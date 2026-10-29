@@ -34,6 +34,9 @@ Format : date — décision — raison — qui l'a validée.
 | 29/10/2026 | Suisse et Espagne en mode `partner_agency` (livreurs d'une agence partenaire) | Le Tribunal fédéral a jugé les livreurs Uber Eats salariés ; loi « Rider » en Espagne |
 | 29/10/2026 | Livreur : 80 % des frais de livraison + 100 % du pourboire ; plateforme : 20 % des frais | Proposition par défaut, réglable par pays |
 | 29/10/2026 | Courses retenues seulement si la commande est remise au livreur avec le code du client ; dédommagement du livreur si la commande est annulée après son arrivée | Équité pour les livreurs |
+| 29/10/2026 | Un livreur a au plus 2 courses en cours ; recherche relancée à 8 km après 10 min, équipe alertée après 30 min | Éviter les commandes bloquées |
+| 29/10/2026 | Le livreur voit le gain, la ville et la distance **avant** d'accepter ; adresses exactes seulement après acceptation | Transparence (directive 2024/2831) et sécurité des clients |
+| 29/10/2026 | Remise validée par le code à 4 chiffres du client, comme pour le retrait | Preuve de livraison, évite les litiges |
 | 29/10/2026 | Documentation et mémoire **dans le dépôt** | Le conteneur cloud est effacé à chaque session |
 
 ## Provisoires / à confirmer par l'utilisateur

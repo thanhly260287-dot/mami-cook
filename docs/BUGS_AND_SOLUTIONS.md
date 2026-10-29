@@ -18,6 +18,9 @@ Format : **symptôme** → cause → solution.
 - **Le serveur Postgres de test refuse de démarrer en root** → `supabase/tests/run.sh` relance en tant que `postgres` (binaires dans `/usr/lib/postgresql/16/bin`, port 54329).
 - **`on conflict (order_id)` ne marche plus sur `payouts`** depuis que l'unicité est partielle (cuisinière **ou** livreur) → écrire `on conflict (order_id) where cook_id is not null`.
 
+- **Les suites de tests SQL se gênaient** (plats et profils de l'une visibles dans l'autre) → `run.sh` crée une base neuve par fichier de test.
+- **Un test lu « en tant que livreur » renvoie vide** → normal : un livreur n'accède ni aux commandes ni au code du client, seulement à sa course via `delivery_details`. Faire les vérifications en tant qu'administrateur.
+
 ## Site web
 
 - **Routes du SPA en 404** sur le serveur de test statique → naviguer à l'intérieur de l'appli. L'aperçu artifact utilise le hash router (`VITE_HASH_ROUTER=1`).

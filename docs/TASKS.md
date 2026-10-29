@@ -6,33 +6,26 @@ Une tâche ne passe en « Terminées » qu'avec une preuve (test ou commit). Les
 
 ### #10 — Livraison par livreurs, livreurs payés, commissions
 
-Fait (non commité, **non testé**) :
-- `supabase/migrations/20261029000001_schema.sql` :
-  - enums `fulfillment` (avec `courier`), `delivery_status`, `business_status` ;
-  - table `countries` (devise, taux, frais de livraison, `courier_mode`) ;
-  - `cooks.country`, `is_professional` et `offers_courier` ; champs DSA/DAC7 dans `cook_private` ;
-  - `orders.tip_cents` et `courier_payout_cents` ;
-  - `payouts` pour une cuisinière **ou** un livreur ;
-  - tables `couriers`, `courier_private`, `deliveries` et `delivery_declines` ; `reviews.courier_rating`.
-- Les réglages `service_rate`, `min_order_cents` et `payout_delay_hours` ne sont plus dans `platform_settings` : ils passent dans `countries`.
-- `supabase/migrations/20261029000002_security.sql` : RLS, triggers de protection des livreurs, note moyenne des livreurs, policy des versements pour les livreurs.
+**Partie serveur terminée et testée** le 29/10/2026 (`bash supabase/tests/run.sh` : 120 vérifications au vert, dont la suite `test_delivery.sql`) :
+- tables `countries`, `couriers`, `courier_private`, `deliveries` et `delivery_declines`, avec RLS et protections ;
+- migration `20261029000006_delivery.sql` :
+  - `place_order` v2 : pourboire, taux et devise du pays, livreur ;
+  - `transition_order` v2 ;
+  - `feed` v2 : devise, livreur, badge professionnel ;
+  - fonctions livreur : mise en ligne, courses disponibles, accepter, refuser, étapes, désistement, détails, suivi, tableau de bord ;
+  - `delivery_quote`, `review_courier_application`, `dac7_report`, `platform_stats` ;
+  - relances par cron ;
+- fonctions Edge (`deno check` OK) :
+  - `checkout` : devise et pourboire ;
+  - `process-payouts` : livreurs et dédommagements ;
+  - `connect-onboarding` : `role: "courier"` ;
+  - `stripe-webhook` : comptes livreurs ;
+  - `delete-account` : livreurs ;
+- `packages/shared` : `FULFILLMENTS` avec `courier`, `formatMoney`, `TIP_PRESETS_CENTS`, `tipCents` dans `checkoutSchema`.
 
-Reste à faire :
-1. Nouvelle migration `20261029000006_delivery.sql` :
-   - `place_order` : nouvelle signature avec `p_tip_cents` ; taux, minimum et devise selon le pays ; mode `courier` avec frais = base + km, bornés ; part livreur = frais × (1 − commission) + pourboire ; création de la ligne `deliveries`.
-   - `transition_order` : à l'acceptation, recherche d'un livreur et notification des livreurs proches ; la cuisinière ne termine pas elle-même une commande `courier` ; une annulation annule la course et dédommage le livreur s'il était déjà sur place.
-   - `feed` : devise et taux du pays, `offers_courier` et `is_professional`.
-   - Versements : délai pris dans `countries` ; `on conflict` avec index partiel.
-   - Fonctions livreur : `courier_set_online`, `available_deliveries`, `accept_delivery`, `decline_delivery`, `delivery_step` (`at_pickup`, `picked_up`, `delivered` avec le code du client), `courier_cancel`, `delivery_details`, `courier_dashboard`.
-   - `delivery_tracking` (client), `delivery_quote` (panier), `review_courier_application`, `dac7_report`, `platform_stats`.
-   - Tâches cron : relance de la recherche après 20 min, passage hors ligne après 10 min d'inactivité.
-2. Mettre à jour `seed.sql`, puis tester le parcours livreur dans `supabase/tests/test_security_and_orders.sql` jusqu'au vert.
-3. Fonctions Edge :
-   - `checkout` : devise et pourboire ;
-   - `process-payouts` : versements aux livreurs ;
-   - `connect-onboarding` : rôle livreur ;
-   - `stripe-webhook` : `account.updated` pour les livreurs.
-4. `packages/shared` : `FULFILLMENTS` avec `courier`, `formatMoney` multi-devises.
+Reste pour #10 : données de démo livreurs dans `seed.sql`. Les écrans font partie de #11.
+
+**Attention (#11)** : les écrans cuisinière ne gèrent pas encore le mode `courier`. Les boutons « Partir en livraison » et « Livrée » doivent être masqués pour ces commandes : `apps/web/src/pages/cook/Orders.tsx` et `apps/mobile/src/app/cuisinier/index.tsx`. Le serveur refuse déjà ces actions.
 
 ## À faire
 
@@ -62,4 +55,5 @@ Reste à faire :
 | 5 | Appli mobile Expo | Commit `f669d8c` ; export iOS et Android OK |
 | 7 | Traduction en 10 langues | Commit `c5cd31f` ; `i18n-keys --missing` OK |
 | 9 | Recherche juridique par pays | [LEGAL_RESEARCH.md](LEGAL_RESEARCH.md) |
+| 10 | Livraison : partie serveur (base, Stripe, shared) | Tests SQL 120 ✓, `deno check` OK, typecheck web et mobile OK |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

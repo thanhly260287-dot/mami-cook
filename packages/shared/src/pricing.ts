@@ -100,5 +100,14 @@ export function computeOrderPrice(
 }
 
 export function formatEuros(cents: number): string {
-  return new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR" }).format(cents / 100);
+  return formatMoney(cents, "EUR");
 }
+
+/** Montant dans la devise de la commande ou du pays (EUR, CHF, GBP…). */
+export function formatMoney(cents: number, currency = "EUR"): string {
+  return new Intl.NumberFormat(intlLocale(), { style: "currency", currency }).format(cents / 100);
+}
+
+/** Pourboires proposés au client pour son livreur (en centimes). Il reçoit 100 % du pourboire. */
+export const TIP_PRESETS_CENTS = [0, 100, 200, 300, 500] as const;
+export const MAX_TIP_CENTS = 5000;

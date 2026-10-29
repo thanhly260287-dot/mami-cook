@@ -11,7 +11,12 @@ Deno.serve(handler(async (req) => {
     .in("status", ["pending_payment", "paid", "accepted", "preparing", "ready", "out_for_delivery"]);
   if ((count ?? 0) > 0) throw new HttpError(409, "Vous avez des commandes en cours. Réessayez une fois terminées.");
 
-  const { data: pendingPayout } = await admin.from("payouts").select("id").eq("cook_id", userId).eq("status", "pending").limit(1);
+  const { count: activeDeliveries } = await admin.from("deliveries").select("id", { count: "exact", head: true })
+    .eq("courier_id", userId).in("status", ["assigned", "at_pickup", "picked_up"]);
+  if ((activeDeliveries ?? 0) > 0) throw new HttpError(409, "Vous avez une course en cours. Réessayez une fois terminée.");
+
+  const { data: pendingPayout } = await admin.from("payouts").select("id")
+    .or(`cook_id.eq.${userId},courier_id.eq.${userId}`).eq("status", "pending").limit(1);
   if (pendingPayout?.length) throw new HttpError(409, "Un versement est en attente. Réessayez dans 24 h.");
 
   await admin.from("addresses").delete().eq("user_id", userId);
@@ -25,6 +30,8 @@ Deno.serve(handler(async (req) => {
   await admin.from("cooks").update({ status: "suspended", status_reason: "Compte supprimé", bio: null, cover_url: null }).eq("id", userId);
   await admin.from("dishes").update({ is_active: false }).eq("cook_id", userId);
   await admin.from("cook_private").update({ exact_location: null, siret: null, address_id: null }).eq("cook_id", userId);
+  // Livreur : compte désactivé, position effacée. L'identité fiscale reste conservée le temps légal (DAC7, 10 ans).
+  await admin.from("couriers").update({ status: "suspended", status_reason: "Compte supprimé", is_online: false, last_location: null }).eq("id", userId);
   await admin.from("orders").update({ delivery_address: null, delivery_location: null, note: null }).eq("customer_id", userId);
 
   for (const bucket of ["avatars", "dish-photos", "covers"]) {

@@ -6,7 +6,8 @@
 
 - Le site, les applis iOS et Android, la base de données et les paiements sont écrits et testés **en local, en mode démo**.
 - **Rien n'est encore en ligne** : pas de projet Supabase, de compte Stripe, d'hébergement ni de publication sur les stores. La procédure est dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
-- **Travail en cours** : système de livraison par livreurs (tâche #10). Les migrations SQL sont modifiées mais **pas encore commitées ni testées**.
+- **Livraison par livreurs** : partie serveur terminée et testée (120 tests SQL). **Les écrans (espace livreur, choix du livreur au panier, back-office) restent à faire** (#11).
+- **Stripe** : compte de l'utilisateur fourni (`acct_1UNYJHArjF3GfFcv`), mais **pas encore branché**. Il faut d'abord le projet Supabase et l'hébergement, voir [TASKS.md](TASKS.md) #14.
 
 ## Ce qui fonctionne (vérifié le 29/10/2026)
 
@@ -14,7 +15,7 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Partie | Preuve |
 | --- | --- |
-| Base de données : sécurité, commandes, stock, paiements | Environ 55 tests SQL au vert (`bash supabase/tests/run.sh`), commit `ed9b55e` |
+| Base de données : sécurité, commandes, stock, paiements, livraison, commissions | 120 tests SQL au vert (`bash supabase/tests/run.sh`) |
 | Calcul des prix | 6 tests au vert (`pnpm --filter @mami/shared test`) |
 | Site web | Typecheck, lint et build OK ; 16 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |

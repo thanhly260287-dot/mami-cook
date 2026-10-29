@@ -71,10 +71,12 @@ Deno.serve(async (req) => {
       }
       case "account.updated": {
         const acct = event.data.object as Stripe.Account;
-        await admin.from("cooks").update({
+        const flags = {
           stripe_charges_enabled: !!acct.charges_enabled && !!acct.details_submitted,
           stripe_payouts_enabled: !!acct.payouts_enabled,
-        }).eq("stripe_account_id", acct.id);
+        };
+        await admin.from("cooks").update(flags).eq("stripe_account_id", acct.id);
+        await admin.from("couriers").update(flags).eq("stripe_account_id", acct.id);
         break;
       }
     }

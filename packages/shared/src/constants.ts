@@ -102,7 +102,8 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   expired: "Expirée",
 };
 
-export const FULFILLMENTS = ["delivery", "pickup"] as const;
+// delivery = la cuisinière livre ; courier = livreur MAMI COOK ; pickup = retrait sur place
+export const FULFILLMENTS = ["delivery", "pickup", "courier"] as const;
 export type Fulfillment = (typeof FULFILLMENTS)[number];
 
 export const REPORT_REASONS = [

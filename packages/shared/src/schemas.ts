@@ -105,6 +105,7 @@ export const checkoutSchema = z.object({
   addressId: z.string().uuid().optional(),
   note: z.string().trim().max(500).optional(),
   promoCode: z.string().trim().toUpperCase().max(30).optional(),
+  tipCents: z.number().int().min(0).max(5000).default(0),
 });
 
 export const reviewSchema = z.object({

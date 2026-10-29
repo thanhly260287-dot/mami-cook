@@ -4,7 +4,8 @@ import { admin, stripe, userClient } from "../_shared/clients.ts";
 
 interface Body {
   lines: { drop_id: string; quantity: number; extra_ids?: string[]; menu_deal_id?: string | null }[];
-  fulfillment: "delivery" | "pickup";
+  fulfillment: "delivery" | "pickup" | "courier";
+  tip_cents?: number;
   address_id?: string | null;
   note?: string | null;
   promo_code?: string | null;
@@ -24,9 +25,10 @@ Deno.serve(handler(async (req) => {
     p_note: body.note ?? null,
     p_promo_code: body.promo_code ?? null,
     p_idempotency_key: body.idempotency_key ?? null,
+    p_tip_cents: Number.isInteger(body.tip_cents) ? body.tip_cents : 0,
   }).single();
   if (error) throw error;
-  const o = order as { id: string; number: number; total_cents: number; cook_id: string; status: string; stripe_payment_intent_id: string | null };
+  const o = order as { id: string; number: number; total_cents: number; currency: string; cook_id: string; status: string; stripe_payment_intent_id: string | null };
 
   if (o.status !== "pending_payment") return json(req, { order_id: o.id, status: o.status });
 
@@ -45,7 +47,7 @@ Deno.serve(handler(async (req) => {
     pi = await stripe.paymentIntents.create(
       {
         amount: o.total_cents,
-        currency: "eur",
+        currency: o.currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
         receipt_email: email,
         transfer_group: o.id,
@@ -62,6 +64,7 @@ Deno.serve(handler(async (req) => {
     order_id: o.id,
     order_number: o.number,
     total_cents: o.total_cents,
+    currency: o.currency,
     client_secret: pi.client_secret,
     publishable_key: Deno.env.get("STRIPE_PUBLISHABLE_KEY"),
   });

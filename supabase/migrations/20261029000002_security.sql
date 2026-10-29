@@ -33,7 +33,7 @@ as $$ begin new.updated_at := now(); return new; end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles','profile_private','cooks','cook_private','dishes','orders','payouts','reviews','reports']
+  foreach t in array array['profiles','profile_private','cooks','cook_private','dishes','orders','payouts','reviews','reports','couriers','courier_private','deliveries','countries']
   loop
     execute format('create trigger %I_touch before update on public.%I for each row execute function public.touch_updated_at()', t, t);
   end loop;
@@ -372,7 +372,7 @@ create policy "voir historique commande" on public.order_events for select to au
                  and (o.customer_id = auth.uid() or o.cook_id = auth.uid() or public.is_staff())));
 
 create policy "voir ses versements" on public.payouts for select to authenticated
-  using (cook_id = auth.uid() or public.has_role('admin'));
+  using (cook_id = auth.uid() or courier_id = auth.uid() or public.has_role('admin'));
 
 create policy "promos admin" on public.promo_codes for select to authenticated using (public.has_role('admin'));
 create policy "voir ses promos utilisées" on public.promo_redemptions for select to authenticated
@@ -444,3 +444,104 @@ revoke insert, update, delete on public.orders, public.order_items, public.order
 revoke all on public.rate_limits, public.stripe_events from anon, authenticated;
 revoke insert, update, delete on all tables in schema public from anon;
 revoke execute on function public.handle_new_user() from anon, authenticated, public;
+
+
+-- =============================================================================
+-- Livreurs, livraisons, pays
+-- =============================================================================
+create or replace function public.protect_courier_columns()
+returns trigger language plpgsql set search_path = ''
+as $$
+begin
+  if not public.is_client_request() or public.has_role('admin') then return new; end if;
+  if tg_op = 'INSERT' then
+    new.status := 'draft'; new.approved_at := null; new.status_reason := null;
+    new.stripe_account_id := null; new.stripe_charges_enabled := false; new.stripe_payouts_enabled := false;
+    new.rating_avg := 0; new.rating_count := 0; new.deliveries_completed := 0;
+    new.is_online := false; new.last_location := null; new.last_seen_at := null;
+    return new;
+  end if;
+  if new.status is distinct from old.status
+     and not (old.status in ('draft', 'rejected') and new.status = 'pending_review') then
+    raise exception 'Changement de statut non autorisé' using errcode = '42501';
+  end if;
+  new.id := old.id; new.approved_at := old.approved_at; new.status_reason := old.status_reason;
+  new.stripe_account_id := old.stripe_account_id; new.stripe_charges_enabled := old.stripe_charges_enabled;
+  new.stripe_payouts_enabled := old.stripe_payouts_enabled; new.rating_avg := old.rating_avg;
+  new.rating_count := old.rating_count; new.deliveries_completed := old.deliveries_completed;
+  -- La position et la disponibilité passent par courier_set_online (contrôles + limitation)
+  new.is_online := old.is_online; new.last_location := old.last_location; new.last_seen_at := old.last_seen_at;
+  new.country := case when old.status = 'approved' then old.country else new.country end;
+  return new;
+end $$;
+create trigger couriers_protect before insert or update on public.couriers
+  for each row execute function public.protect_courier_columns();
+
+create or replace function public.protect_courier_private()
+returns trigger language plpgsql set search_path = ''
+as $$
+begin
+  if public.is_client_request() and not public.is_staff() then
+    if tg_op = 'UPDATE' then
+      new.documents_verified_at := old.documents_verified_at; new.admin_notes := old.admin_notes;
+    else
+      new.documents_verified_at := null; new.admin_notes := null;
+    end if;
+  end if;
+  return new;
+end $$;
+create trigger courier_private_protect before insert or update on public.courier_private
+  for each row execute function public.protect_courier_private();
+
+-- Note moyenne des livreurs (donnée par le client dans son avis)
+create or replace function public.refresh_courier_rating()
+returns trigger language plpgsql security definer set search_path = ''
+as $$
+declare _courier uuid;
+begin
+  select d.courier_id into _courier from public.deliveries d where d.order_id = coalesce(new.order_id, old.order_id);
+  if _courier is null then return null; end if;
+  update public.couriers c set
+    rating_avg = coalesce((select round(avg(r.courier_rating)::numeric, 2) from public.reviews r
+                           join public.deliveries d on d.order_id = r.order_id
+                           where d.courier_id = _courier and r.courier_rating is not null and not r.is_hidden), 0),
+    rating_count = (select count(*) from public.reviews r join public.deliveries d on d.order_id = r.order_id
+                    where d.courier_id = _courier and r.courier_rating is not null and not r.is_hidden)
+  where c.id = _courier;
+  return null;
+end $$;
+create trigger reviews_courier_rating after insert or update of courier_rating, is_hidden or delete on public.reviews
+  for each row execute function public.refresh_courier_rating();
+
+alter table public.countries enable row level security;
+alter table public.couriers enable row level security;
+alter table public.courier_private enable row level security;
+alter table public.deliveries enable row level security;
+alter table public.delivery_declines enable row level security;
+
+create policy "pays publics" on public.countries for select using (true);
+create policy "pays : admin" on public.countries for update to authenticated
+  using (public.has_role('admin')) with check (public.has_role('admin'));
+
+create policy "voir son profil livreur" on public.couriers for select to authenticated
+  using (id = auth.uid() or public.is_staff());
+create policy "devenir livreur" on public.couriers for insert to authenticated with check (id = auth.uid());
+create policy "modifier son profil livreur" on public.couriers for update to authenticated
+  using (id = auth.uid() or public.has_role('admin')) with check (id = auth.uid() or public.has_role('admin'));
+
+create policy "infos privées livreur" on public.courier_private for select to authenticated
+  using (courier_id = auth.uid() or public.is_staff());
+create policy "créer infos privées livreur" on public.courier_private for insert to authenticated
+  with check (courier_id = auth.uid());
+create policy "modifier infos privées livreur" on public.courier_private for update to authenticated
+  using (courier_id = auth.uid() or public.has_role('admin')) with check (courier_id = auth.uid() or public.has_role('admin'));
+
+-- Une livraison est visible par son livreur, la cuisinière et le client de la commande.
+-- Les courses disponibles sont proposées via available_deliveries (sans adresse exacte).
+create policy "voir ses livraisons" on public.deliveries for select to authenticated
+  using (courier_id = auth.uid() or public.is_staff() or exists (
+    select 1 from public.orders o where o.id = order_id and (o.customer_id = auth.uid() or o.cook_id = auth.uid())));
+
+revoke insert, update, delete on public.deliveries, public.delivery_declines, public.countries from anon, authenticated;
+grant update on public.countries to authenticated;
+revoke all on public.delivery_declines from anon, authenticated;

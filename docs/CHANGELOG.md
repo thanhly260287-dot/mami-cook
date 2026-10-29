@@ -5,7 +5,16 @@ Les modifications importantes, de la plus récente à la plus ancienne. Le déta
 ## Non publié
 
 - Système de mémoire du projet : `CLAUDE.md`, `docs/` (10 fichiers et la recherche juridique), 5 skills, hooks, `scripts/check-docs.sh`.
-- *(en cours, non commité)* Livraison par livreurs : pays et devises, livreurs, courses, commissions, versements aux livreurs.
+- Livraison par livreurs (serveur) :
+  - pays et devises (EUR, CHF…) ;
+  - commission sur les plats et sur la livraison ;
+  - pourboire ;
+  - courses librement acceptées ou refusées ;
+  - suivi en direct ;
+  - versements Stripe aux livreurs ;
+  - dédommagement en cas d'annulation ;
+  - export DAC7 ;
+  - statistiques de l'équipe.
 
 ## 29/10/2026
 
