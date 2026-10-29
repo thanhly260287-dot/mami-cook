@@ -3,6 +3,7 @@
 
   python3 scripts/fetch-photos.py candidates   → 4 propositions par plat dans photo-review/ (à trier)
   python3 scripts/fetch-photos.py final        → télécharge les photos choisies dans scripts/photos.json
+  python3 scripts/fetch-photos.py hero         → 12 propositions pour la bannière d'accueil (section « hero »)
 
 Lancé par GitHub (.github/workflows/fetch-photos.yml) : l'environnement de développement n'a pas accès à internet.
 Les crédits (auteur, licence) sont enregistrés dans apps/web/public/images/dishes/credits.json et affichés sur le site.
@@ -39,11 +40,13 @@ def info(pages):
             "title": p["title"], "thumb": ii.get("thumburl"), "page": ii.get("descriptionurl"),
             "license": lic, "author": clean(meta.get("Artist", {}).get("value"))[:120],
             "width": ii.get("width"), "height": ii.get("height"),
+            # « personality » : personne reconnaissable, son accord peut être nécessaire pour une publicité
+            "restrictions": clean(meta.get("Restrictions", {}).get("value")),
         })
     return out
 
-def search(q, width):
-    r = query({"generator": "search", "gsrsearch": f"{q} filetype:bitmap", "gsrnamespace": "6", "gsrlimit": "20",
+def search(q, width, limit=20):
+    r = query({"generator": "search", "gsrsearch": f"{q} filetype:bitmap", "gsrnamespace": "6", "gsrlimit": str(limit),
                "prop": "imageinfo", "iiprop": "url|extmetadata|mime|size", "iiurlwidth": str(width)})
     pages = sorted(r.get("query", {}).get("pages", []), key=lambda p: p.get("index", 0))
     return [c for c in info(pages) if (c["width"] or 0) >= 800 and (c["height"] or 0) >= 500]
@@ -75,6 +78,22 @@ if mode == "candidates":
             jpeg(c["thumb"], out / f"{name}-{i}.jpg", 400)
         print(f"{name} : {len(cands)} candidates")
     (out / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=1))
+elif mode == "hero":
+    out = ROOT / "photo-review"
+    out.mkdir(exist_ok=True)
+    seen, cands = set(), []
+    for q in cfg["hero"]["queries"]:
+        try:
+            for c in search(q, 600, 30):
+                if c["title"] not in seen and (c["width"] or 0) >= 1200 and c["width"] >= c["height"]:
+                    seen.add(c["title"]); cands.append({**c, "query": q})
+        except Exception as e:  # noqa: BLE001
+            print(f"✗ {q} : {e}")
+    cands = cands[:16]
+    for i, c in enumerate(cands):
+        jpeg(c["thumb"], out / f"hero-{i}.jpg", 600)
+    (out / "index.json").write_text(json.dumps({"hero": cands}, ensure_ascii=False, indent=1))
+    print(f"hero : {len(cands)} candidates")
 else:
     dishes = ROOT / "apps/web/public/images/dishes"
     demo = ROOT / "packages/shared/src/demo-data.ts"
@@ -89,5 +108,14 @@ else:
         credits[name] = {k: c[k] for k in ("title", "page", "license", "author")}
         src = src.replace(f"/images/dishes/{name}.svg", f"/images/dishes/{name}.jpg")
         print(f"✓ {name} ← {c['title']} ({c['license']})")
+    hero = cfg.get("hero", {})
+    if hero.get("title"):
+        c = by_title(hero["title"], 1600)
+        if c:
+            jpeg(c["thumb"], ROOT / "apps/web/public/images/hero.jpg", 1600)
+            credits["hero"] = {k: c[k] for k in ("title", "page", "license", "author")}
+            print(f"✓ hero ← {c['title']} ({c['license']})")
+        else:
+            print(f"✗ hero : {hero['title']} introuvable ou licence non libre")
     (dishes / "credits.json").write_text(json.dumps(credits, ensure_ascii=False, indent=1))
     demo.write_text(src)

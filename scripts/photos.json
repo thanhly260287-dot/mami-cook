@@ -49,5 +49,19 @@
       "query": "fruit tart berries",
       "title": "File:Dessert Assorted Berries Tart (17252838722).jpg"
     }
+  },
+  "hero": {
+    "_note": "Bannière d'accueil : une maman contente de cuisiner. queries = recherches ; title = fichier choisi après vérification visuelle (éviter les photos marquées « personality »).",
+    "queries": [
+      "mother cooking kitchen smiling",
+      "grandmother cooking kitchen",
+      "woman cooking kitchen smiling",
+      "mom cooking dinner family",
+      "woman preparing food home kitchen happy",
+      "African woman cooking",
+      "Asian woman cooking kitchen",
+      "Italian grandmother cooking pasta"
+    ],
+    "title": ""
   }
 }
