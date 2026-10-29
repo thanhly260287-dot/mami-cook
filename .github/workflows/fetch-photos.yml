@@ -1,0 +1,29 @@
+name: Télécharger les vraies photos
+
+# Se lance tout seul quand la liste des photos change, ou à la main (Actions → Run workflow).
+on:
+  push:
+    branches: [main]
+    paths: [scripts/photos.json, scripts/fetch-photos.sh]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils
+        run: sudo apt-get install -y -q imagemagick jq file >/dev/null
+      - name: Téléchargement
+        run: bash scripts/fetch-photos.sh
+      - name: Enregistrement dans le dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/public/images/dishes packages/shared/src/demo-data.ts
+          git diff --cached --quiet && echo "Rien de nouveau" && exit 0
+          git commit -m "Vraies photos des plats (Unsplash)"
+          git push
