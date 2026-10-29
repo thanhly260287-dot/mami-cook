@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStripe } from "@/lib/stripe";
 import { Ionicons } from "@expo/vector-icons";
-import { formatEuros, MIN_ORDER_CENTS, relativeDay } from "@mami/shared";
+import { formatEuros, MIN_ORDER_CENTS, relativeDay, t } from "@mami/shared";
 import { useAuth, useCart } from "@/hooks/providers";
 import { checkout, createAddress, fetchAddresses, searchAddress } from "@/lib/api";
 import { DEMO_MODE, errorMessage, photoUrl } from "@/lib/supabase";
@@ -32,12 +32,12 @@ export default function CartScreen() {
   // Une clé par contenu de panier : un double appui ne crée pas deux commandes.
   const idem = useRef<{ sig: string; key: string } | null>(null);
 
-  if (!first) return <Empty emoji="🛍️" title="Votre panier est vide" text="Les plats faits maison de votre quartier vous attendent." action={<Button title="Découvrir les plats" onPress={() => router.navigate("/")} />} />;
+  if (!first) return <Empty emoji="🛍️" title={t("Votre panier est vide")} text={t("Les plats faits maison de votre quartier vous attendent.")} action={<Button title={t("Découvrir les plats")} onPress={() => router.navigate("/")} />} />;
 
   const pay = async () => {
-    if (DEMO_MODE) return Alert.alert("Mode démo", "Le paiement sera actif une fois Supabase et Stripe configurés.");
+    if (DEMO_MODE) return Alert.alert(t("Mode démo"), t("Le paiement sera actif une fois Supabase et Stripe configurés."));
     if (!userId) return router.push("/connexion");
-    if (mode === "delivery" && !selected) return Alert.alert("Adresse", "Ajoutez une adresse de livraison.");
+    if (mode === "delivery" && !selected) return Alert.alert(t("Adresse"), t("Ajoutez une adresse de livraison."));
     const sig = JSON.stringify([cart.lines, mode, selected, promo]);
     if (idem.current?.sig !== sig) idem.current = { sig, key: newKey() };
     setLoading(true);
@@ -54,11 +54,11 @@ export default function CartScreen() {
       });
       if (init.error) throw new Error(init.error.message);
       const result = await presentPaymentSheet();
-      if (result.error) { if (result.error.code !== "Canceled") Alert.alert("Paiement refusé", result.error.message); return; }
+      if (result.error) { if (result.error.code !== "Canceled") Alert.alert(t("Paiement refusé"), result.error.message); return; }
       cart.clear();
       router.push(`/commande/${res.order_id}`);
     } catch (e) {
-      Alert.alert("Commande impossible", errorMessage(e));
+      Alert.alert(t("Commande impossible"), errorMessage(e));
       qc.invalidateQueries({ queryKey: ["feed"] });
     } finally {
       setLoading(false);
@@ -67,10 +67,10 @@ export default function CartScreen() {
 
   const addAddress = async (a: (typeof results)[number]) => {
     try {
-      const r = await createAddress(userId!, { ...a, label: "Maison" });
+      const r = await createAddress(userId!, { ...a, label: t("Maison") });
       setAddressId(r.id); setSearch(""); setResults([]);
       qc.invalidateQueries({ queryKey: ["addresses"] });
-    } catch (e) { Alert.alert("Erreur", errorMessage(e)); }
+    } catch (e) { Alert.alert(t("Erreur"), errorMessage(e)); }
   };
 
   return (
@@ -85,7 +85,7 @@ export default function CartScreen() {
               {l.extras.length > 0 && <T size={12} color={c.muted}>+ {l.extras.map((e) => e.name).join(", ")}</T>}
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Stepper value={l.quantity} max={l.maxQuantity} onChange={(q) => cart.setQuantity(l.key, q)} />
-                <Pressable onPress={() => cart.remove(l.key)} accessibilityLabel={`Retirer ${l.title}`} hitSlop={10}><Ionicons name="trash-outline" size={20} color={c.muted} /></Pressable>
+                <Pressable onPress={() => cart.remove(l.key)} accessibilityLabel={t("Retirer {name}", { name: l.title })} hitSlop={10}><Ionicons name="trash-outline" size={20} color={c.muted} /></Pressable>
               </View>
             </View>
           </View>
@@ -93,7 +93,7 @@ export default function CartScreen() {
       </Card>
 
       <Card style={{ gap: 10 }}>
-        <T weight="700">Mode de remise</T>
+        <T weight="700">{t("Mode de remise")}</T>
         <View style={{ flexDirection: "row", gap: 10 }}>
           {(["pickup", "delivery"] as const).map((m) => {
             const ok = m === "pickup" ? first.offersPickup : first.offersDelivery;
@@ -102,8 +102,8 @@ export default function CartScreen() {
               <Pressable key={m} disabled={!ok} onPress={() => setMode(m)} accessibilityState={{ selected: on, disabled: !ok }}
                 style={{ flex: 1, borderWidth: 2, borderColor: on ? c.primary : c.border, borderRadius: 14, padding: 12, opacity: ok ? 1 : 0.4 }}>
                 <Ionicons name={m === "pickup" ? "storefront-outline" : "bicycle-outline"} size={20} color={c.text} />
-                <T weight="700">{m === "pickup" ? "Retrait" : "Livraison"}</T>
-                <T size={12} color={c.muted}>{m === "pickup" ? "Gratuit" : ok ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : "Offerte") : "Non proposée"}</T>
+                <T weight="700">{m === "pickup" ? t("Retrait") : t("Livraison")}</T>
+                <T size={12} color={c.muted}>{m === "pickup" ? t("Gratuit") : ok ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : t("Offerte")) : t("Non proposée")}</T>
               </Pressable>
             );
           })}
@@ -116,27 +116,27 @@ export default function CartScreen() {
                 <T size={14} style={{ flex: 1 }}>{a.line1}, {a.postal_code} {a.city}</T>
               </Pressable>
             ))}
-            <Input value={search} onChangeText={async (t) => { setSearch(t); setResults(await searchAddress(t).catch(() => [])); }} placeholder="Ajouter une adresse…" />
+            <Input value={search} onChangeText={async (t) => { setSearch(t); setResults(await searchAddress(t).catch(() => [])); }} placeholder={t("Ajouter une adresse…")} />
             {results.map((r) => <Pressable key={r.label} onPress={() => addAddress(r)} style={{ padding: 10 }}><T size={14}>📍 {r.label}</T></Pressable>)}
           </View>
         )}
       </Card>
 
       <Card style={{ gap: 10 }}>
-        <Input label="Un mot pour la cuisinière ?" value={note} onChangeText={setNote} maxLength={500} placeholder="Sans coriandre svp…" multiline />
-        <Input label="Code promo" value={promo} onChangeText={(t) => setPromo(t.toUpperCase())} autoCapitalize="characters" maxLength={30} />
+        <Input label={t("Un mot pour la cuisinière ?")} value={note} onChangeText={setNote} maxLength={500} placeholder={t("Sans coriandre svp…")} multiline />
+        <Input label={t("Code promo")} value={promo} onChangeText={(t) => setPromo(t.toUpperCase())} autoCapitalize="characters" maxLength={30} />
       </Card>
 
       <Card style={{ gap: 6 }}>
-        <Row label={`Sous-total (${price.totalPlates} plat${price.totalPlates > 1 ? "s" : ""})`} value={formatEuros(price.subtotalCents)} />
-        {price.discountCents > 0 && <Row label="Remise volume" value={`−${formatEuros(price.discountCents)}`} color={c.success} />}
-        {mode === "delivery" && <Row label="Livraison" value={formatEuros(price.deliveryFeeCents)} />}
+        <Row label={t(price.totalPlates > 1 ? "Sous-total ({n} plats)" : "Sous-total ({n} plat)", { n: price.totalPlates })} value={formatEuros(price.subtotalCents)} />
+        {price.discountCents > 0 && <Row label={t("Remise volume")} value={`−${formatEuros(price.discountCents)}`} color={c.success} />}
+        {mode === "delivery" && <Row label={t("Livraison")} value={formatEuros(price.deliveryFeeCents)} />}
         <View style={{ height: 1, backgroundColor: c.border, marginVertical: 6 }} />
-        <Row label="Total" value={formatEuros(price.totalCents)} bold />
-        {price.totalPlates < 5 && <T size={12} color={c.success}>Plus que {5 - price.totalPlates} plat(s) pour −10 % !</T>}
+        <Row label={t("Total")} value={formatEuros(price.totalCents)} bold />
+        {price.totalPlates < 5 && <T size={12} color={c.success}>{t("Plus que {n} plat(s) pour −10 % !", { n: 5 - price.totalPlates })}</T>}
       </Card>
-      <Button title={`Payer ${formatEuros(price.totalCents)}`} icon="lock-closed" loading={loading} disabled={price.subtotalCents - price.discountCents < MIN_ORDER_CENTS} onPress={pay} />
-      <T size={12} color={c.muted} style={{ textAlign: "center" }}>Paiement sécurisé par Stripe · Apple Pay · Google Pay</T>
+      <Button title={t("Payer {price}", { price: formatEuros(price.totalCents) })} icon="lock-closed" loading={loading} disabled={price.subtotalCents - price.discountCents < MIN_ORDER_CENTS} onPress={pay} />
+      <T size={12} color={c.muted} style={{ textAlign: "center" }}>{t("Paiement sécurisé par Stripe · Apple Pay · Google Pay")}</T>
     </ScrollView>
   );
 }

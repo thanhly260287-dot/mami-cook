@@ -1,19 +1,19 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, Clock, Flame, MapPin, Snowflake, Star, UtensilsCrossed } from "lucide-react";
-import { cuisineLabel, formatDistance, formatEuros, formatTime, relativeDay, type FeedItem } from "@mami/shared";
+import { cuisineLabel, formatDistance, formatEuros, formatTime, relativeDay, type FeedItem, t } from "@mami/shared";
 import { photoUrl } from "@/lib/utils";
 
 const TEMP = {
-  hot: { label: "🔥 Chaud", cls: "bg-status-hot" },
-  reheat: { label: "♨️ À réchauffer", cls: "bg-status-warn" },
-  cold: { label: "🥗 Froid", cls: "bg-primary" },
-  frozen: { label: "🧊 Congelé", cls: "bg-status-frozen" },
+  hot: { label: t("🔥 Chaud"), cls: "bg-status-hot" },
+  reheat: { label: t("♨️ À réchauffer"), cls: "bg-status-warn" },
+  cold: { label: t("🥗 Froid"), cls: "bg-primary" },
+  frozen: { label: t("🧊 Congelé"), cls: "bg-status-frozen" },
 } as const;
 
 export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
   const soldOut = item.quantity_remaining === 0;
-  const t = TEMP[item.temperature];
+  const temp = TEMP[item.temperature];
 
   return (
     <motion.article
@@ -28,17 +28,17 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
           className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${soldOut ? "grayscale" : ""}`} />
         <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-1.5 text-xs font-bold tabular-nums shadow-sm backdrop-blur-md">
           {item.temperature === "frozen" ? <Snowflake className="h-3 w-3 text-status-frozen" /> : <Flame className="h-3 w-3 text-status-hot" />}
-          {soldOut ? "Épuisé" : `${item.quantity_remaining} ${item.quantity_remaining > 1 ? "plats restants" : "plat restant"}`}
+          {soldOut ? t("Épuisé") : `${item.quantity_remaining} ${item.quantity_remaining > 1 ? t("plats restants") : t("plat restant")}`}
         </span>
         <span className="absolute right-3 top-3 rounded-full bg-card/90 px-2.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-md">
           {cuisineLabel(item.cuisine)}
         </span>
         {item.menu_deal && (
           <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full gradient-primary px-2.5 py-1.5 text-xs font-bold text-primary-foreground shadow-sm">
-            <UtensilsCrossed className="h-3 w-3" /> Menu dispo
+            <UtensilsCrossed className="h-3 w-3" />{" "}{t("Menu dispo")}
           </span>
         )}
-        <span className={`absolute bottom-3 right-3 rounded-full px-2 py-1 text-xs font-semibold text-white ${t.cls}`}>{t.label}</span>
+        <span className={`absolute bottom-3 right-3 rounded-full px-2 py-1 text-xs font-semibold text-white ${temp.cls}`}>{t(temp.label)}</span>
       </div>
 
       <div className="p-4">
@@ -49,7 +49,7 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
         <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
           <span className="font-medium">{item.cook_name}</span>
-          <span className="text-xs">· Vérifié</span>
+          <span className="text-xs">{t("· Vérifié")}</span>
         </div>
 
         {item.extras.length > 0 && (

@@ -15,6 +15,7 @@ import {
   type Message,
   type Order,
   type Review,
+  t,
 } from "@mami/shared";
 import { callFunction, DEMO_MODE, requireSupabase, supabase } from "./supabase";
 
@@ -287,7 +288,7 @@ export async function fetchMyPayouts(cookId: string) {
 
 /** Envoie une photo dans le dossier de l'utilisateur (règle imposée par la base). */
 export async function uploadImage(bucket: "dish-photos" | "avatars" | "covers", userId: string, file: File): Promise<string> {
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Format accepté : JPG, PNG ou WebP");
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(t("Format accepté : JPG, PNG ou WebP"));
   const blob = await resizeImage(file, bucket === "avatars" ? 512 : 1600);
   const path = `${userId}/${crypto.randomUUID()}.webp`;
   const { error } = await requireSupabase().storage.from(bucket).upload(path, blob, { contentType: "image/webp", cacheControl: "31536000" });
@@ -304,7 +305,7 @@ async function resizeImage(file: File, max: number): Promise<Blob> {
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Image illisible"))), "image/webp", 0.82));
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error(t("Image illisible")))), "image/webp", 0.82));
 }
 
 // ------------------------------------------------------------------ administration

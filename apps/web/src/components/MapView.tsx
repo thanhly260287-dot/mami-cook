@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import { Link } from "react-router-dom";
-import { formatEuros, type FeedItem } from "@mami/shared";
+import { formatEuros, type FeedItem, t } from "@mami/shared";
 
 // Les cuisines sont affichées à leur position publique floutée (pas l'adresse exacte).
 const icon = (label: string) => L.divIcon({
@@ -38,8 +38,8 @@ export function MapView({ items, center }: { items: (FeedItem & { lat?: number; 
           <Popup>
             <div className="min-w-[180px]">
               <p className="font-bold">{item.cook_name}</p>
-              <p className="text-xs">{count} plat{count > 1 ? "s" : ""} aujourd'hui · ⭐ {Number(item.cook_rating).toFixed(1)}</p>
-              <Link to={`/cuisine/${item.cook_slug}`} className="mt-1 inline-block text-xs font-semibold">Voir la cuisine →</Link>
+              <p className="text-xs">{count} plat{count > 1 ? "s" : ""}{" "}{t("aujourd'hui · ⭐")}{" "}{Number(item.cook_rating).toFixed(1)}</p>
+              <Link to={`/cuisine/${item.cook_slug}`} className="mt-1 inline-block text-xs font-semibold">{t("Voir la cuisine →")}</Link>
             </div>
           </Popup>
         </Marker>

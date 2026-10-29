@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
-import { signInSchema, signUpSchema } from "@mami/shared";
+import { signInSchema, signUpSchema, t } from "@mami/shared";
 import { requireSupabase, DEMO_MODE } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,11 @@ function OAuthButtons({ redirect }: { redirect: string }) {
     <div className="grid grid-cols-2 gap-3">
       <Button variant="outline" type="button" onClick={() => go("google")}>
         <svg viewBox="0 0 24 24" aria-hidden><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.9-5.5 3.9-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.3 12 2.3 6.6 2.3 2.3 6.6 2.3 12s4.3 9.7 9.7 9.7c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6H12z" /></svg>
-        Google
+        {t("Google")}
       </Button>
       <Button variant="outline" type="button" onClick={() => go("apple")}>
         <svg viewBox="0 0 24 24" aria-hidden><path fill="currentColor" d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 4.9c.7-.9 1.2-2 1-3.2-1 .1-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z" /></svg>
-        Apple
+        {t("Apple")}
       </Button>
     </div>
   );
@@ -52,7 +52,7 @@ function Shell({ title, subtitle, children }: { title: string; subtitle?: React.
       <Seo title={`${title} — MAMI COOK`} noindex />
       <h1 className="mb-1 text-center text-3xl font-extrabold">{title}</h1>
       {subtitle && <p className="mb-6 text-center text-sm text-muted-foreground">{subtitle}</p>}
-      <Card className="p-6">{DEMO_MODE ? <p className="text-sm">Les comptes sont désactivés en mode démo.</p> : children}</Card>
+      <Card className="p-6">{DEMO_MODE ? <p className="text-sm">{t("Les comptes sont désactivés en mode démo.")}</p> : children}</Card>
     </div>
   );
 }
@@ -94,13 +94,13 @@ export function Login() {
     setLoading(true);
     const { error } = await requireSupabase().auth.mfa.challengeAndVerify({ factorId: mfa!.factorId, code });
     setLoading(false);
-    if (error) return toast.error("Code incorrect");
+    if (error) return toast.error(t("Code incorrect"));
     navigate(redirect, { replace: true });
   };
 
   const magic = async () => {
     const parsed = signInSchema.shape.email.safeParse(email);
-    if (!parsed.success) return toast.error("Saisissez votre e-mail d'abord");
+    if (!parsed.success) return toast.error(t("Saisissez votre e-mail d'abord"));
     setLoading(true);
     const { error } = await requireSupabase().auth.signInWithOtp({ email: parsed.data, options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${redirect}` } });
     setLoading(false);
@@ -110,30 +110,30 @@ export function Login() {
 
   if (mfa) {
     return (
-      <Shell title="Double authentification" subtitle="Saisissez le code à 6 chiffres de votre application d'authentification.">
+      <Shell title={t("Double authentification")} subtitle="Saisissez le code à 6 chiffres de votre application d'authentification.">
         <form onSubmit={verifyMfa} className="space-y-4">
           <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="123456" className="text-center text-2xl tracking-[0.4em]" autoFocus />
-          <Button type="submit" className="w-full" loading={loading} disabled={code.length !== 6}>Vérifier</Button>
+          <Button type="submit" className="w-full" loading={loading} disabled={code.length !== 6}>{t("Vérifier")}</Button>
         </form>
       </Shell>
     );
   }
 
   return (
-    <Shell title="Bon retour !" subtitle={<>Pas encore de compte ? <Link to={`/inscription?redirect=${encodeURIComponent(redirect)}`} className="font-semibold text-primary">Inscrivez-vous</Link></>}>
+    <Shell title={t("Bon retour !")} subtitle={<>{t("Pas encore de compte ?")}{" "}<Link to={`/inscription?redirect=${encodeURIComponent(redirect)}`} className="font-semibold text-primary">{t("Inscrivez-vous")}</Link></>}>
       {magicSent ? (
-        <div className="py-6 text-center"><Mail className="mx-auto mb-3 h-10 w-10 text-primary" /><p className="font-semibold">Lien envoyé à {email}</p><p className="mt-1 text-sm text-muted-foreground">Cliquez sur le lien reçu pour vous connecter.</p></div>
+        <div className="py-6 text-center"><Mail className="mx-auto mb-3 h-10 w-10 text-primary" /><p className="font-semibold">{t("Lien envoyé à")}{" "}{email}</p><p className="mt-1 text-sm text-muted-foreground">{t("Cliquez sur le lien reçu pour vous connecter.")}</p></div>
       ) : (
         <>
           <OAuthButtons redirect={redirect} />
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" />ou<div className="h-px flex-1 bg-border" /></div>
           <form onSubmit={submit} className="space-y-4" noValidate>
-            <Field label="E-mail" htmlFor="email"><Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-            <Field label={<span className="flex justify-between">Mot de passe <Link to="/mot-de-passe-oublie" className="text-xs font-medium text-primary">Oublié ?</Link></span>} htmlFor="password">
+            <Field label={t("E-mail")} htmlFor="email"><Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
+            <Field label={<span className="flex justify-between">{t("Mot de passe")}{" "}<Link to="/mot-de-passe-oublie" className="text-xs font-medium text-primary">{t("Oublié ?")}</Link></span>} htmlFor="password">
               <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </Field>
-            <Button type="submit" className="w-full" loading={loading}>Se connecter</Button>
-            <Button type="button" variant="ghost" className="w-full" onClick={magic} disabled={loading}><Mail /> Recevoir un lien de connexion</Button>
+            <Button type="submit" className="w-full" loading={loading}>{t("Se connecter")}</Button>
+            <Button type="button" variant="ghost" className="w-full" onClick={magic} disabled={loading}><Mail />{" "}{t("Recevoir un lien de connexion")}</Button>
           </form>
         </>
       )}
@@ -177,29 +177,29 @@ export function Signup() {
     setForm({ ...form, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
 
   return (
-    <Shell title="Créer un compte" subtitle={<>Déjà inscrit ? <Link to={`/connexion?redirect=${encodeURIComponent(redirect)}`} className="font-semibold text-primary">Connectez-vous</Link></>}>
+    <Shell title={t("Créer un compte")} subtitle={<>{t("Déjà inscrit ?")}{" "}<Link to={`/connexion?redirect=${encodeURIComponent(redirect)}`} className="font-semibold text-primary">{t("Connectez-vous")}</Link></>}>
       {sent ? (
-        <div className="py-6 text-center"><Mail className="mx-auto mb-3 h-10 w-10 text-primary" /><p className="font-semibold">Vérifiez votre boîte mail</p><p className="mt-1 text-sm text-muted-foreground">Nous avons envoyé un lien de confirmation à {form.email}.</p></div>
+        <div className="py-6 text-center"><Mail className="mx-auto mb-3 h-10 w-10 text-primary" /><p className="font-semibold">{t("Vérifiez votre boîte mail")}</p><p className="mt-1 text-sm text-muted-foreground">{t("Nous avons envoyé un lien de confirmation à")}{" "}{form.email}.</p></div>
       ) : (
         <>
           <OAuthButtons redirect={redirect} />
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" />ou<div className="h-px flex-1 bg-border" /></div>
           <form onSubmit={submit} className="space-y-4" noValidate>
-            <Field label="Prénom ou pseudo" htmlFor="name" error={errors.displayName}><Input id="name" autoComplete="given-name" value={form.displayName} onChange={set("displayName")} aria-invalid={!!errors.displayName} /></Field>
-            <Field label="E-mail" htmlFor="email" error={errors.email}><Input id="email" type="email" autoComplete="email" value={form.email} onChange={set("email")} aria-invalid={!!errors.email} /></Field>
-            <Field label="Mot de passe" htmlFor="password" error={errors.password} hint="10 caractères min., avec majuscule, minuscule et chiffre">
+            <Field label={t("Prénom ou pseudo")} htmlFor="name" error={errors.displayName}><Input id="name" autoComplete="given-name" value={form.displayName} onChange={set("displayName")} aria-invalid={!!errors.displayName} /></Field>
+            <Field label={t("E-mail")} htmlFor="email" error={errors.email}><Input id="email" type="email" autoComplete="email" value={form.email} onChange={set("email")} aria-invalid={!!errors.email} /></Field>
+            <Field label={t("Mot de passe")} htmlFor="password" error={errors.password} hint={t("10 caractères min., avec majuscule, minuscule et chiffre")}>
               <Input id="password" type="password" autoComplete="new-password" value={form.password} onChange={set("password")} aria-invalid={!!errors.password} />
             </Field>
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" checked={form.acceptTerms} onChange={set("acceptTerms")} className="mt-1 accent-[hsl(var(--primary))]" />
-              <span>J'accepte les <Link to="/legal/cgu" target="_blank" className="font-semibold text-primary">CGU</Link> et la <Link to="/legal/confidentialite" target="_blank" className="font-semibold text-primary">politique de confidentialité</Link></span>
+              <span>{t("J'accepte les")}{" "}<Link to="/legal/cgu" target="_blank" className="font-semibold text-primary">{t("CGU")}</Link>{" "}{t("et la")}{" "}<Link to="/legal/confidentialite" target="_blank" className="font-semibold text-primary">{t("politique de confidentialité")}</Link></span>
             </label>
             {errors.acceptTerms && <p className="text-xs font-medium text-destructive">{errors.acceptTerms}</p>}
             <label className="flex items-start gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={form.marketingConsent} onChange={set("marketingConsent")} className="mt-1 accent-[hsl(var(--primary))]" />
-              Je souhaite recevoir les bons plans et nouveautés (désinscription en un clic)
+              {t("Je souhaite recevoir les bons plans et nouveautés (désinscription en un clic)")}
             </label>
-            <Button type="submit" className="w-full" loading={loading}>Créer mon compte</Button>
+            <Button type="submit" className="w-full" loading={loading}>{t("Créer mon compte")}</Button>
           </form>
         </>
       )}
@@ -220,11 +220,11 @@ export function ForgotPassword() {
     setSent(true);
   };
   return (
-    <Shell title="Mot de passe oublié" subtitle="Nous vous envoyons un lien pour le réinitialiser.">
-      {sent ? <p className="py-4 text-center text-sm">Si un compte existe pour {email}, un e-mail vient d'être envoyé.</p> : (
+    <Shell title={t("Mot de passe oublié")} subtitle="Nous vous envoyons un lien pour le réinitialiser.">
+      {sent ? <p className="py-4 text-center text-sm">{t("Si un compte existe pour")}{" "}{email}{t(", un e-mail vient d'être envoyé.")}</p> : (
         <form onSubmit={submit} className="space-y-4">
-          <Field label="E-mail" htmlFor="email"><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
-          <Button type="submit" className="w-full" loading={loading}>Envoyer le lien</Button>
+          <Field label={t("E-mail")} htmlFor="email"><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></Field>
+          <Button type="submit" className="w-full" loading={loading}>{t("Envoyer le lien")}</Button>
         </form>
       )}
     </Shell>
@@ -243,14 +243,14 @@ export function ResetPassword() {
     const { error } = await requireSupabase().auth.updateUser({ password });
     setLoading(false);
     if (error) return toast.error(translateAuthError(errorMessage(error)));
-    toast.success("Mot de passe modifié");
+    toast.success(t("Mot de passe modifié"));
     navigate("/");
   };
   return (
-    <Shell title="Nouveau mot de passe">
+    <Shell title={t("Nouveau mot de passe")}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Nouveau mot de passe" htmlFor="pw" hint="10 caractères min., avec majuscule, minuscule et chiffre"><Input id="pw" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
-        <Button type="submit" className="w-full" loading={loading}>Enregistrer</Button>
+        <Field label={t("Nouveau mot de passe")} htmlFor="pw" hint={t("10 caractères min., avec majuscule, minuscule et chiffre")}><Input id="pw" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+        <Button type="submit" className="w-full" loading={loading}>{t("Enregistrer")}</Button>
       </form>
     </Shell>
   );

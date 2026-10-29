@@ -1,3 +1,4 @@
+import { t } from "@mami/shared";
 import { useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
@@ -26,14 +27,14 @@ export default function Explore() {
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
         <View style={{ gap: 10, marginBottom: 14 }}>
-          <Input value={text} onChangeText={setText} placeholder="Lasagnes, phở, tajine…" returnKeyType="search" clearButtonMode="while-editing" accessibilityLabel="Rechercher" />
+          <Input value={text} onChangeText={setText} placeholder={t("Lasagnes, phở, tajine…")} returnKeyType="search" clearButtonMode="while-editing" accessibilityLabel="Rechercher" />
           <View style={{ flexDirection: "row" }}>
             {[3, 5, 10, 20].map((r) => <Chip key={r} label={`${r} km`} active={r === radius} onPress={() => setRadius(r)} />)}
           </View>
-          <T size={13} color={c.muted}>{q.data?.length ?? 0} plat(s) autour de {geo.label}</T>
+          <T size={13} color={c.muted}>{q.data?.length ?? 0}{" "}{t("plat(s) autour de")}{" "}{geo.label}</T>
         </View>
       }
-      ListEmptyComponent={q.isLoading ? <Loading /> : <Empty emoji="🔍" title="Aucun résultat" text="Élargissez le rayon ou changez de recherche." />}
+      ListEmptyComponent={q.isLoading ? <Loading /> : <Empty emoji="🔍" title={t("Aucun résultat")} text={t("Élargissez le rayon ou changez de recherche.")} />}
     />
   );
 }

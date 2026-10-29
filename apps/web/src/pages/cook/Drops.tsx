@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CalendarPlus, Copy, Lock, Minus, Plus } from "lucide-react";
-import { dropSchema, formatTime, relativeDay } from "@mami/shared";
+import { dropSchema, formatTime, relativeDay, t, intlLocale } from "@mami/shared";
 import { fetchMyDishes, fetchMyDrops } from "@/lib/api";
 import { requireSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +38,7 @@ export default function Drops() {
       const r = await requireSupabase().rpc("republish_drop", { _drop_id: republish, _date: repDate });
       if (r.error) throw r.error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-drops"] }); setRepublish(null); toast.success("Vente republiée"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-drops"] }); setRepublish(null); toast.success(t("Vente republiée")); },
     onError: (e) => toast.error(errorMessage(e)),
   });
 
@@ -48,15 +48,15 @@ export default function Drops() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Une « vente » = un plat proposé un jour précis, en quantité limitée.</p>
-        <Button disabled={!approved || !dishes.data?.length} onClick={() => setOpen(true)}><CalendarPlus /> Programmer une vente</Button>
+        <p className="text-sm text-muted-foreground">{t("Une « vente » = un plat proposé un jour précis, en quantité limitée.")}</p>
+        <Button disabled={!approved || !dishes.data?.length} onClick={() => setOpen(true)}><CalendarPlus />{" "}{t("Programmer une vente")}</Button>
       </div>
-      {!approved && <p className="mb-4 text-sm text-status-warn">Vous pourrez programmer des ventes dès que votre cuisine sera validée.</p>}
+      {!approved && <p className="mb-4 text-sm text-status-warn">{t("Vous pourrez programmer des ventes dès que votre cuisine sera validée.")}</p>}
       {drops.isLoading ? <Spinner /> : !upcoming.length && !past.length ? (
-        <EmptyState icon="📅" title="Aucune vente programmée">Créez d'abord un plat, puis programmez-le pour aujourd'hui ou les jours suivants.</EmptyState>
+        <EmptyState icon="📅" title={t("Aucune vente programmée")}>{t("Créez d'abord un plat, puis programmez-le pour aujourd'hui ou les jours suivants.")}</EmptyState>
       ) : (
         <>
-          <h2 className="mb-3 font-bold">À venir</h2>
+          <h2 className="mb-3 font-bold">{t("À venir")}</h2>
           <div className="mb-8 grid gap-3 md:grid-cols-2">
             {upcoming.map((d) => {
               const sold = d.quantity_total - d.quantity_remaining;
@@ -66,31 +66,31 @@ export default function Drops() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-bold">{d.dishes?.title}</p>
-                      <Badge tone={d.status === "open" ? "success" : d.status === "sold_out" ? "warn" : "muted"}>{{ open: "En vente", sold_out: "Épuisé", closed: "Fermée", cancelled: "Annulée", scheduled: "Programmée" }[d.status]}</Badge>
+                      <Badge tone={d.status === "open" ? "success" : d.status === "sold_out" ? "warn" : "muted"}>{{ open: t("En vente"), sold_out: t("Épuisé"), closed: t("Fermée"), cancelled: t("Annulée"), scheduled: t("Programmée") }[d.status]}</Badge>
                     </div>
                     <p className="text-sm capitalize text-muted-foreground">{relativeDay(d.available_on)} · {formatTime(d.ready_from)}–{formatTime(d.ready_until)}</p>
                     <div className="mt-2 flex items-center gap-2 text-sm">
-                      <span>{sold} vendu(s) /</span>
-                      <Button size="icon" variant="outline" className="h-7 w-7" disabled={d.quantity_total <= Math.max(1, sold)} onClick={() => update.mutate({ id: d.id, quantity_total: d.quantity_total - 1 })} aria-label="Diminuer"><Minus /></Button>
+                      <span>{sold}{" "}{t("vendu(s) /")}</span>
+                      <Button size="icon" variant="outline" className="h-7 w-7" disabled={d.quantity_total <= Math.max(1, sold)} onClick={() => update.mutate({ id: d.id, quantity_total: d.quantity_total - 1 })} aria-label={t("Diminuer")}><Minus /></Button>
                       <b className="w-6 text-center tabular-nums">{d.quantity_total}</b>
-                      <Button size="icon" variant="outline" className="h-7 w-7" disabled={d.quantity_total >= 200} onClick={() => update.mutate({ id: d.id, quantity_total: d.quantity_total + 1 })} aria-label="Augmenter"><Plus /></Button>
-                      {["open", "sold_out"].includes(d.status) && <Button size="sm" variant="ghost" className="ml-auto" onClick={() => update.mutate({ id: d.id, status: "closed" })}><Lock /> Fermer</Button>}
-                      {d.status === "closed" && <Button size="sm" variant="ghost" className="ml-auto" onClick={() => update.mutate({ id: d.id, status: "open" })}>Rouvrir</Button>}
+                      <Button size="icon" variant="outline" className="h-7 w-7" disabled={d.quantity_total >= 200} onClick={() => update.mutate({ id: d.id, quantity_total: d.quantity_total + 1 })} aria-label={t("Augmenter")}><Plus /></Button>
+                      {["open", "sold_out"].includes(d.status) && <Button size="sm" variant="ghost" className="ml-auto" onClick={() => update.mutate({ id: d.id, status: "closed" })}><Lock />{" "}{t("Fermer")}</Button>}
+                      {d.status === "closed" && <Button size="sm" variant="ghost" className="ml-auto" onClick={() => update.mutate({ id: d.id, status: "open" })}>{t("Rouvrir")}</Button>}
                     </div>
                   </div>
                 </Card>
               );
             })}
-            {!upcoming.length && <p className="text-sm text-muted-foreground">Rien de programmé.</p>}
+            {!upcoming.length && <p className="text-sm text-muted-foreground">{t("Rien de programmé.")}</p>}
           </div>
           {past.length > 0 && (
             <>
-              <h2 className="mb-3 font-bold">Ventes passées</h2>
+              <h2 className="mb-3 font-bold">{t("Ventes passées")}</h2>
               <div className="grid gap-2 md:grid-cols-2">
                 {past.map((d) => (
                   <Card key={d.id} className="flex items-center justify-between gap-3 p-3 text-sm">
-                    <span><b>{d.dishes?.title}</b> · {new Date(d.available_on).toLocaleDateString("fr-FR")} · {d.quantity_total - d.quantity_remaining}/{d.quantity_total} vendus</span>
-                    <Button size="sm" variant="secondary" disabled={!approved} onClick={() => { setRepublish(d.id); setRepDate(today()); }}><Copy /> Republier</Button>
+                    <span><b>{d.dishes?.title}</b> · {new Date(d.available_on).toLocaleDateString(intlLocale())} · {d.quantity_total - d.quantity_remaining}/{d.quantity_total} vendus</span>
+                    <Button size="sm" variant="secondary" disabled={!approved} onClick={() => { setRepublish(d.id); setRepDate(today()); }}><Copy />{" "}{t("Republier")}</Button>
                   </Card>
                 ))}
               </div>
@@ -99,9 +99,9 @@ export default function Drops() {
         </>
       )}
       {open && <NewDrop dishes={(dishes.data ?? []).filter((d) => d.is_active)} onClose={() => setOpen(false)} />}
-      <Dialog open={!!republish} onOpenChange={(o) => !o && setRepublish(null)} title="Republier cette vente">
-        <Field label="Jour" htmlFor="rd"><Input id="rd" type="date" min={today()} value={repDate} onChange={(e) => setRepDate(e.target.value)} /></Field>
-        <Button className="mt-4 w-full" loading={rep.isPending} onClick={() => rep.mutate()}>Republier</Button>
+      <Dialog open={!!republish} onOpenChange={(o) => !o && setRepublish(null)} title={t("Republier cette vente")}>
+        <Field label={t("Jour")} htmlFor="rd"><Input id="rd" type="date" min={today()} value={repDate} onChange={(e) => setRepDate(e.target.value)} /></Field>
+        <Button className="mt-4 w-full" loading={rep.isPending} onClick={() => rep.mutate()}>{t("Republier")}</Button>
       </Dialog>
     </div>
   );
@@ -114,7 +114,7 @@ function NewDrop({ dishes, onClose }: { dishes: { id: string; title: string }[];
   const days = Array.from({ length: 14 }, (_, i) => new Date(Date.now() + i * 86400000).toISOString().slice(0, 10));
   const save = useMutation({
     mutationFn: async () => {
-      if (!f.dates.length) throw new Error("Choisissez au moins un jour");
+      if (!f.dates.length) throw new Error(t("Choisissez au moins un jour"));
       const rows = f.dates.map((date) => {
         const p = dropSchema.safeParse({ dishId: f.dishId, availableOn: date, readyFrom: f.readyFrom, readyUntil: f.readyUntil, quantity: Number(f.quantity) });
         if (!p.success) throw new Error(p.error.issues[0].message);
@@ -123,31 +123,31 @@ function NewDrop({ dishes, onClose }: { dishes: { id: string; title: string }[];
       const r = await requireSupabase().from("drops").insert(rows);
       if (r.error) throw r.error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-drops"] }); toast.success("Vente programmée 🎉"); onClose(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-drops"] }); toast.success(t("Vente programmée 🎉")); onClose(); },
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()} title="Programmer une vente">
+    <Dialog open onOpenChange={(o) => !o && onClose()} title={t("Programmer une vente")}>
       <div className="space-y-4">
-        <Field label="Plat" htmlFor="dish"><Select id="dish" value={f.dishId} onChange={(e) => setF({ ...f, dishId: e.target.value })}>{dishes.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}</Select></Field>
+        <Field label={t("Plat")} htmlFor="dish"><Select id="dish" value={f.dishId} onChange={(e) => setF({ ...f, dishId: e.target.value })}>{dishes.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}</Select></Field>
         <div>
-          <p className="mb-2 text-sm font-semibold">Jours (plusieurs possibles)</p>
+          <p className="mb-2 text-sm font-semibold">{t("Jours (plusieurs possibles)")}</p>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
             {days.map((d) => {
               const on = f.dates.includes(d);
               return <button key={d} type="button" onClick={() => setF({ ...f, dates: on ? f.dates.filter((x) => x !== d) : [...f.dates, d] })}
                 className={`rounded-lg border px-1 py-2 text-xs capitalize ${on ? "border-primary bg-primary/10 font-bold text-primary" : "border-border"}`}>
-                {new Date(d).toLocaleDateString("fr-FR", { weekday: "short" })}<br />{d.slice(8)}
+                {new Date(d).toLocaleDateString(intlLocale(), { weekday: "short" })}<br />{d.slice(8)}
               </button>;
             })}
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <Field label="Prêt dès" htmlFor="rf"><Input id="rf" type="time" value={f.readyFrom} onChange={(e) => setF({ ...f, readyFrom: e.target.value })} /></Field>
-          <Field label="Jusqu'à" htmlFor="ru"><Input id="ru" type="time" value={f.readyUntil} onChange={(e) => setF({ ...f, readyUntil: e.target.value })} /></Field>
-          <Field label="Portions" htmlFor="qt"><Input id="qt" type="number" min={1} max={200} value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} /></Field>
+          <Field label={t("Prêt dès")} htmlFor="rf"><Input id="rf" type="time" value={f.readyFrom} onChange={(e) => setF({ ...f, readyFrom: e.target.value })} /></Field>
+          <Field label={t("Jusqu'à")} htmlFor="ru"><Input id="ru" type="time" value={f.readyUntil} onChange={(e) => setF({ ...f, readyUntil: e.target.value })} /></Field>
+          <Field label={t("Portions")} htmlFor="qt"><Input id="qt" type="number" min={1} max={200} value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} /></Field>
         </div>
-        <Button className="w-full" loading={save.isPending} onClick={() => save.mutate()}>Mettre en vente</Button>
+        <Button className="w-full" loading={save.isPending} onClick={() => save.mutate()}>{t("Mettre en vente")}</Button>
       </div>
     </Dialog>
   );

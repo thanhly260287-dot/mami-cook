@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Clock, Euro, Package, TrendingUp, Users, Wallet } from "lucide-react";
-import { formatEuros } from "@mami/shared";
+import { formatEuros, t } from "@mami/shared";
 import { fetchCookDashboard } from "@/lib/api";
 import { Card, Spinner } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
@@ -21,34 +21,34 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi icon={<Euro />} label="Revenus · 30 j" value={formatEuros(d.revenue_cents)} sub={growth != null ? `${growth >= 0 ? "+" : ""}${growth} % vs mois précédent` : undefined} />
-        <Kpi icon={<Package />} label="Commandes" value={String(d.orders_count)} />
-        <Kpi icon={<Users />} label="Clients" value={String(d.customers_count)} />
-        <Kpi icon={<Wallet />} label="Versement à venir" value={formatEuros(d.pending_payout_cents)} />
+        <Kpi icon={<Euro />} label={t("Revenus · 30 j")} value={formatEuros(d.revenue_cents)} sub={growth != null ? t("{g} % vs mois précédent", { g: `${growth >= 0 ? "+" : ""}${growth}` }) : undefined} />
+        <Kpi icon={<Package />} label={t("Commandes")} value={String(d.orders_count)} />
+        <Kpi icon={<Users />} label={t("Clients")} value={String(d.customers_count)} />
+        <Kpi icon={<Wallet />} label={t("Versement à venir")} value={formatEuros(d.pending_payout_cents)} />
       </div>
       {(d.pending_count > 0 || d.active_count > 0) && (
         <Card className="flex flex-wrap items-center justify-between gap-3 border-primary/30 bg-primary/5 p-5">
-          <p className="flex items-center gap-2 font-semibold"><Clock className="h-5 w-5 text-primary" />{d.pending_count} commande(s) à accepter · {d.active_count} en cours</p>
-          <Button asChild><Link to="commandes">Gérer les commandes</Link></Button>
+          <p className="flex items-center gap-2 font-semibold"><Clock className="h-5 w-5 text-primary" />{d.pending_count}{" "}{t("commande(s) à accepter ·")}{" "}{d.active_count}{" "}{t("en cours")}</p>
+          <Button asChild><Link to="commandes">{t("Gérer les commandes")}</Link></Button>
         </Card>
       )}
       <Card className="p-5">
-        <h2 className="mb-4 flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5" /> Revenus des 30 derniers jours</h2>
+        <h2 className="mb-4 flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5" />{" "}{t("Revenus des 30 derniers jours")}</h2>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={days}>
               <XAxis dataKey="day" tick={{ fontSize: 11 }} interval={4} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={40} unit=" €" />
-              <Tooltip formatter={(v: number) => [`${v.toFixed(2)} €`, "Revenus"]} cursor={{ fill: "hsl(var(--muted))" }} />
+              <Tooltip formatter={(v: number) => [`${v.toFixed(2)} €`, t("Revenus")]} cursor={{ fill: "hsl(var(--muted))" }} />
               <Bar dataKey="euros" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
       <div className="grid gap-4 md:grid-cols-3">
-        <Shortcut to="plats" title="Ajouter un plat" desc="Photo, prix, allergènes" />
-        <Shortcut to="ventes" title="Programmer une vente" desc="Choisissez le jour et les quantités" />
-        <Shortcut to="avis" title="Répondre aux avis" desc="Fidélisez vos clients" />
+        <Shortcut to="plats" title={t("Ajouter un plat")} desc="Photo, prix, allergènes" />
+        <Shortcut to="ventes" title={t("Programmer une vente")} desc="Choisissez le jour et les quantités" />
+        <Shortcut to="avis" title={t("Répondre aux avis")} desc="Fidélisez vos clients" />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { cuisineLabel } from "@mami/shared";
+import { cuisineLabel, t } from "@mami/shared";
 import { fetchFavoriteCooks } from "@/lib/api";
 import { Card, EmptyState, Spinner, Stars } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,10 @@ export default function Favorites() {
   const q = useQuery({ queryKey: ["favorite-cooks"], queryFn: fetchFavoriteCooks });
   return (
     <div className="container max-w-4xl py-8">
-      <Seo title="Mes cuisines favorites — MAMI COOK" noindex />
-      <h1 className="mb-6 text-3xl font-extrabold">Mes cuisines favorites</h1>
+      <Seo title={t("Mes cuisines favorites — MAMI COOK")} noindex />
+      <h1 className="mb-6 text-3xl font-extrabold">{t("Mes cuisines favorites")}</h1>
       {q.isLoading ? <Spinner /> : !q.data?.length ? (
-        <EmptyState icon="❤️" title="Aucune cuisine favorite" action={<Button asChild><Link to="/explorer">Découvrir des cuisines</Link></Button>}>Suivez vos cuisinières préférées pour être averti de leurs nouveaux plats.</EmptyState>
+        <EmptyState icon="❤️" title={t("Aucune cuisine favorite")} action={<Button asChild><Link to="/explorer">{t("Découvrir des cuisines")}</Link></Button>}>{t("Suivez vos cuisinières préférées pour être averti de leurs nouveaux plats.")}</EmptyState>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {q.data.map((c) => (

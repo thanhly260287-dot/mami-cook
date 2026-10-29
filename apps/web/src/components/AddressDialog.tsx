@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import type { Address } from "@mami/shared";
+import { t, type Address } from "@mami/shared";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
@@ -33,15 +33,15 @@ export function AddressDialog({ open, onOpenChange, onCreated }: { open: boolean
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title="Nouvelle adresse">
+    <Dialog open={open} onOpenChange={onOpenChange} title={t("Nouvelle adresse")}>
       <div className="space-y-4">
-        <Field label="Adresse"><AddressAutocomplete onSelect={setPicked} autoFocus /></Field>
+        <Field label={t("Adresse")}><AddressAutocomplete onSelect={setPicked} autoFocus /></Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Nom" htmlFor="addr-label"><Input id="addr-label" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={40} /></Field>
-          <Field label="Bât., étage, code" htmlFor="addr-l2"><Input id="addr-l2" value={line2} onChange={(e) => setLine2(e.target.value)} maxLength={200} /></Field>
+          <Field label={t("Nom")} htmlFor="addr-label"><Input id="addr-label" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={40} /></Field>
+          <Field label={t("Bât., étage, code")} htmlFor="addr-l2"><Input id="addr-l2" value={line2} onChange={(e) => setLine2(e.target.value)} maxLength={200} /></Field>
         </div>
-        <Field label="Instructions de livraison" htmlFor="addr-instr"><Input id="addr-instr" value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={300} placeholder="Interphone, digicode…" /></Field>
-        <Button className="w-full" disabled={!picked} loading={loading} onClick={save}>Enregistrer l'adresse</Button>
+        <Field label={t("Instructions de livraison")} htmlFor="addr-instr"><Input id="addr-instr" value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={300} placeholder={t("Interphone, digicode…")} /></Field>
+        <Button className="w-full" disabled={!picked} loading={loading} onClick={save}>{t("Enregistrer l'adresse")}</Button>
       </div>
     </Dialog>
   );

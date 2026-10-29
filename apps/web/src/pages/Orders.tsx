@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
-import { formatDate, formatEuros, ORDER_STATUS_LABELS } from "@mami/shared";
+import { formatDate, formatEuros, ORDER_STATUS_LABELS, t } from "@mami/shared";
 import { fetchMyOrders } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge, Card, EmptyState, Spinner } from "@/components/ui/misc";
@@ -17,10 +17,10 @@ export default function Orders() {
   const orders = q.data ?? [];
   return (
     <div className="container max-w-3xl py-8">
-      <Seo title="Mes commandes — MAMI COOK" noindex />
-      <h1 className="mb-6 text-3xl font-extrabold">Mes commandes</h1>
+      <Seo title={t("Mes commandes — MAMI COOK")} noindex />
+      <h1 className="mb-6 text-3xl font-extrabold">{t("Mes commandes")}</h1>
       {orders.length === 0 ? (
-        <EmptyState icon="📦" title="Aucune commande pour l'instant" action={<Button asChild><Link to="/explorer">Commander mon premier plat</Link></Button>} />
+        <EmptyState icon="📦" title={t("Aucune commande pour l'instant")} action={<Button asChild><Link to="/explorer">{t("Commander mon premier plat")}</Link></Button>} />
       ) : (
         <div className="space-y-3">
           {orders.map((o) => (
@@ -29,7 +29,7 @@ export default function Orders() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="truncate font-bold">{o.cooks?.kitchen_name}</p>
-                    <Badge tone={ACTIVE.includes(o.status) ? "primary" : o.status === "completed" ? "success" : "danger"}>{ORDER_STATUS_LABELS[o.status]}</Badge>
+                    <Badge tone={ACTIVE.includes(o.status) ? "primary" : o.status === "completed" ? "success" : "danger"}>{t(ORDER_STATUS_LABELS[o.status])}</Badge>
                   </div>
                   <p className="mt-0.5 truncate text-sm text-muted-foreground">{o.order_items?.map((i) => `${i.quantity}× ${i.title}`).join(", ")}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">n°{o.number} · {formatDate(o.created_at, { day: "numeric", month: "short", year: "numeric" })}</p>

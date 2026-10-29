@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Download, KeyRound, LogOut, MapPin, Moon, Plus, ShieldCheck, Trash2, User } from "lucide-react";
-import { phoneSchema } from "@mami/shared";
+import { phoneSchema, t } from "@mami/shared";
 import { requireSupabase, callFunction } from "@/lib/supabase";
 import { deleteAddress, fetchAddresses, uploadImage } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,13 +38,13 @@ export default function Account() {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (phone && !phoneSchema.safeParse(phone).success) throw new Error("Numéro de téléphone invalide");
+      if (phone && !phoneSchema.safeParse(phone).success) throw new Error(t("Numéro de téléphone invalide"));
       const r1 = await sb.from("profiles").update({ display_name: name.trim().slice(0, 60) }).eq("id", user!.id);
       if (r1.error) throw r1.error;
       const r2 = await sb.from("profile_private").update({ phone: phone || null, marketing_consent: marketing }).eq("user_id", user!.id);
       if (r2.error) throw r2.error;
     },
-    onSuccess: () => { toast.success("Profil enregistré"); qc.invalidateQueries({ queryKey: ["my-profile"] }); qc.invalidateQueries({ queryKey: ["account"] }); },
+    onSuccess: () => { toast.success(t("Profil enregistré")); qc.invalidateQueries({ queryKey: ["my-profile"] }); qc.invalidateQueries({ queryKey: ["account"] }); },
     onError: (e) => toast.error(errorMessage(e)),
   });
 
@@ -54,36 +54,36 @@ export default function Account() {
       const r = await sb.from("profiles").update({ avatar_url: path }).eq("id", user!.id);
       if (r.error) throw r.error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["account"] }); toast.success("Photo mise à jour"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["account"] }); toast.success(t("Photo mise à jour")); },
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   return (
     <div className="container max-w-3xl space-y-6 py-8">
-      <Seo title="Mon compte — MAMI COOK" noindex />
-      <h1 className="text-3xl font-extrabold">Mon compte</h1>
+      <Seo title={t("Mon compte — MAMI COOK")} noindex />
+      <h1 className="text-3xl font-extrabold">{t("Mon compte")}</h1>
 
       <Card className="p-6">
-        <h2 className="mb-4 flex items-center gap-2 font-bold"><User className="h-5 w-5" /> Profil</h2>
+        <h2 className="mb-4 flex items-center gap-2 font-bold"><User className="h-5 w-5" />{" "}{t("Profil")}</h2>
         <div className="mb-5 flex items-center gap-4">
           <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full gradient-primary text-2xl font-bold text-white">
             {profile.data?.avatar_url ? <img src={photoUrl(profile.data.avatar_url)} alt="" className="h-full w-full object-cover" /> : name.slice(0, 1).toUpperCase()}
           </div>
           <label className="cursor-pointer text-sm font-semibold text-primary">
-            {avatar.isPending ? "Envoi…" : "Changer la photo"}
+            {avatar.isPending ? t("Envoi…") : t("Changer la photo")}
             <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => e.target.files?.[0] && avatar.mutate(e.target.files[0])} />
           </label>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nom affiché" htmlFor="name"><Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} /></Field>
-          <Field label="Téléphone" htmlFor="phone" hint="Visible uniquement par vous et le support"><Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" /></Field>
+          <Field label={t("Nom affiché")} htmlFor="name"><Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} /></Field>
+          <Field label={t("Téléphone")} htmlFor="phone" hint={t("Visible uniquement par vous et le support")}><Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" /></Field>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">E-mail : {user!.email}</p>
+        <p className="mt-3 text-sm text-muted-foreground">{t("E-mail :")}{" "}{user!.email}</p>
         <label className="mt-4 flex items-center justify-between gap-4 text-sm">
-          <span>Recevoir les bons plans par e-mail</span>
+          <span>{t("Recevoir les bons plans par e-mail")}</span>
           <Switch checked={marketing} onCheckedChange={setMarketing} />
         </label>
-        <Button className="mt-5" loading={save.isPending} onClick={() => save.mutate()}>Enregistrer</Button>
+        <Button className="mt-5" loading={save.isPending} onClick={() => save.mutate()}>{t("Enregistrer")}</Button>
       </Card>
 
       <Addresses />
@@ -91,12 +91,12 @@ export default function Account() {
       <Preferences />
 
       <Card className="p-6">
-        <h2 className="mb-2 font-bold">Mes données</h2>
-        <p className="mb-4 text-sm text-muted-foreground">Conformément au RGPD, vous pouvez télécharger ou supprimer vos données à tout moment.</p>
+        <h2 className="mb-2 font-bold">{t("Mes données")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("Conformément au RGPD, vous pouvez télécharger ou supprimer vos données à tout moment.")}</p>
         <div className="flex flex-wrap gap-3">
           <ExportButton />
           <DeleteAccount />
-          <Button variant="ghost" onClick={() => signOut()}><LogOut /> Se déconnecter</Button>
+          <Button variant="ghost" onClick={() => signOut()}><LogOut />{" "}{t("Se déconnecter")}</Button>
         </div>
       </Card>
     </div>
@@ -111,16 +111,16 @@ function Addresses() {
   const del = useMutation({ mutationFn: deleteAddress, onSuccess: () => qc.invalidateQueries({ queryKey: ["addresses"] }), onError: (e) => toast.error(errorMessage(e)) });
   return (
     <Card className="p-6">
-      <h2 className="mb-4 flex items-center gap-2 font-bold"><MapPin className="h-5 w-5" /> Mes adresses</h2>
+      <h2 className="mb-4 flex items-center gap-2 font-bold"><MapPin className="h-5 w-5" />{" "}{t("Mes adresses")}</h2>
       <div className="space-y-2">
         {(q.data ?? []).map((a) => (
           <div key={a.id} className="flex items-center justify-between rounded-xl border border-border p-3 text-sm">
-            <span><b>{a.label}</b>{a.is_default && <span className="ml-2 text-xs text-primary">par défaut</span>}<br />{a.line1}, {a.postal_code} {a.city}</span>
-            <Button variant="ghost" size="icon" onClick={() => del.mutate(a.id)} aria-label={`Supprimer ${a.label}`}><Trash2 /></Button>
+            <span><b>{a.label}</b>{a.is_default && <span className="ml-2 text-xs text-primary">{t("par défaut")}</span>}<br />{a.line1}, {a.postal_code} {a.city}</span>
+            <Button variant="ghost" size="icon" onClick={() => del.mutate(a.id)} aria-label={t("Supprimer {name}", { name: a.label })}><Trash2 /></Button>
           </div>
         ))}
       </div>
-      <Button variant="secondary" className="mt-3" onClick={() => setOpen(true)}><Plus /> Ajouter une adresse</Button>
+      <Button variant="secondary" className="mt-3" onClick={() => setOpen(true)}><Plus />{" "}{t("Ajouter une adresse")}</Button>
       <AddressDialog open={open} onOpenChange={setOpen} onCreated={() => qc.invalidateQueries({ queryKey: ["addresses"] })} />
     </Card>
   );
@@ -145,8 +145,8 @@ function Security() {
   };
   const verify = async () => {
     const { error } = await sb.auth.mfa.challengeAndVerify({ factorId: enroll!.id, code });
-    if (error) return toast.error("Code incorrect");
-    toast.success("Double authentification activée 🔐");
+    if (error) return toast.error(t("Code incorrect"));
+    toast.success(t("Double authentification activée 🔐"));
     setEnroll(null); setCode("");
     qc.invalidateQueries({ queryKey: ["mfa"] });
   };
@@ -154,37 +154,37 @@ function Security() {
     const { error } = await sb.auth.mfa.unenroll({ factorId: active!.id });
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["mfa"] });
-    toast.success("Double authentification désactivée");
+    toast.success(t("Double authentification désactivée"));
   };
   const changePw = async () => {
     const { error } = await sb.auth.updateUser({ password: pw });
     if (error) return toast.error(error.message);
-    toast.success("Mot de passe modifié"); setPwOpen(false); setPw("");
+    toast.success(t("Mot de passe modifié")); setPwOpen(false); setPw("");
   };
 
   return (
     <Card className="p-6">
-      <h2 className="mb-4 flex items-center gap-2 font-bold"><ShieldCheck className="h-5 w-5" /> Sécurité</h2>
+      <h2 className="mb-4 flex items-center gap-2 font-bold"><ShieldCheck className="h-5 w-5" />{" "}{t("Sécurité")}</h2>
       <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" onClick={() => setPwOpen(true)}><KeyRound /> Changer le mot de passe</Button>
-        {active ? <Button variant="outline" onClick={disable}>Désactiver la double authentification</Button>
-          : <Button variant="outline" onClick={start}><ShieldCheck /> Activer la double authentification</Button>}
+        <Button variant="secondary" onClick={() => setPwOpen(true)}><KeyRound />{" "}{t("Changer le mot de passe")}</Button>
+        {active ? <Button variant="outline" onClick={disable}>{t("Désactiver la double authentification")}</Button>
+          : <Button variant="outline" onClick={start}><ShieldCheck />{" "}{t("Activer la double authentification")}</Button>}
       </div>
-      {active && <p className="mt-3 text-sm text-status-hot">✓ Double authentification active</p>}
-      <Dialog open={!!enroll} onOpenChange={(o) => !o && setEnroll(null)} title="Double authentification" description="Scannez ce QR code avec Google Authenticator, 1Password, Authy…">
+      {active && <p className="mt-3 text-sm text-status-hot">{t("✓ Double authentification active")}</p>}
+      <Dialog open={!!enroll} onOpenChange={(o) => !o && setEnroll(null)} title={t("Double authentification")} description={t("Scannez ce QR code avec Google Authenticator, 1Password, Authy…")}>
         {enroll && (
           <div className="space-y-4 text-center">
-            <img src={enroll.qr} alt="QR code" className="mx-auto h-48 w-48 rounded-xl bg-white p-2" />
-            <p className="break-all text-xs text-muted-foreground">Clé manuelle : {enroll.secret}</p>
-            <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder="Code à 6 chiffres" className="text-center text-xl tracking-[0.3em]" />
-            <Button className="w-full" disabled={code.length !== 6} onClick={verify}>Activer</Button>
+            <img src={enroll.qr} alt={t("QR code")} className="mx-auto h-48 w-48 rounded-xl bg-white p-2" />
+            <p className="break-all text-xs text-muted-foreground">{t("Clé manuelle :")}{" "}{enroll.secret}</p>
+            <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder={t("Code à 6 chiffres")} className="text-center text-xl tracking-[0.3em]" />
+            <Button className="w-full" disabled={code.length !== 6} onClick={verify}>{t("Activer")}</Button>
           </div>
         )}
       </Dialog>
-      <Dialog open={pwOpen} onOpenChange={setPwOpen} title="Nouveau mot de passe">
+      <Dialog open={pwOpen} onOpenChange={setPwOpen} title={t("Nouveau mot de passe")}>
         <div className="space-y-4">
-          <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" placeholder="10 caractères min." />
-          <Button className="w-full" disabled={pw.length < 10} onClick={changePw}>Enregistrer</Button>
+          <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" placeholder={t("10 caractères min.")} />
+          <Button className="w-full" disabled={pw.length < 10} onClick={changePw}>{t("Enregistrer")}</Button>
         </div>
       </Dialog>
     </Card>
@@ -200,7 +200,7 @@ function Preferences() {
   };
   return (
     <Card className="p-6">
-      <label className="flex items-center justify-between gap-4 text-sm font-semibold"><span className="flex items-center gap-2"><Moon className="h-5 w-5" /> Mode sombre</span><Switch checked={dark} onCheckedChange={toggle} /></label>
+      <label className="flex items-center justify-between gap-4 text-sm font-semibold"><span className="flex items-center gap-2"><Moon className="h-5 w-5" />{" "}{t("Mode sombre")}</span><Switch checked={dark} onCheckedChange={toggle} /></label>
     </Card>
   );
 }
@@ -217,7 +217,7 @@ function ExportButton() {
     a.click();
     URL.revokeObjectURL(url);
   };
-  return <Button variant="secondary" loading={loading} onClick={run}><Download /> Télécharger mes données</Button>;
+  return <Button variant="secondary" loading={loading} onClick={run}><Download />{" "}{t("Télécharger mes données")}</Button>;
 }
 
 function DeleteAccount() {
@@ -229,7 +229,7 @@ function DeleteAccount() {
     setLoading(true);
     try {
       await callFunction("delete-account", {});
-      toast.success("Votre compte a été supprimé. Au revoir 👋");
+      toast.success(t("Votre compte a été supprimé. Au revoir 👋"));
       await signOut();
     } catch (e) {
       toast.error(errorMessage(e));
@@ -239,12 +239,12 @@ function DeleteAccount() {
   };
   return (
     <>
-      <Button variant="ghost" className="text-destructive" onClick={() => setOpen(true)}><Trash2 /> Supprimer mon compte</Button>
-      <Dialog open={open} onOpenChange={setOpen} title="Supprimer mon compte" description="Action définitive. Vos commandes sont conservées de façon anonyme pour nos obligations comptables.">
+      <Button variant="ghost" className="text-destructive" onClick={() => setOpen(true)}><Trash2 />{" "}{t("Supprimer mon compte")}</Button>
+      <Dialog open={open} onOpenChange={setOpen} title={t("Supprimer mon compte")} description={t("Action définitive. Vos commandes sont conservées de façon anonyme pour nos obligations comptables.")}>
         <div className="space-y-4">
-          <Field label={<>Tapez <b>SUPPRIMER</b> pour confirmer</>} htmlFor="confirm"><Input id="confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
-          <Button variant="destructive" className="w-full" disabled={confirm !== "SUPPRIMER"} loading={loading} onClick={run}>Supprimer définitivement</Button>
-          <p className="text-center text-xs text-muted-foreground">Une question ? <Link to="/aide#contact" className="text-primary">Contactez-nous</Link></p>
+          <Field label={<>{t("Tapez")}{" "}<b>{t("SUPPRIMER")}</b>{" "}{t("pour confirmer")}</>} htmlFor="confirm"><Input id="confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
+          <Button variant="destructive" className="w-full" disabled={confirm !== "SUPPRIMER"} loading={loading} onClick={run}>{t("Supprimer définitivement")}</Button>
+          <p className="text-center text-xs text-muted-foreground">{t("Une question ?")}{" "}<Link to="/aide#contact" className="text-primary">{t("Contactez-nous")}</Link></p>
         </div>
       </Dialog>
     </>

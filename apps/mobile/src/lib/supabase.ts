@@ -1,3 +1,4 @@
+import { t } from "@mami/shared";
 import "react-native-url-polyfill/auto";
 import { AppState, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
@@ -56,7 +57,7 @@ if (supabase && Platform.OS !== "web") {
 }
 
 export function requireSupabase(): SupabaseClient {
-  if (!supabase) throw new Error("Mode démo : configurez Supabase (voir docs/DEPLOIEMENT.md)");
+  if (!supabase) throw new Error(t("Mode démo : configurez Supabase (voir docs/DEPLOIEMENT.md)"));
   return supabase;
 }
 

@@ -8,10 +8,12 @@ export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; l
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+import { intlLocale } from "./i18n";
+
 export function formatDistance(meters: number | null | undefined): string {
   if (meters == null) return "";
   if (meters < 1000) return `${Math.max(100, Math.round(meters / 100) * 100)} m`;
-  return `${(meters / 1000).toFixed(1).replace(".", ",")} km`;
+  return `${new Intl.NumberFormat(intlLocale(), { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(meters / 1000)} km`;
 }
 
 /** Paris centre — position par défaut quand la géolocalisation est refusée. */

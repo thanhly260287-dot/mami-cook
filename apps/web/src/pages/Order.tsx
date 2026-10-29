@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bike, Check, ChefHat, CircleCheck, Clock, Flag, MapPin, MessageCircle, Package, Send, Store, X } from "lucide-react";
-import { formatDate, formatEuros, ORDER_STATUS_LABELS, relativeDay, type Order } from "@mami/shared";
+import { formatDate, formatEuros, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale } from "@mami/shared";
 import { createReview, fetchMessages, fetchMyReviewForOrder, fetchOrder, fetchPickupAddress, orderAction, sendMessage } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtime } from "@/hooks/useRealtime";
@@ -16,10 +16,10 @@ import { ReportDialog } from "@/components/ReportDialog";
 import { Seo } from "@/components/Seo";
 
 const STEPS: { status: Order["status"][]; label: string; icon: React.ReactNode }[] = [
-  { status: ["paid"], label: "Payée", icon: <Check /> },
-  { status: ["accepted", "preparing"], label: "En cuisine", icon: <ChefHat /> },
-  { status: ["ready", "out_for_delivery"], label: "Prête", icon: <Package /> },
-  { status: ["completed"], label: "Remise", icon: <CircleCheck /> },
+  { status: ["paid"], label: t("Payée"), icon: <Check /> },
+  { status: ["accepted", "preparing"], label: t("En cuisine"), icon: <ChefHat /> },
+  { status: ["ready", "out_for_delivery"], label: t("Prête"), icon: <Package /> },
+  { status: ["completed"], label: t("Remise"), icon: <CircleCheck /> },
 ];
 const ORDER_FLOW: Order["status"][] = ["pending_payment", "paid", "accepted", "preparing", "ready", "out_for_delivery", "completed"];
 
@@ -38,38 +38,38 @@ export default function OrderPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
 
-  useEffect(() => { if (params.get("paye")) toast.success("Paiement reçu, merci ! 🎉"); }, [params]);
+  useEffect(() => { if (params.get("paye")) toast.success(t("Paiement reçu, merci ! 🎉")); }, [params]);
 
   const action = useMutation({
     mutationFn: (v: { to: string; note?: string }) => orderAction(id!, v.to, { note: v.note }),
-    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["order", id] }); toast.success(r.refunded ? "Commande annulée — vous serez remboursé sous 5 à 10 jours" : "C'est noté !"); },
+    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["order", id] }); toast.success(r.refunded ? t("Commande annulée — vous serez remboursé sous 5 à 10 jours") : t("C'est noté !")); },
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   if (order.isLoading) return <div className="flex justify-center py-24"><Spinner /></div>;
   const o = order.data;
-  if (!o) return <EmptyState icon="📦" title="Commande introuvable" action={<Button asChild><Link to="/commandes">Mes commandes</Link></Button>} />;
+  if (!o) return <EmptyState icon="📦" title={t("Commande introuvable")} action={<Button asChild><Link to="/commandes">{t("Mes commandes")}</Link></Button>} />;
   const isCustomer = o.customer_id === user?.id;
   const idx = ORDER_FLOW.indexOf(o.status);
   const finished = ["cancelled", "refunded", "expired"].includes(o.status);
 
   return (
     <div className="container max-w-4xl py-8">
-      <Seo title={`Commande n°${o.number} — MAMI COOK`} noindex />
+      <Seo title={t("Commande n°{n}", { n: o.number }) + " — MAMI COOK"} noindex />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">Commande n°{o.number} · {formatDate(o.created_at, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>
-          <h1 className="text-3xl font-extrabold">{ORDER_STATUS_LABELS[o.status]}</h1>
+          <p className="text-sm text-muted-foreground">{t("Commande n°")}{o.number} · {formatDate(o.created_at, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>
+          <h1 className="text-3xl font-extrabold">{t(ORDER_STATUS_LABELS[o.status])}</h1>
           {o.cooks && <Link to={`/cuisine/${o.cooks.slug}`} className="text-sm font-semibold text-primary hover:underline">{o.cooks.kitchen_name}</Link>}
         </div>
         <Badge tone={finished ? "danger" : o.status === "completed" ? "success" : "primary"} className="text-sm">
           {o.fulfillment === "pickup" ? <Store className="h-3.5 w-3.5" /> : <Bike className="h-3.5 w-3.5" />}
-          {o.fulfillment === "pickup" ? "Retrait" : "Livraison"} · {relativeDay(o.scheduled_for)}
+          {o.fulfillment === "pickup" ? t("Retrait") : t("Livraison")} · {relativeDay(o.scheduled_for)}
         </Badge>
       </div>
 
       {o.status === "pending_payment" && (
-        <Card className="mb-6 flex items-center gap-3 p-5"><Spinner className="h-6 w-6" /><p className="text-sm">Confirmation du paiement en cours…</p></Card>
+        <Card className="mb-6 flex items-center gap-3 p-5"><Spinner className="h-6 w-6" /><p className="text-sm">{t("Confirmation du paiement en cours…")}</p></Card>
       )}
 
       {!finished && o.status !== "pending_payment" && (
@@ -81,7 +81,7 @@ export default function OrderPage() {
                 <li key={s.label} className="flex flex-1 items-center last:flex-none">
                   <div className="flex flex-col items-center gap-1.5">
                     <span className={cn("flex h-10 w-10 items-center justify-center rounded-full [&_svg]:h-5 [&_svg]:w-5", done ? "gradient-primary text-white" : "bg-muted text-muted-foreground")}>{s.icon}</span>
-                    <span className={cn("text-xs font-semibold", !done && "text-muted-foreground")}>{s.label}</span>
+                    <span className={cn("text-xs font-semibold", !done && "text-muted-foreground")}>{t(s.label)}</span>
                   </div>
                   {i < STEPS.length - 1 && <div className={cn("mx-2 mb-5 h-1 flex-1 rounded-full", idx >= ORDER_FLOW.indexOf(STEPS[i + 1].status[0]) ? "gradient-primary" : "bg-muted")} />}
                 </li>
@@ -93,17 +93,17 @@ export default function OrderPage() {
 
       {isCustomer && o.fulfillment === "pickup" && ["paid", "accepted", "preparing", "ready"].includes(o.status) && (
         <Card className="mb-6 border-primary/30 bg-primary/5 p-6 text-center">
-          <p className="text-sm font-semibold text-muted-foreground">Code de retrait à donner à la cuisinière</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t("Code de retrait à donner à la cuisinière")}</p>
           <p className="mt-1 text-5xl font-extrabold tracking-[0.3em] tabular-nums">{o.pickup_code}</p>
           <PickupAddress orderId={o.id} status={o.status} />
         </Card>
       )}
 
-      {o.cancel_reason && <Card className="mb-6 border-destructive/30 bg-destructive/5 p-4 text-sm"><b>Motif :</b> {o.cancel_reason}</Card>}
+      {o.cancel_reason && <Card className="mb-6 border-destructive/30 bg-destructive/5 p-4 text-sm"><b>{t("Motif :")}</b> {o.cancel_reason}</Card>}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="p-5">
-          <h2 className="mb-3 font-bold">Détail</h2>
+          <h2 className="mb-3 font-bold">{t("Détail")}</h2>
           <ul className="space-y-2 text-sm">
             {o.order_items?.map((it) => (
               <li key={it.id} className="flex justify-between gap-2">
@@ -113,10 +113,10 @@ export default function OrderPage() {
             ))}
           </ul>
           <dl className="mt-4 space-y-1 border-t border-border pt-3 text-sm">
-            {o.discount_cents > 0 && <div className="flex justify-between text-status-hot"><dt>Remise volume</dt><dd>−{formatEuros(o.discount_cents)}</dd></div>}
-            {o.promo_cents > 0 && <div className="flex justify-between text-status-hot"><dt>Code promo</dt><dd>−{formatEuros(o.promo_cents)}</dd></div>}
-            {o.delivery_fee_cents > 0 && <div className="flex justify-between"><dt>Livraison</dt><dd>{formatEuros(o.delivery_fee_cents)}</dd></div>}
-            <div className="flex justify-between text-base font-extrabold"><dt>Total payé</dt><dd>{formatEuros(o.total_cents)}</dd></div>
+            {o.discount_cents > 0 && <div className="flex justify-between text-status-hot"><dt>{t("Remise volume")}</dt><dd>−{formatEuros(o.discount_cents)}</dd></div>}
+            {o.promo_cents > 0 && <div className="flex justify-between text-status-hot"><dt>{t("Code promo")}</dt><dd>−{formatEuros(o.promo_cents)}</dd></div>}
+            {o.delivery_fee_cents > 0 && <div className="flex justify-between"><dt>{t("Livraison")}</dt><dd>{formatEuros(o.delivery_fee_cents)}</dd></div>}
+            <div className="flex justify-between text-base font-extrabold"><dt>{t("Total payé")}</dt><dd>{formatEuros(o.total_cents)}</dd></div>
           </dl>
           {o.delivery_address && <p className="mt-4 rounded-xl bg-muted p-3 text-sm"><MapPin className="mr-1 inline h-4 w-4" />{o.delivery_address.line1}, {o.delivery_address.postal_code} {o.delivery_address.city}</p>}
           {o.note && <p className="mt-3 rounded-xl bg-muted p-3 text-sm italic">« {o.note} »</p>}
@@ -127,17 +127,17 @@ export default function OrderPage() {
 
       {isCustomer && (
         <div className="mt-6 flex flex-wrap gap-3">
-          {["ready", "out_for_delivery"].includes(o.status) && <Button onClick={() => action.mutate({ to: "completed" })} loading={action.isPending}><CircleCheck /> J'ai bien reçu ma commande</Button>}
-          {["pending_payment", "paid"].includes(o.status) && <Button variant="outline" onClick={() => setCancelOpen(true)}><X /> Annuler la commande</Button>}
-          <Button variant="ghost" onClick={() => setReportOpen(true)}><Flag /> Signaler un problème</Button>
+          {["ready", "out_for_delivery"].includes(o.status) && <Button onClick={() => action.mutate({ to: "completed" })} loading={action.isPending}><CircleCheck />{" "}{t("J'ai bien reçu ma commande")}</Button>}
+          {["pending_payment", "paid"].includes(o.status) && <Button variant="outline" onClick={() => setCancelOpen(true)}><X />{" "}{t("Annuler la commande")}</Button>}
+          <Button variant="ghost" onClick={() => setReportOpen(true)}><Flag />{" "}{t("Signaler un problème")}</Button>
         </div>
       )}
       {isCustomer && o.status === "completed" && <ReviewBox order={o} />}
 
-      <Dialog open={cancelOpen} onOpenChange={setCancelOpen} title="Annuler la commande ?" description={o.status === "paid" ? "Vous serez remboursé intégralement." : undefined}>
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen} title={t("Annuler la commande ?")} description={o.status === "paid" ? t("Vous serez remboursé intégralement.") : undefined}>
         <div className="flex gap-3">
-          <Button variant="secondary" className="flex-1" onClick={() => setCancelOpen(false)}>Garder</Button>
-          <Button variant="destructive" className="flex-1" loading={action.isPending} onClick={() => action.mutate({ to: "cancelled", note: "Annulée par le client" }, { onSettled: () => setCancelOpen(false) })}>Annuler</Button>
+          <Button variant="secondary" className="flex-1" onClick={() => setCancelOpen(false)}>{t("Garder")}</Button>
+          <Button variant="destructive" className="flex-1" loading={action.isPending} onClick={() => action.mutate({ to: "cancelled", note: t("Annulée par le client") }, { onSettled: () => setCancelOpen(false) })}>{t("Annuler")}</Button>
         </div>
       </Dialog>
       <ReportDialog open={reportOpen} onOpenChange={setReportOpen} targetType="order" targetId={o.id} />
@@ -161,19 +161,19 @@ export function ChatPanel({ orderId, disabled }: { orderId: string; disabled?: b
 
   return (
     <Card className="flex h-[360px] flex-col p-5">
-      <h2 className="mb-3 flex items-center gap-2 font-bold"><MessageCircle className="h-4 w-4" /> Messages</h2>
+      <h2 className="mb-3 flex items-center gap-2 font-bold"><MessageCircle className="h-4 w-4" />{" "}{t("Messages")}</h2>
       <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto pr-1">
-        {(msgs.data ?? []).length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">Une question ? Écrivez ici.</p>}
+        {(msgs.data ?? []).length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">{t("Une question ? Écrivez ici.")}</p>}
         {msgs.data?.map((m) => (
           <div key={m.id} className={cn("max-w-[85%] rounded-2xl px-3 py-2 text-sm", m.sender_id === user?.id ? "ml-auto gradient-primary text-white" : "bg-muted")}>
             <p className="whitespace-pre-wrap break-words">{m.body}</p>
-            <p className={cn("mt-0.5 text-[10px]", m.sender_id === user?.id ? "text-white/70" : "text-muted-foreground")}><Clock className="mr-0.5 inline h-2.5 w-2.5" />{new Date(m.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</p>
+            <p className={cn("mt-0.5 text-[10px]", m.sender_id === user?.id ? "text-white/70" : "text-muted-foreground")}><Clock className="mr-0.5 inline h-2.5 w-2.5" />{new Date(m.created_at).toLocaleTimeString(intlLocale(), { hour: "2-digit", minute: "2-digit" })}</p>
           </div>
         ))}
       </div>
       <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (text.trim()) send.mutate(); }}>
-        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={disabled ? "Messagerie disponible après paiement" : "Votre message…"} disabled={disabled} maxLength={2000} aria-label="Message" />
-        <Button size="icon" type="submit" disabled={disabled || !text.trim()} loading={send.isPending} aria-label="Envoyer"><Send /></Button>
+        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={disabled ? t("Messagerie disponible après paiement") : t("Votre message…")} disabled={disabled} maxLength={2000} aria-label={t("Message")} />
+        <Button size="icon" type="submit" disabled={disabled || !text.trim()} loading={send.isPending} aria-label={t("Envoyer")}><Send /></Button>
       </form>
     </Card>
   );
@@ -190,18 +190,18 @@ function ReviewBox({ order }: { order: Order }) {
       orderId: order.id, customerId: user!.id, cookId: order.cook_id, rating, comment,
       dishRatings: Object.fromEntries((order.order_items ?? []).map((i) => [i.dish_id, rating])),
     }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["review", order.id] }); toast.success("Merci pour votre avis ! ⭐"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["review", order.id] }); toast.success(t("Merci pour votre avis ! ⭐")); },
     onError: (e) => toast.error(errorMessage(e)),
   });
   if (existing.isLoading) return null;
-  if (existing.data) return <Card className="mt-6 p-5 text-sm">Vous avez noté cette commande {existing.data.rating}/5. Merci !</Card>;
+  if (existing.data) return <Card className="mt-6 p-5 text-sm">{t("Vous avez noté cette commande")}{" "}{existing.data.rating}/5. Merci !</Card>;
   return (
     <Card className="mt-6 p-6">
-      <h2 className="mb-1 text-lg font-bold">Comment était votre repas ?</h2>
-      <p className="mb-4 text-sm text-muted-foreground">Votre avis aide la communauté et la cuisinière.</p>
+      <h2 className="mb-1 text-lg font-bold">{t("Comment était votre repas ?")}</h2>
+      <p className="mb-4 text-sm text-muted-foreground">{t("Votre avis aide la communauté et la cuisinière.")}</p>
       <StarInput value={rating} onChange={setRating} />
-      <Textarea className="mt-4" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder="Racontez-nous (facultatif)" />
-      <Button className="mt-4" disabled={!rating} loading={submit.isPending} onClick={() => submit.mutate()}>Publier mon avis</Button>
+      <Textarea className="mt-4" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder={t("Racontez-nous (facultatif)")} />
+      <Button className="mt-4" disabled={!rating} loading={submit.isPending} onClick={() => submit.mutate()}>{t("Publier mon avis")}</Button>
     </Card>
   );
 }
@@ -209,13 +209,13 @@ function ReviewBox({ order }: { order: Order }) {
 function PickupAddress({ orderId, status }: { orderId: string; status: Order["status"] }) {
   const accepted = ["accepted", "preparing", "ready"].includes(status);
   const q = useQuery({ queryKey: ["pickup", orderId, status], enabled: accepted, queryFn: () => fetchPickupAddress(orderId) });
-  if (!accepted) return <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /> L'adresse de retrait s'affiche dès que la cuisinière accepte la commande.</p>;
+  if (!accepted) return <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{" "}{t("L'adresse de retrait s'affiche dès que la cuisinière accepte la commande.")}</p>;
   if (!q.data?.line1) return null;
   const a = q.data;
   return (
     <div className="mt-4 rounded-xl bg-card p-3 text-sm">
       <p className="font-semibold"><MapPin className="mr-1 inline h-4 w-4" />{a.line1}{a.line2 ? `, ${a.line2}` : ""}, {a.postal_code} {a.city}</p>
-      <a className="mt-1 inline-block text-xs font-semibold text-primary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/directions?to=${a.lat}%2C${a.lng}`}>Itinéraire →</a>
+      <a className="mt-1 inline-block text-xs font-semibold text-primary" target="_blank" rel="noopener noreferrer" href={`https://www.openstreetmap.org/directions?to=${a.lat}%2C${a.lng}`}>{t("Itinéraire →")}</a>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 // Position de recherche : géolocalisation du navigateur ou adresse choisie, mémorisée localement.
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import { DEFAULT_LOCATION } from "@mami/shared";
+import { DEFAULT_LOCATION, t } from "@mami/shared";
 
 interface Geo { lat: number; lng: number; label: string }
 interface GeoState extends Geo {
@@ -30,7 +30,7 @@ export function GeoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const locate = useCallback(() => new Promise<void>((resolve, reject) => {
-    if (!navigator.geolocation) return reject(new Error("Géolocalisation indisponible"));
+    if (!navigator.geolocation) return reject(new Error(t("Géolocalisation indisponible")));
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -46,7 +46,7 @@ export function GeoProvider({ children }: { children: ReactNode }) {
         setLocating(false);
         resolve();
       },
-      (err) => { setLocating(false); reject(new Error(err.code === 1 ? "Autorisez la localisation dans votre navigateur" : "Position introuvable")); },
+      (err) => { setLocating(false); reject(new Error(err.code === 1 ? t("Autorisez la localisation dans votre navigateur") : t("Position introuvable"))); },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
     );
   }), [setLocation]);

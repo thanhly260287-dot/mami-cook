@@ -1,3 +1,4 @@
+import { t } from "@mami/shared";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -21,25 +22,25 @@ export default function Home() {
 
   return (
     <>
-      <Seo title="MAMI COOK — Manger comme à la maison, partout" path="/" />
+      <Seo title={t("MAMI COOK — Manger comme à la maison, partout")} path="/" />
       <HeroSection openCount={feed.data?.length} />
       <section className="py-6"><div className="container"><CuisineFilter value={cuisine} onChange={setCuisine} /></div></section>
       <section className="pb-16">
         <div className="container">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Disponible aujourd'hui</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Des plats de nos mamans, nos tantes… pour tous ! 🏠 · autour de {geo.label}</p>
+              <h2 className="text-2xl font-bold">{t("Disponible aujourd'hui")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("Des plats de nos mamans, nos tantes… pour tous ! 🏠 · autour de")}{" "}{geo.label}</p>
             </div>
-            <Link to={`/explorer${cuisine ? `?cuisine=${cuisine}` : ""}`} className="shrink-0 text-sm font-semibold text-primary hover:underline">Voir tout →</Link>
+            <Link to={`/explorer${cuisine ? `?cuisine=${cuisine}` : ""}`} className="shrink-0 text-sm font-semibold text-primary hover:underline">{t("Voir tout →")}</Link>
           </div>
           {feed.isLoading ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, i) => <DishCardSkeleton key={i} />)}</div>
           ) : feed.isError ? (
-            <EmptyState icon="😕" title="Impossible de charger les plats" action={<Button onClick={() => feed.refetch()}>Réessayer</Button>}>Vérifiez votre connexion internet.</EmptyState>
+            <EmptyState icon="😕" title={t("Impossible de charger les plats")} action={<Button onClick={() => feed.refetch()}>{t("Réessayer")}</Button>}>{t("Vérifiez votre connexion internet.")}</EmptyState>
           ) : feed.data!.length === 0 ? (
-            <EmptyState icon="🍳" title="Pas encore de plat près de chez vous" action={<Button asChild><Link to="/devenir-cuisinier">Devenir la première Mami Cook du quartier</Link></Button>}>
-              Essayez une autre adresse ou une autre cuisine.
+            <EmptyState icon="🍳" title={t("Pas encore de plat près de chez vous")} action={<Button asChild><Link to="/devenir-cuisinier">{t("Devenir la première Mami Cook du quartier")}</Link></Button>}>
+              {t("Essayez une autre adresse ou une autre cuisine.")}
             </EmptyState>
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

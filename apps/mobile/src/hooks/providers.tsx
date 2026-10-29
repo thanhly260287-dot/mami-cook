@@ -7,7 +7,7 @@ import * as Device from "expo-device";
 import Constants from "expo-constants";
 import type { Session } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { computeOrderPrice, DEFAULT_LOCATION, MAX_QTY_PER_LINE, type Cook, type FeedItem } from "@mami/shared";
+import { computeOrderPrice, DEFAULT_LOCATION, MAX_QTY_PER_LINE, type Cook, type FeedItem, t } from "@mami/shared";
 import { supabase } from "@/lib/supabase";
 import { fetchMyCook } from "@/lib/api";
 
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }), [session, userId, loading, cook.data, qc]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
-export const useAuth = () => { const c = useContext(AuthCtx); if (!c) throw new Error("AuthProvider manquant"); return c; };
+export const useAuth = () => { const c = useContext(AuthCtx); if (!c) throw new Error(t("AuthProvider manquant")); return c; };
 
 // Notifications push : jeton Expo enregistré pour la personne connectée.
 Notifications.setNotificationHandler({
@@ -71,7 +71,7 @@ export function GeoProvider({ children }: { children: ReactNode }) {
     setLocating(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") throw new Error("Autorisez la localisation dans les réglages");
+      if (status !== "granted") throw new Error(t("Autorisez la localisation dans les réglages"));
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const [place] = await Location.reverseGeocodeAsync(pos.coords).catch(() => []);
       setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: place?.city ?? "Ma position" });
@@ -81,7 +81,7 @@ export function GeoProvider({ children }: { children: ReactNode }) {
   }, [setLocation]);
   return <GeoCtx.Provider value={{ ...geo, locate, setLocation, locating }}>{children}</GeoCtx.Provider>;
 }
-export const useGeo = () => { const c = useContext(GeoCtx); if (!c) throw new Error("GeoProvider manquant"); return c; };
+export const useGeo = () => { const c = useContext(GeoCtx); if (!c) throw new Error(t("GeoProvider manquant")); return c; };
 
 // ------------------------------------------------------------------ panier
 export interface CartLine {
@@ -142,4 +142,4 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }), [lines]);
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
 }
-export const useCart = () => { const c = useContext(CartCtx); if (!c) throw new Error("CartProvider manquant"); return c; };
+export const useCart = () => { const c = useContext(CartCtx); if (!c) throw new Error(t("CartProvider manquant")); return c; };

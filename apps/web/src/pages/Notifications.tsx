@@ -1,3 +1,4 @@
+import { t, intlLocale } from "@mami/shared";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,16 +17,16 @@ export default function Notifications() {
   useRealtime(`notif-${user?.id}`, "notifications", `user_id=eq.${user?.id}`, [["notifications", user?.id]]);
   useEffect(() => {
     if (q.data?.some((n) => !n.read_at)) {
-      const t = setTimeout(() => markNotificationsRead(user!.id).then(() => qc.invalidateQueries({ queryKey: ["notifications"] })), 1500);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => markNotificationsRead(user!.id).then(() => qc.invalidateQueries({ queryKey: ["notifications"] })), 1500);
+      return () => clearTimeout(timer);
     }
   }, [q.data, user, qc]);
 
   return (
     <div className="container max-w-2xl py-8">
-      <Seo title="Notifications — MAMI COOK" noindex />
-      <h1 className="mb-6 text-3xl font-extrabold">Notifications</h1>
-      {q.isLoading ? <Spinner /> : !q.data?.length ? <EmptyState icon="🔔" title="Rien de nouveau" /> : (
+      <Seo title={t("Notifications — MAMI COOK")} noindex />
+      <h1 className="mb-6 text-3xl font-extrabold">{t("Notifications")}</h1>
+      {q.isLoading ? <Spinner /> : !q.data?.length ? <EmptyState icon="🔔" title={t("Rien de nouveau")} /> : (
         <div className="space-y-2">
           {q.data.map((n) => {
             const orderId = typeof n.data.order_id === "string" ? n.data.order_id : null;
@@ -35,7 +36,7 @@ export default function Notifications() {
                 <div>
                   <p className="font-semibold">{n.title}</p>
                   {n.body && <p className="text-sm text-muted-foreground">{n.body}</p>}
-                  <p className="mt-1 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString(intlLocale(), { dateStyle: "medium", timeStyle: "short" })}</p>
                 </div>
               </Card>
             );

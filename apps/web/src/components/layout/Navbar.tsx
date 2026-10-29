@@ -1,3 +1,4 @@
+import { t } from "@mami/shared";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
@@ -8,6 +9,7 @@ import { useCart } from "@/hooks/useCart";
 import { useGeo } from "@/hooks/useGeo";
 import { fetchNotifications } from "@/lib/api";
 import { LocationDialog } from "@/components/LocationDialog";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -31,24 +33,25 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
       <div className="container flex h-16 items-center justify-between gap-3">
-        <Link to="/" className="shrink-0" aria-label="MAMI COOK — accueil">
-          <img src={`${import.meta.env.BASE_URL}images/logo.svg`} alt="MAMI COOK" className="h-8 w-auto sm:h-9" />
+        <Link to="/" className="shrink-0" aria-label={t("MAMI COOK — accueil")}>
+          <img src={`${import.meta.env.BASE_URL}images/logo.svg`} alt={t("MAMI COOK")} className="h-8 w-auto sm:h-9" />
         </Link>
 
         <form onSubmit={submit} className="hidden md:flex flex-1 max-w-md mx-4" role="search">
           <label className="relative w-full">
-            <span className="sr-only">Chercher un plat</span>
+            <span className="sr-only">{t("Chercher un plat")}</span>
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} type="search" placeholder="Chercher un plat, une cuisine…"
+            <input value={q} onChange={(e) => setQ(e.target.value)} type="search" placeholder={t("Chercher un plat, une cuisine…")}
               className="w-full rounded-xl bg-muted py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </label>
         </form>
 
-        <nav className="flex items-center gap-0.5" aria-label="Navigation principale">
+        <nav className="flex items-center gap-0.5" aria-label={t("Navigation principale")}>
           <button onClick={() => setLocOpen(true)} className="flex max-w-[160px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
             <MapPin className="h-4 w-4 shrink-0" />
             <span className="hidden truncate sm:inline">{geo.label}</span>
           </button>
+          <LanguageSwitcher compact className="hidden rounded-xl p-2.5 text-muted-foreground hover:bg-muted sm:inline-flex" />
           {user && (
             <Link to="/notifications" className="relative rounded-xl p-2.5 text-muted-foreground hover:bg-muted" aria-label={`Notifications${unread ? ` (${unread} non lues)` : ""}`}>
               <Bell className="h-5 w-5" />
@@ -64,7 +67,7 @@ export function Navbar() {
 
           {user ? (
             <Dropdown.Root>
-              <Dropdown.Trigger className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted" aria-label="Mon compte">
+              <Dropdown.Trigger className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted" aria-label={t("Mon compte")}>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
                   {displayName.slice(0, 1).toUpperCase() || "?"}
                 </span>
@@ -73,24 +76,24 @@ export function Navbar() {
                 <Dropdown.Content align="end" sideOffset={8} className="z-50 min-w-[230px] rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
                   <div className="px-3 py-2 text-sm"><p className="font-bold">{displayName}</p><p className="truncate text-xs text-muted-foreground">{user.email}</p></div>
                   <Dropdown.Separator className="my-1 h-px bg-border" />
-                  <MenuItem to="/commandes" icon={<Package />}>Mes commandes</MenuItem>
-                  <MenuItem to="/favoris" icon={<Heart />}>Mes cuisines favorites</MenuItem>
-                  <MenuItem to="/compte" icon={<User />}>Mon compte</MenuItem>
+                  <MenuItem to="/commandes" icon={<Package />}>{t("Mes commandes")}</MenuItem>
+                  <MenuItem to="/favoris" icon={<Heart />}>{t("Mes cuisines favorites")}</MenuItem>
+                  <MenuItem to="/compte" icon={<User />}>{t("Mon compte")}</MenuItem>
                   <Dropdown.Separator className="my-1 h-px bg-border" />
-                  {cook ? <MenuItem to="/cuisine/tableau-de-bord" icon={<ChefHat />}>Ma cuisine</MenuItem>
-                    : <MenuItem to="/devenir-cuisinier" icon={<ChefHat />}>Devenir Mami Cook</MenuItem>}
-                  {isStaff && <MenuItem to="/admin" icon={<Shield />}>Administration</MenuItem>}
+                  {cook ? <MenuItem to="/cuisine/tableau-de-bord" icon={<ChefHat />}>{t("Ma cuisine")}</MenuItem>
+                    : <MenuItem to="/devenir-cuisinier" icon={<ChefHat />}>{t("Devenir Mami Cook")}</MenuItem>}
+                  {isStaff && <MenuItem to="/admin" icon={<Shield />}>{t("Administration")}</MenuItem>}
                   <Dropdown.Separator className="my-1 h-px bg-border" />
                   <Dropdown.Item onSelect={() => signOut().then(() => navigate("/"))}
                     className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-destructive outline-none data-[highlighted]:bg-muted [&_svg]:h-4 [&_svg]:w-4">
-                    <LogOut /> Se déconnecter
+                    <LogOut />{" "}{t("Se déconnecter")}
                   </Dropdown.Item>
                 </Dropdown.Content>
               </Dropdown.Portal>
             </Dropdown.Root>
           ) : (
             <NavLink to="/connexion" className={({ isActive }) => cn("ml-1 rounded-xl px-4 py-2 text-sm font-semibold", isActive ? "bg-muted" : "gradient-primary text-primary-foreground")}>
-              Connexion
+              {t("Connexion")}
             </NavLink>
           )}
         </nav>

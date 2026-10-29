@@ -66,3 +66,14 @@ test("en-têtes de sécurité présents", async ({ request }) => {
   expect(h["x-content-type-options"]).toBe("nosniff");
   expect(h["strict-transport-security"]).toContain("max-age");
 });
+
+test("langues : détection du navigateur, changement de langue et arabe de droite à gauche", async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: "en-GB" });
+  const page = await ctx.newPage();
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("at home");
+  await page.getByRole("combobox", { name: "Language" }).last().selectOption("ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("في البيت");
+  await ctx.close();
+});

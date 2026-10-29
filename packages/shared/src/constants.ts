@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 // Référentiels partagés entre le site, les applis et la base de données.
 // Toute modification ici doit être répercutée dans supabase/migrations (types enum / contraintes).
 
@@ -30,7 +32,7 @@ export const CUISINE_IDS = CUISINES.map((c) => c.id) as [CuisineId, ...CuisineId
 
 export function cuisineLabel(id: string): string {
   const c = CUISINES.find((x) => x.id === id);
-  return c ? `${c.emoji} ${c.label}` : id;
+  return c ? `${c.emoji} ${t(c.label)}` : id;
 }
 
 /** Les 14 allergènes à déclaration obligatoire (règlement UE n°1169/2011). */

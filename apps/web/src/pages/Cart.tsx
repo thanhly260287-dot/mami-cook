@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bike, Lock, Plus, Store, Tag, Trash2 } from "lucide-react";
-import { formatEuros, MIN_ORDER_CENTS, relativeDay } from "@mami/shared";
+import { formatEuros, MIN_ORDER_CENTS, relativeDay, t } from "@mami/shared";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { checkout, fetchAddresses, type CheckoutResult } from "@/lib/api";
@@ -37,11 +37,11 @@ export default function CartPage() {
   const idempotencyKey = useMemo(() => crypto.randomUUID(), [cart.lines, fulfillment, selectedAddress, promo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!first) {
-    return <EmptyState icon="🛍️" title="Votre panier est vide" action={<Button asChild><Link to="/explorer">Découvrir les plats</Link></Button>}>Les plats faits maison de votre quartier vous attendent.</EmptyState>;
+    return <EmptyState icon="🛍️" title={t("Votre panier est vide")} action={<Button asChild><Link to="/explorer">{t("Découvrir les plats")}</Link></Button>}>{t("Les plats faits maison de votre quartier vous attendent.")}</EmptyState>;
   }
 
   const pay = async () => {
-    if (DEMO_MODE) return toast.info("Mode démo : le paiement sera actif une fois Supabase et Stripe configurés.");
+    if (DEMO_MODE) return toast.info(t("Mode démo : le paiement sera actif une fois Supabase et Stripe configurés."));
     if (!user) return navigate("/connexion?redirect=/panier");
     if (fulfillment === "delivery" && !selectedAddress) return setAddrOpen(true);
     setLoading(true);
@@ -63,8 +63,8 @@ export default function CartPage() {
 
   return (
     <div className="container max-w-5xl py-8">
-      <Seo title="Mon panier — MAMI COOK" noindex />
-      <h1 className="mb-1 text-3xl font-extrabold">Mon panier</h1>
+      <Seo title={t("Mon panier — MAMI COOK")} noindex />
+      <h1 className="mb-1 text-3xl font-extrabold">{t("Mon panier")}</h1>
       <p className="mb-6 text-muted-foreground">
         <Link to={`/cuisine/${first.cookSlug}`} className="font-semibold text-foreground hover:underline">{first.cookName}</Link> · {relativeDay(first.availableOn)}
       </p>
@@ -88,10 +88,10 @@ export default function CartPage() {
           </Card>
 
           <Card className="p-5">
-            <h2 className="mb-3 font-bold">Mode de remise</h2>
+            <h2 className="mb-3 font-bold">{t("Mode de remise")}</h2>
             <div className="grid grid-cols-2 gap-3">
-              <ModeButton active={fulfillment === "pickup"} disabled={!first.offersPickup} onClick={() => setFulfillment("pickup")} icon={<Store />} title="Retrait" sub="Gratuit · adresse communiquée après paiement" />
-              <ModeButton active={fulfillment === "delivery"} disabled={!first.offersDelivery} onClick={() => setFulfillment("delivery")} icon={<Bike />} title="Livraison" sub={first.offersDelivery ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : "Offerte") : "Non proposée"} />
+              <ModeButton active={fulfillment === "pickup"} disabled={!first.offersPickup} onClick={() => setFulfillment("pickup")} icon={<Store />} title={t("Retrait")} sub={t("Gratuit · adresse communiquée après paiement")} />
+              <ModeButton active={fulfillment === "delivery"} disabled={!first.offersDelivery} onClick={() => setFulfillment("delivery")} icon={<Bike />} title={t("Livraison")} sub={first.offersDelivery ? (first.deliveryFeeCents ? formatEuros(first.deliveryFeeCents) : t("Offerte")) : t("Non proposée")} />
             </div>
             {fulfillment === "delivery" && (
               <div className="mt-4 space-y-2">
@@ -101,39 +101,39 @@ export default function CartPage() {
                     <span className="text-sm"><span className="font-semibold">{a.label}</span><br />{a.line1}, {a.postal_code} {a.city}</span>
                   </label>
                 ))}
-                <Button variant="ghost" size="sm" onClick={() => user ? setAddrOpen(true) : navigate("/connexion?redirect=/panier")}><Plus /> Ajouter une adresse</Button>
+                <Button variant="ghost" size="sm" onClick={() => user ? setAddrOpen(true) : navigate("/connexion?redirect=/panier")}><Plus />{" "}{t("Ajouter une adresse")}</Button>
               </div>
             )}
           </Card>
 
           <Card className="p-5">
-            <label htmlFor="note" className="mb-2 block font-bold">Un mot pour la cuisinière ?</label>
-            <Textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder="Ex : sans coriandre svp, je passe vers 19h…" />
+            <label htmlFor="note" className="mb-2 block font-bold">{t("Un mot pour la cuisinière ?")}</label>
+            <Textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder={t("Ex : sans coriandre svp, je passe vers 19h…")} />
           </Card>
         </div>
 
         <div>
           <Card className="sticky top-24 p-5">
-            <h2 className="mb-4 font-bold">Récapitulatif</h2>
+            <h2 className="mb-4 font-bold">{t("Récapitulatif")}</h2>
             <dl className="space-y-2 text-sm">
-              <Row label={`Sous-total (${price.totalPlates} plat${price.totalPlates > 1 ? "s" : ""})`} value={formatEuros(price.subtotalCents)} />
-              {price.discountCents > 0 && <Row label="Remise volume" value={`−${formatEuros(price.discountCents)}`} tone="success" />}
-              {fulfillment === "delivery" && <Row label="Livraison" value={price.deliveryFeeCents ? formatEuros(price.deliveryFeeCents) : "Offerte"} />}
-              <div className="flex items-center justify-between border-t border-border pt-3 text-base font-extrabold"><dt>Total</dt><dd className="tabular-nums">{formatEuros(price.totalCents)}</dd></div>
+              <Row label={t(price.totalPlates > 1 ? "Sous-total ({n} plats)" : "Sous-total ({n} plat)", { n: price.totalPlates })} value={formatEuros(price.subtotalCents)} />
+              {price.discountCents > 0 && <Row label={t("Remise volume")} value={`−${formatEuros(price.discountCents)}`} tone="success" />}
+              {fulfillment === "delivery" && <Row label={t("Livraison")} value={price.deliveryFeeCents ? formatEuros(price.deliveryFeeCents) : t("Offerte")} />}
+              <div className="flex items-center justify-between border-t border-border pt-3 text-base font-extrabold"><dt>{t("Total")}</dt><dd className="tabular-nums">{formatEuros(price.totalCents)}</dd></div>
             </dl>
-            {price.totalPlates < 5 && <p className="mt-3 rounded-xl bg-status-hot/10 p-2.5 text-xs font-medium text-status-hot">Plus que {5 - price.totalPlates} plat{5 - price.totalPlates > 1 ? "s" : ""} pour profiter de −10 % !</p>}
+            {price.totalPlates < 5 && <p className="mt-3 rounded-xl bg-status-hot/10 p-2.5 text-xs font-medium text-status-hot">{t(5 - price.totalPlates > 1 ? "Plus que {n} plats pour profiter de −10 % !" : "Plus que {n} plat pour profiter de −10 % !", { n: 5 - price.totalPlates })}</p>}
             <div className="mt-4 flex gap-2">
               <div className="relative flex-1">
                 <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={promo} onChange={(e) => setPromo(e.target.value.toUpperCase())} placeholder="Code promo" className="pl-9" maxLength={30} aria-label="Code promo" />
+                <Input value={promo} onChange={(e) => setPromo(e.target.value.toUpperCase())} placeholder={t("Code promo")} className="pl-9" maxLength={30} aria-label={t("Code promo")} />
               </div>
             </div>
-            {promo && <p className="mt-1 text-xs text-muted-foreground">Le code sera vérifié au paiement.</p>}
+            {promo && <p className="mt-1 text-xs text-muted-foreground">{t("Le code sera vérifié au paiement.")}</p>}
             <Button size="lg" className="mt-4 w-full" loading={loading} onClick={pay} disabled={price.subtotalCents - price.discountCents < MIN_ORDER_CENTS}>
-              <Lock /> Payer {formatEuros(price.totalCents)}
+              <Lock />{" "}{t("Payer")}{" "}{formatEuros(price.totalCents)}
             </Button>
-            {price.subtotalCents - price.discountCents < MIN_ORDER_CENTS && <p className="mt-2 text-center text-xs text-destructive">Minimum de commande : {formatEuros(MIN_ORDER_CENTS)}</p>}
-            <p className="mt-3 text-center text-xs text-muted-foreground">Paiement sécurisé par Stripe · Carte, Apple Pay, Google Pay</p>
+            {price.subtotalCents - price.discountCents < MIN_ORDER_CENTS && <p className="mt-2 text-center text-xs text-destructive">{t("Minimum de commande :")}{" "}{formatEuros(MIN_ORDER_CENTS)}</p>}
+            <p className="mt-3 text-center text-xs text-muted-foreground">{t("Paiement sécurisé par Stripe · Carte, Apple Pay, Google Pay")}</p>
           </Card>
         </div>
       </div>

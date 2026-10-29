@@ -15,10 +15,10 @@ export function AddressAutocomplete({ onSelect, placeholder = "Ex : 10 rue de Ri
   const id = useId();
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       searchAddress(q).then((r) => { setItems(r); setOpen(r.length > 0); }).catch(() => setItems([]));
     }, 250);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [q]);
 
   return (

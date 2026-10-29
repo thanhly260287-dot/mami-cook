@@ -1,3 +1,5 @@
+import { intlLocale } from "./i18n";
+
 // Calcul des prix. ATTENTION : le serveur (fonction SQL `place_order`) refait
 // TOUJOURS ce calcul et c'est lui qui fait foi. Ce module sert uniquement à
 // afficher un récapitulatif cohérent côté client. Les deux implémentations sont
@@ -98,5 +100,5 @@ export function computeOrderPrice(
 }
 
 export function formatEuros(cents: number): string {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
+  return new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR" }).format(cents / 100);
 }
