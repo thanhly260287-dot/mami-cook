@@ -15,7 +15,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Bouillon de bœuf mijoté 12 heures, nouilles de riz, herbes fraîches.",
   "cuisine": "vietnamese",
   "photos": [
-   "/images/dishes/pho.svg"
+   "/images/dishes/pho.jpg"
   ],
   "price_cents": 1050,
   "customer_price_cents": 1260,
@@ -80,7 +80,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "La recette de ma nonna : sauce bolognaise mijotée, béchamel maison, parmesan.",
   "cuisine": "italian",
   "photos": [
-   "/images/dishes/lasagna.svg"
+   "/images/dishes/lasagna.jpg"
   ],
   "price_cents": 1250,
   "customer_price_cents": 1500,
@@ -144,7 +144,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Nems au porc et champignons noirs, servis avec salade et menthe.",
   "cuisine": "vietnamese",
   "photos": [
-   "/images/dishes/springrolls.svg"
+   "/images/dishes/springrolls.jpg"
   ],
   "price_cents": 800,
   "customer_price_cents": 960,
@@ -208,7 +208,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Poulet fermier, citrons confits, olives violettes, cuisson lente.",
   "cuisine": "moroccan",
   "photos": [
-   "/images/dishes/tagine.svg"
+   "/images/dishes/tagine.jpg"
   ],
   "price_cents": 1300,
   "customer_price_cents": 1560,
@@ -272,7 +272,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Bouillon d'os de porc crémeux, chashu, nouilles fraîches.",
   "cuisine": "japanese",
   "photos": [
-   "/images/dishes/ramen.svg"
+   "/images/dishes/ramen.jpg"
   ],
   "price_cents": 1150,
   "customer_price_cents": 1380,
@@ -330,7 +330,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Double steak smashé, cheddar affiné, pain brioché maison.",
   "cuisine": "fastfood",
   "photos": [
-   "/images/dishes/burger.svg"
+   "/images/dishes/burger.jpg"
   ],
   "price_cents": 950,
   "customer_price_cents": 1140,
@@ -394,7 +394,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Poulet mariné au yaourt, sauce tomate-beurre aux épices douces.",
   "cuisine": "indian",
   "photos": [
-   "/images/dishes/butterchicken.svg"
+   "/images/dishes/butterchicken.jpg"
   ],
   "price_cents": 1200,
   "customer_price_cents": 1440,
@@ -466,7 +466,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Nouilles de riz sautées, crevettes, cacahuètes, citron vert.",
   "cuisine": "thai",
   "photos": [
-   "/images/dishes/padthai.svg"
+   "/images/dishes/padthai.jpg"
   ],
   "price_cents": 1100,
   "customer_price_cents": 1320,
@@ -525,7 +525,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Riz bomba au safran, gambas, moules, calamars.",
   "cuisine": "spanish",
   "photos": [
-   "/images/dishes/paella.svg"
+   "/images/dishes/paella.jpg"
   ],
   "price_cents": 1400,
   "customer_price_cents": 1680,
@@ -583,7 +583,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Har gow et siu mai faits main, cuits à la vapeur.",
   "cuisine": "chinese",
   "photos": [
-   "/images/dishes/dimsum.svg"
+   "/images/dishes/dimsum.jpg"
   ],
   "price_cents": 950,
   "customer_price_cents": 1140,
@@ -641,7 +641,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Mascarpone, café serré, biscuits imbibés, cacao amer.",
   "cuisine": "dessert",
   "photos": [
-   "/images/dishes/tiramisu.svg"
+   "/images/dishes/tiramisu.jpg"
   ],
   "price_cents": 700,
   "customer_price_cents": 840,
@@ -693,7 +693,7 @@ export const DEMO_FEED: DemoItem[] = ([
   "description": "Pâte sablée, crème pâtissière vanille, fruits rouges de saison.",
   "cuisine": "dessert",
   "photos": [
-   "/images/dishes/tarte.svg"
+   "/images/dishes/tarte.jpg"
   ],
   "price_cents": 650,
   "customer_price_cents": 780,
