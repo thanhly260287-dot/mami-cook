@@ -53,17 +53,21 @@
   "hero": {
     "_note": "Bannière d'accueil : une maman contente de cuisiner. queries = recherches ; title = fichier choisi après vérification visuelle (éviter les photos marquées « personality »).",
     "queries": [
-      "Shixart1985 kitchen",
-      "Shixart1985 cooking",
-      "modern kitchen woman cooking",
-      "mother cooking modern kitchen",
-      "family cooking modern kitchen",
-      "woman cooking salad kitchen bright",
-      "woman cooking pasta kitchen",
-      "mother daughter baking kitchen",
-      "cooking dinner modern kitchen",
-      "kitchen cooking healthy food woman"
+      "Italian woman cooking spaghetti",
+      "woman cooking pasta kitchen smiling",
+      "Spanish woman cooking kitchen",
+      "mother cooking pasta"
     ],
-    "title": "File:Middle-aged woman cooking in kitchen while looking out the window.jpg"
+    "title": "",
+    "openverse": [
+      "italian mother cooking pasta",
+      "woman cooking spaghetti kitchen",
+      "mom cooking pasta smiling",
+      "italian woman cooking kitchen",
+      "spanish woman cooking kitchen",
+      "woman making pasta kitchen",
+      "woman cooking spaghetti",
+      "mamma cucina pasta"
+    ]
   }
 }

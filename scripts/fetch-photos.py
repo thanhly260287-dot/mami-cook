@@ -3,7 +3,8 @@
 
   python3 scripts/fetch-photos.py candidates   → 4 propositions par plat dans photo-review/ (à trier)
   python3 scripts/fetch-photos.py final        → télécharge les photos choisies dans scripts/photos.json
-  python3 scripts/fetch-photos.py hero         → 12 propositions pour la bannière d'accueil (section « hero »)
+  python3 scripts/fetch-photos.py hero         → propositions pour la bannière d'accueil (section « hero » :
+                                                 Wikimedia Commons + Openverse/Flickr, licences commerciales)
 
 Lancé par GitHub (.github/workflows/fetch-photos.yml) : l'environnement de développement n'a pas accès à internet.
 Les crédits (auteur, licence) sont enregistrés dans apps/web/public/images/dishes/credits.json et affichés sur le site.
@@ -56,6 +57,24 @@ def by_title(title, width):
     found = info(r.get("query", {}).get("pages", []))
     return found[0] if found else None
 
+OPENVERSE = "https://api.openverse.org/v1/images/"
+
+def ov_item(r):
+    lic = f"CC {r.get('license', '').upper()} {r.get('license_version') or ''}".strip()
+    if r.get("license") in ("cc0", "pdm"):
+        lic = "CC0" if r.get("license") == "cc0" else "Public domain"
+    return {"title": "openverse:" + r["id"], "thumb": r.get("url"), "page": r.get("foreign_landing_url"),
+            "license": lic, "author": (r.get("creator") or "")[:120], "width": r.get("width"), "height": r.get("height"),
+            "restrictions": "", "label": (r.get("title") or "")[:100], "source": r.get("source")}
+
+def openverse_search(q):
+    params = urllib.parse.urlencode({"q": q, "license_type": "commercial,modification", "page_size": "20",
+                                     "aspect_ratio": "wide", "size": "large", "mature": "false"})
+    return [ov_item(r) for r in json.loads(get(OPENVERSE + "?" + params)).get("results", [])]
+
+def openverse_get(ident):
+    return ov_item(json.loads(get(OPENVERSE + ident + "/")))
+
 def jpeg(src, dest, size):
     tmp = dest.with_suffix(".tmp")
     tmp.write_bytes(get(src))
@@ -89,9 +108,21 @@ elif mode == "hero":
                     seen.add(c["title"]); cands.append({**c, "query": q})
         except Exception as e:  # noqa: BLE001
             print(f"✗ {q} : {e}")
-    cands = cands[:32]
-    for i, c in enumerate(cands):
-        jpeg(c["thumb"], out / f"hero-{i}.jpg", 600)
+    for q in cfg["hero"].get("openverse", []):
+        try:
+            for c in openverse_search(q):
+                if c["title"] not in seen and c["thumb"] and (c["width"] or 0) >= 1200:
+                    seen.add(c["title"]); cands.append({**c, "query": "openverse: " + q})
+        except Exception as e:  # noqa: BLE001
+            print(f"✗ openverse {q} : {e}")
+    cands = cands[:48]
+    ok = []
+    for c in cands:
+        try:
+            jpeg(c["thumb"], out / f"hero-{len(ok)}.jpg", 600); ok.append(c)
+        except Exception as e:  # noqa: BLE001
+            print(f"✗ {c['title']} : {e}")
+    cands = ok
     (out / "index.json").write_text(json.dumps({"hero": cands}, ensure_ascii=False, indent=1))
     print(f"hero : {len(cands)} candidates")
 else:
@@ -110,7 +141,10 @@ else:
         print(f"✓ {name} ← {c['title']} ({c['license']})")
     hero = cfg.get("hero", {})
     if hero.get("title"):
-        c = by_title(hero["title"], 1600)
+        if hero["title"].startswith("openverse:"):
+            c = openverse_get(hero["title"].split(":", 1)[1])
+        else:
+            c = by_title(hero["title"], 1600)
         if c:
             jpeg(c["thumb"], ROOT / "apps/web/public/images/hero.jpg", 1600)
             credits["hero"] = {k: c[k] for k in ("title", "page", "license", "author")}
