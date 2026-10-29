@@ -13,7 +13,7 @@ export function Footer() {
       <div className="container">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
-            <img src="/images/logo.svg" alt="MAMI COOK" className="mb-4 h-8 w-auto brightness-[1.8]" />
+            <img src={`${import.meta.env.BASE_URL}images/logo.svg`} alt="MAMI COOK" className="mb-4 h-8 w-auto brightness-[1.8]" />
             <p className="text-sm leading-relaxed text-white/50">La cuisine de la maison, livrée partout. Faite avec ❤️ par de vrais cuisiniers.</p>
           </div>
           {cols.map((c) => (

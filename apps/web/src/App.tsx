@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, createHashRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -48,7 +48,9 @@ const queryClient = new QueryClient({
 const page = (el: React.ReactNode) => <Suspense fallback={<div className="flex justify-center py-24"><Spinner /></div>}>{el}</Suspense>;
 const auth = (el: React.ReactNode, opts: { cook?: boolean; staff?: boolean } = {}) => page(<RequireAuth {...opts}>{el}</RequireAuth>);
 
-const router = createBrowserRouter([
+// Version de prévisualisation (hébergée dans un sous-dossier) : routage par #.
+const createRouter = import.meta.env.VITE_HASH_ROUTER ? createHashRouter : createBrowserRouter;
+const router = createRouter([
   {
     element: <Layout />,
     errorElement: <ErrorBoundary />,

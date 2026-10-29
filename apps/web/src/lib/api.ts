@@ -138,8 +138,8 @@ export async function searchAddress(q: string): Promise<{ label: string; line1: 
   const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5`);
   if (!res.ok) return [];
   const json = await res.json();
-  // deno-lint-ignore no-explicit-any
-  return (json.features ?? []).map((f: any) => ({
+  type Feature = { properties: Record<string, string>; geometry: { coordinates: [number, number] } };
+  return ((json.features ?? []) as Feature[]).map((f) => ({
     label: f.properties.label,
     line1: f.properties.name,
     postal_code: f.properties.postcode,

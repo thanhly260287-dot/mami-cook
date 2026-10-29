@@ -8,9 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 const STORAGE_PUBLIC = `${import.meta.env.VITE_SUPABASE_URL ?? ""}/storage/v1/object/public/`;
 
 /** Résout une photo : URL absolue, chemin local (/images/...) ou objet du stockage Supabase. */
-export function photoUrl(path: string | null | undefined, fallback = "/images/dishes/placeholder.svg"): string {
+export function photoUrl(path: string | null | undefined, fallback = `${import.meta.env.BASE_URL}images/dishes/placeholder.svg`): string {
   if (!path) return fallback;
-  if (path.startsWith("http") || path.startsWith("/") || path.startsWith("blob:")) return path;
+  if (path.startsWith("http") || path.startsWith("blob:")) return path;
+  if (path.startsWith("/")) return import.meta.env.BASE_URL + path.slice(1);
   return STORAGE_PUBLIC + path;
 }
 

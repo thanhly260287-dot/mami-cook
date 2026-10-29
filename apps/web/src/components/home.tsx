@@ -33,7 +33,7 @@ export function HeroSection({ openCount }: { openCount?: number }) {
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }} className="relative hidden md:block">
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-card">
-              <img src="/images/hero.svg" alt="Une marmite qui mijote dans une cuisine familiale" className="h-full w-full object-cover" />
+              <img src={`${import.meta.env.BASE_URL}images/hero.svg`} alt="Une marmite qui mijote dans une cuisine familiale" className="h-full w-full object-cover" />
             </div>
             <div className="absolute -bottom-4 -left-4 rounded-2xl border border-border bg-card p-4 shadow-xl">
               <p className="text-xs text-muted-foreground">Dernière commande</p>

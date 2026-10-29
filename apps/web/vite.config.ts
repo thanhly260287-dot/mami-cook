@@ -2,12 +2,17 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
+import securityHeaders from "./security-headers.json";
+
+const preview = !!process.env.VITE_HASH_ROUTER;
 
 export default defineConfig({
+  base: preview ? "./" : "/",
   server: { host: "::", port: 8080 },
+  preview: { headers: securityHeaders },
   plugins: [
     react(),
-    VitePWA({
+    !preview && VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "images/**/*"],
       manifest: {

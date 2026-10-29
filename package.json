@@ -19,6 +19,9 @@
     "onlyBuiltDependencies": [
       "@swc/core",
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "brace-expansion@1>balanced-match": "^1.0.2"
+    }
   }
 }

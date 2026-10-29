@@ -32,7 +32,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
       <div className="container flex h-16 items-center justify-between gap-3">
         <Link to="/" className="shrink-0" aria-label="MAMI COOK — accueil">
-          <img src="/images/logo.svg" alt="MAMI COOK" className="h-8 w-auto sm:h-9" />
+          <img src={`${import.meta.env.BASE_URL}images/logo.svg`} alt="MAMI COOK" className="h-8 w-auto sm:h-9" />
         </Link>
 
         <form onSubmit={submit} className="hidden md:flex flex-1 max-w-md mx-4" role="search">
