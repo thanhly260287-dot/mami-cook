@@ -115,6 +115,7 @@ const router = createRouter([
         ],
       },
       { path: "/admin", element: auth(<Admin />, { staff: true }) },
+      { path: "/legal", element: page(<Legal />) },
       { path: "/legal/:page", element: page(<Legal />) },
       { path: "/aide", element: page(<Help />) },
       { path: "/aide/:topic", element: page(<Help />) },
