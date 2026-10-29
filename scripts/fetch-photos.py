@@ -100,7 +100,7 @@ if mode == "candidates":
 elif mode == "hero":
     out = ROOT / "photo-review"
     out.mkdir(exist_ok=True)
-    seen, cands = set(), []
+    seen, cands, errors = set(), [], []
     for q in cfg["hero"]["queries"]:
         try:
             for c in search(q, 600, 30):
@@ -114,7 +114,7 @@ elif mode == "hero":
                 if c["title"] not in seen and c["thumb"] and (c["width"] or 0) >= 1200:
                     seen.add(c["title"]); cands.append({**c, "query": "openverse: " + q})
         except Exception as e:  # noqa: BLE001
-            print(f"✗ openverse {q} : {e}")
+            print(f"✗ openverse {q} : {e}"); errors.append(f"openverse {q} : {e}")
     cands = cands[:48]
     ok = []
     for c in cands:
@@ -123,7 +123,7 @@ elif mode == "hero":
         except Exception as e:  # noqa: BLE001
             print(f"✗ {c['title']} : {e}")
     cands = ok
-    (out / "index.json").write_text(json.dumps({"hero": cands}, ensure_ascii=False, indent=1))
+    (out / "index.json").write_text(json.dumps({"hero": cands, "errors": errors}, ensure_ascii=False, indent=1))
     print(f"hero : {len(cands)} candidates")
 else:
     dishes = ROOT / "apps/web/public/images/dishes"
