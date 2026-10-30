@@ -36,6 +36,9 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 30/10/2026 | « connecte Supabase pour créer un compte et passer commande » → en attente des secrets GitHub |
 | 30/10/2026 | « livreur GPS en temps réel, nombre de minutes pour arriver, étapes : plat récupéré, en chemin, arrivé » → ✅ temps d'arrivée estimé en minutes, frise de 5 étapes, carte livreur + cuisine + client (site et appli) (#23) |
 | 30/10/2026 | « mettre des notes sur chaque vendeur avec les vrais clients, sur 5 avec étoiles » → ✅ avis réservés aux clients ayant reçu une commande (déjà en base), note /5, répartition 5★→1★, badge « Client vérifié » (#24) |
+| 30/10/2026 | « met un agent IA pour les messages dans toutes les langues, réponds directement dans la langue parlée, rajoute les appels aussi » → ✅ assistant IA (fonction `assistant`, API Claude) qui répond dans la langue de la personne, fenêtre sur le site avec micro et **mode appel vocal** (le navigateur écoute et lit la réponse), écran dans l'appli ; activé en ligne avec la clé `ANTHROPIC_API_KEY` (#25). Appels téléphoniques entre clients, cuisinières et livreurs : à confirmer (service payant type Twilio) |
+| 30/10/2026 | « rajoute plusieurs designs du site, une douzaine de couleurs et de designs complètement différents » → à faire (#26) |
+| 30/10/2026 | « pense aux fonctionnalités que j'ai oubliées, propose-les-moi et je valide » → 16 propositions faites (parrainage, fidélité, cartes cadeaux, abonnement, « me prévenir », anti-gaspi, traiteur, avis photo, factures, badges, pourboire cuisinière, ateliers, blog, assistant IA, partage, newsletter) ; en attente du choix |
 
 ## Fonctionnalités
 

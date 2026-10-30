@@ -35,7 +35,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "geolocation=(self), camera=(), microphone=(), payment=(self \"https://js.stripe.com\"), interest-cohort=()"
+          "value": "geolocation=(self), camera=(), microphone=(self), payment=(self \"https://js.stripe.com\"), interest-cohort=()"
         },
         {
           "key": "Cross-Origin-Opener-Policy",

@@ -7,7 +7,7 @@ name: Déployer Supabase (base de données et fonctions)
 #   SUPABASE_ACCESS_TOKEN  jeton personnel Supabase (Account → Access Tokens)
 #   SUPABASE_DB_PASSWORD   mot de passe de la base choisi à la création du projet
 # Facultatifs, transmis aux fonctions serveur s'ils existent :
-#   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PUBLISHABLE_KEY, CRON_SECRET, GEMINI_API_KEY
+#   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PUBLISHABLE_KEY, CRON_SECRET, GEMINI_API_KEY, ANTHROPIC_API_KEY (assistant IA)
 on:
   push:
     branches: [main]
@@ -65,9 +65,10 @@ jobs:
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           args="SITE_URL=$SITE_URL ALLOWED_ORIGINS=$SITE_URL"
-          for k in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PUBLISHABLE_KEY CRON_SECRET GEMINI_API_KEY; do
+          for k in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PUBLISHABLE_KEY CRON_SECRET GEMINI_API_KEY ANTHROPIC_API_KEY; do
             [ -n "${!k}" ] && args="$args $k=${!k}"
           done
           supabase secrets set --project-ref "$PROJECT_REF" $args >/dev/null
@@ -77,7 +78,7 @@ jobs:
         run: |
           for f in supabase/functions/*/; do
             n=$(basename "$f"); [ "$n" = "_shared" ] && continue
-            flags=""; [ "$n" = "stripe-webhook" ] || [ "$n" = "process-payouts" ] || [ "$n" = "send-push" ] && flags="--no-verify-jwt"
+            flags=""; [ "$n" = "stripe-webhook" ] || [ "$n" = "process-payouts" ] || [ "$n" = "send-push" ] || [ "$n" = "assistant" ] && flags="--no-verify-jwt"
             supabase functions deploy "$n" --project-ref "$PROJECT_REF" $flags
           done
       - name: Vérification en ligne

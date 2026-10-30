@@ -4,7 +4,7 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(self "https://js.stripe.com"), interest-cohort=()
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(self), payment=(self "https://js.stripe.com"), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin-allow-popups
 
 /assets/*

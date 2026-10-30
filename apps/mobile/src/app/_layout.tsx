@@ -45,6 +45,7 @@ export default function RootLayout() {
                 <Stack.Screen name="cuisinier/index" options={{ title: t("Ma cuisine") }} />
                 <Stack.Screen name="livreur/index" options={{ title: t("Espace livreur") }} />
                 <Stack.Screen name="mon-espace" options={{ title: t("Mon espace") }} />
+                <Stack.Screen name="assistant" options={{ title: t("Assistant MAMI COOK") }} />
               </Stack>
             </CartProvider>
           </GeoProvider>

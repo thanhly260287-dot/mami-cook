@@ -6,6 +6,7 @@ import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { MobileTabBar } from "./MobileTabBar";
 import { DemoBanner } from "@/components/DemoBanner";
+import { Assistant } from "@/components/Assistant";
 
 export function Layout() {
   const { pathname } = useLocation();
@@ -25,6 +26,7 @@ export function Layout() {
       </main>
       <Footer />
       <MobileTabBar />
+      <Assistant />
       <ScrollRestoration />
     </div>
     </MotionConfig>

@@ -22,6 +22,7 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
   - choisir un médiateur de la consommation.
 - **Justificatifs (#16), reste à faire** : dépôt des documents directement dans l'appli mobile (aujourd'hui via le site) ; écran testé seulement par typecheck, pas encore avec une vraie base ; liste des documents par pays à faire valider par un juriste.
 - **Bannière d'accueil** : l'utilisateur veut idéalement une maman de ~40 ans, style italien/espagnol, qui cuisine des **spaghettis**. Pas de photo libre trouvée. Options : clé Pexels (secret GitHub `PEXELS_API_KEY`) ou image générée (clé `GEMINI_API_KEY`).
+- **Assistant IA** : ajouter le secret GitHub `ANTHROPIC_API_KEY` (clé API Anthropic) pour l'activer en ligne.
 - **Améliorations possibles** :
   - inscription livreur directement dans l'appli (aujourd'hui via le site) ;
   - position du livreur en arrière-plan sur mobile ;
@@ -54,4 +55,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 22 | Ingrédients obligatoires, saveurs, conservation/réchauffage (base, formulaire, fiche plat site et appli, 12 plats d'exemple) | 178 vérifications SQL, 26 E2E (fiche plat), typecheck/lint web et mobile, i18n 1244/1244 |
 | 23 | Suivi livreur : temps d'arrivée en minutes, étapes (livreur trouvé, à la cuisine, plat récupéré, en chemin, arrivé), carte à 3 points | Vérification SQL du temps d'arrivée, typecheck/lint web et mobile, 28 E2E |
 | 24 | Notes /5 des cuisines : répartition par étoiles (`cook_rating_summary`), badge « Client vérifié » | Vérification SQL, E2E page cuisine |
+| 25 | Assistant IA multilingue : fonction serveur `assistant` (limites d'usage, règles de sécurité), fenêtre de discussion + micro + mode appel vocal (site), écran appli ; micro autorisé pour le site seulement | `deno check` OK, 30 E2E (assistant), typecheck/lint web et mobile, i18n 1280/1280, capture |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

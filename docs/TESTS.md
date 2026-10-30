@@ -7,7 +7,7 @@
 | Prix | `pnpm --filter @mami/shared test` | 6 tests : majoration, remises volume, menus, minimum |
 | Base de données | `bash supabase/tests/run.sh` | 180 vérifications (2 fichiers, une base neuve chacun) ; `test_delivery.sql` : livreurs, commissions, pourboire, CHF, DAC7. `test_security_and_orders.sql` : lecture des données d'autrui, auto-promotion admin, commande à 0 €, survente, faux paiement, transitions de statut, flux d'accueil (12 plats de démo). Nécessite PostgreSQL 16 et PostGIS (`apt install postgresql-16-postgis-3`) |
 | Site | `pnpm --filter @mami/web typecheck && pnpm --filter @mami/web lint && pnpm --filter @mami/web build` | Types, règles de code, compilation |
-| Navigateur | `pnpm --filter @mami/web test:e2e` | 28 parcours en ordinateur et en mobile (locale fr-FR) : accueil, recherche, panier, limite de stock, langue… |
+| Navigateur | `pnpm --filter @mami/web test:e2e` | 30 parcours en ordinateur et en mobile (locale fr-FR) : accueil, recherche, panier, limite de stock, langue… |
 | Mobile | `cd apps/mobile && EXPO_OFFLINE=1 npx tsc --noEmit && npx expo lint && npx expo export --platform android --platform ios` | Types, lint, bundles |
 | Fonctions Edge | `cd supabase/functions && deno check */index.ts` | Types Deno |
 | Traductions | `node scripts/i18n-keys.cjs --missing` | Aucune clé manquante dans les 10 langues |

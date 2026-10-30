@@ -54,3 +54,10 @@ Principe : **on ne fait jamais confiance au client** (site ou appli). Tout ce qu
 ## Signaler une faille
 
 Écrivez à security@mamicook.fr (adresse à créer). Merci de ne pas divulguer publiquement avant correction.
+
+## Assistant IA (30/10/2026)
+
+- Clé `ANTHROPIC_API_KEY` uniquement dans les secrets Supabase (jamais dans le site ni l'appli).
+- Limites : 20 messages / 10 min et 150 / jour par compte ou adresse IP ; historique limité à 12 messages de 2000 caractères.
+- L'assistant n'a accès à aucun compte, commande ni paiement ; il ne demande jamais de mot de passe ni de code ; les messages de l'utilisateur ne peuvent pas modifier ses règles.
+- Micro autorisé pour le site lui-même uniquement (`Permissions-Policy: microphone=(self)`) ; la reconnaissance vocale est faite par le navigateur.

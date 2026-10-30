@@ -148,3 +148,17 @@ test("cuisine : note sur 5, répartition par étoiles et avis de clients vérifi
   await expect(page.getByText("✓ Client vérifié").first()).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("assistant d'aide : ouverture, question rapide et réponse", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Ouvrir l'assistant" }).click();
+  const panel = page.getByRole("dialog", { name: "Assistant MAMI COOK" });
+  await expect(panel).toBeVisible();
+  await panel.getByRole("button", { name: "Comment annuler une commande ?" }).click();
+  await expect(panel.getByText(/annuler gratuitement tant que la cuisine/)).toBeVisible();
+  await panel.getByLabel("Votre message").fill("Quels sont les frais ?");
+  await panel.getByRole("button", { name: "Envoyer" }).click();
+  await expect(panel.getByText(/20 % de frais de service/)).toBeVisible();
+  expect(errors).toEqual([]);
+});

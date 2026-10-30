@@ -634,3 +634,24 @@ export async function fetchComplianceQueue() {
   for (const r of rows) seen.set(`${r.user_id}:${r.role}`, { user_id: r.user_id, role: r.role, name: r.profiles?.display_name ?? "—" });
   return [...seen.values()];
 }
+
+// ------------------------------------------------------------------ assistant d'aide IA
+export interface AssistantTurn { role: "user" | "assistant"; content: string }
+
+/** Pose une question à l'assistant (fonction serveur « assistant ») ; réponse dans la langue de la personne. */
+export async function askAssistant(turns: AssistantTurn[], page?: string): Promise<string> {
+  if (DEMO_MODE) return demoAssistant(turns[turns.length - 1]?.content ?? "");
+  const r = await callFunction<{ reply: string | null; refused?: boolean }>("assistant", { messages: turns.slice(-12), page });
+  return r.reply || t("Je ne peux pas répondre à cette question. Contactez le support depuis Aide → Contact.");
+}
+
+/** Aperçu sans serveur : réponses toutes prêtes aux questions fréquentes (l'IA répond à tout une fois en ligne). */
+async function demoAssistant(q: string): Promise<string> {
+  await new Promise((r) => setTimeout(r, 600));
+  const s = q.toLowerCase();
+  if (/annul|rembours|cancel|refund/.test(s)) return t("Vous pouvez annuler gratuitement tant que la cuisine n'a pas accepté la commande. Si la cuisine refuse, ou si le plat n'est pas conforme (signalé dans les 24 h avec une photo), vous êtes remboursé sur votre carte sous 5 à 10 jours.");
+  if (/frais|prix|commission|co[uû]t|price|fee/.test(s)) return t("La cuisinière fixe son prix et MAMI COOK ajoute 20 % de frais de service. Remise automatique : −10 % dès 5 plats, −15 % dès 10 plats d'une même cuisine.");
+  if (/cuisini|vendre|devenir|cook|sell/.test(s)) return t("Cliquez sur « Devenir Mami Cook », remplissez votre candidature puis déposez vos justificatifs (en France : identité, assurance, formation hygiène de 14 h, déclaration DDPP). Après vérification, vous publiez vos plats et êtes payée automatiquement.");
+  if (/livr|livreur|deliver|courier/.test(s)) return t("Vous suivez votre livreur en direct sur la carte, avec le temps d'arrivée estimé. Donnez-lui votre code à 4 chiffres à la remise. Le pourboire va entièrement au livreur.");
+  return t("Aperçu : je réponds ici aux questions fréquentes (annulation, frais, devenir cuisinière, livraison). Une fois le site en ligne, l'assistant IA répondra à toutes vos questions, dans votre langue.");
+}

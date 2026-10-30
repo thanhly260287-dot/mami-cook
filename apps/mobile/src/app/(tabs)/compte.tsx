@@ -45,6 +45,7 @@ export default function AccountScreen() {
         {session && item("stats-chart-outline", t("Mon espace"), () => router.push("/mon-espace"))}
         {cook ? item("restaurant", t("Ma cuisine"), () => router.push("/cuisinier")) : item("restaurant-outline", t("Vendre mes plats"), () => Linking.openURL(`${SITE_URL}/devenir-cuisinier`))}
         {courier && courier.status !== "draft" ? item("bicycle", t("Espace livreur"), () => router.push("/livreur")) : item("bicycle-outline", t("Devenir livreur"), () => Linking.openURL(`${SITE_URL}/devenir-livreur`))}
+        {item("chatbubbles-outline", t("Assistant MAMI COOK"), () => router.push("/assistant"))}
         {item("help-circle-outline", t("Aide"), () => Linking.openURL(`${SITE_URL}/aide`))}
         {item("earth-outline", t("Règles par pays"), () => Linking.openURL(`${SITE_URL}/guide-legal`))}
         {item("document-text-outline", t("Informations légales"), () => Linking.openURL(`${SITE_URL}/legal`))}
