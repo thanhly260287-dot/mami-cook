@@ -1292,3 +1292,4 @@
 1291=Puoi annullare gratuitamente finché la cucina non ha accettato l'ordine. Se la cucina rifiuta, o se il piatto non è conforme (segnalato entro 24 h con una foto), vieni rimborsato sulla carta entro 5-10 giorni.
 1292=Segui il rider in diretta sulla mappa, con l'orario di arrivo previsto. Dagli il tuo codice di 4 cifre alla consegna. La mancia va interamente al rider.
 1293=Scrivi il tuo messaggio…
+1294=Le immagini d'atmosfera della home page sono create con l'intelligenza artificiale: le persone raffigurate non esistono.

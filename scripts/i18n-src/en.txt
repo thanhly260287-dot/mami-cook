@@ -1292,3 +1292,4 @@
 1291=You can cancel for free as long as the kitchen hasn't accepted the order. If the kitchen refuses, or if the dish isn't as described (reported within 24 h with a photo), you're refunded to your card within 5 to 10 days.
 1292=You follow your courier live on the map, with the estimated arrival time. Give them your 4-digit code at hand-over. Tips go entirely to the courier.
 1293=Write your message…
+1294=The mood images on the home page are created by artificial intelligence: the people shown do not exist.

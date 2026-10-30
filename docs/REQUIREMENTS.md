@@ -39,6 +39,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 30/10/2026 | « met un agent IA pour les messages dans toutes les langues, réponds directement dans la langue parlée, rajoute les appels aussi » → ✅ assistant IA (fonction `assistant`, API Claude) qui répond dans la langue de la personne, fenêtre sur le site avec micro et **mode appel vocal** (le navigateur écoute et lit la réponse), écran dans l'appli ; activé en ligne avec la clé `ANTHROPIC_API_KEY` (#25). Appels téléphoniques entre clients, cuisinières et livreurs : à confirmer (service payant type Twilio) |
 | 30/10/2026 | « rajoute plusieurs designs du site, une douzaine de couleurs et de designs complètement différents » → à faire (#26) |
 | 30/10/2026 | « pense aux fonctionnalités que j'ai oubliées, propose-les-moi et je valide » → 16 propositions faites (parrainage, fidélité, cartes cadeaux, abonnement, « me prévenir », anti-gaspi, traiteur, avis photo, factures, badges, pourboire cuisinière, ateliers, blog, assistant IA, partage, newsletter) ; en attente du choix |
+| 30/10/2026 | « des plus belles photos qui ont un rapport avec le fait de faire des plats maison à la maison, des maisons modernes, des métisses, asiatiques, japonais, français, portugais, grecs, italiens… à faire des desserts ou des plats, les mêmes plats qu'on voit en bas » → 🟡 12 scènes prêtes à être créées par IA (une par plat, personnes fictives de toutes origines, maisons modernes) ; le carrousel les prend automatiquement ; il manque la clé `GEMINI_API_KEY` |
 
 ## Fonctionnalités
 

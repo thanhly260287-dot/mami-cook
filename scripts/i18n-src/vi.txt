@@ -1292,3 +1292,4 @@
 1291=Bạn có thể hủy miễn phí khi bếp chưa nhận đơn. Nếu bếp từ chối, hoặc món không đúng (báo trong 24 giờ kèm ảnh), bạn được hoàn tiền vào thẻ trong 5 đến 10 ngày.
 1292=Bạn theo dõi tài xế trực tiếp trên bản đồ với thời gian đến dự kiến. Đưa mã 4 số khi nhận hàng. Tiền tip được chuyển toàn bộ cho tài xế.
 1293=Nhập tin nhắn…
+1294=Ảnh minh họa trên trang chủ được tạo bằng trí tuệ nhân tạo: những người trong ảnh không có thật.

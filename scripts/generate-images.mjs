@@ -4,6 +4,7 @@
 //   GEMINI_API_KEY=xxx node scripts/generate-images.mjs            → génère les photos manquantes
 //   GEMINI_API_KEY=xxx node scripts/generate-images.mjs --force    → régénère tout
 //   node scripts/generate-images.mjs --dry-run                     → affiche les descriptions sans rien appeler
+//   GEMINI_API_KEY=xxx node scripts/generate-images.mjs --hero     → scènes du carrousel d'accueil (scripts/hero-scenes.json)
 //
 // Les images sont enregistrées dans apps/web/public/images/dishes/<nom>.jpg, puis les données
 // de démo (packages/shared/src/demo-data.ts) sont mises à jour pour les utiliser.
@@ -17,6 +18,45 @@ const OUT = join(ROOT, "apps/web/public/images/dishes");
 const MODEL = process.env.GEMINI_IMAGE_MODEL ?? "gemini-2.5-flash-image";
 const dry = process.argv.includes("--dry-run");
 const force = process.argv.includes("--force");
+
+// ------------------------------------------------------------------ carrousel d'accueil
+// Une scène par plat, personnes fictives de toutes origines dans des maisons modernes.
+// Écrit apps/web/public/images/hero/<id>.png (converties en JPEG par le workflow) et scenes.json.
+if (process.argv.includes("--hero")) {
+  const { mkdirSync } = await import("node:fs");
+  const cfg = JSON.parse(readFileSync(join(ROOT, "scripts/hero-scenes.json"), "utf8"));
+  const dir = join(ROOT, "apps/web/public/images/hero");
+  mkdirSync(dir, { recursive: true });
+  const heroPrompt = (sc) => `${sc.prompt} ${cfg.style}`;
+  if (dry) {
+    for (const sc of cfg.scenes) console.log(`${sc.id} ← ${heroPrompt(sc)}\n`);
+    process.exit(0);
+  }
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) { console.error("Définissez GEMINI_API_KEY (clé sur https://aistudio.google.com/apikey)."); process.exit(1); }
+  const done = [];
+  for (const sc of cfg.scenes) {
+    const jpg = join(dir, `${sc.id}.jpg`);
+    if (existsSync(jpg) && !force) { console.log(`= ${sc.id}.jpg existe déjà`); done.push(sc); continue; }
+    process.stdout.write(`→ ${sc.id}… `);
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ contents: [{ parts: [{ text: heroPrompt(sc) }] }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "3:2" } } }),
+    });
+    if (!res.ok) { console.log(`échec (${res.status}) : ${(await res.text()).slice(0, 200)}`); continue; }
+    const body = await res.json();
+    const img = (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.inlineData ?? p.inline_data).find(Boolean);
+    if (!img?.data) { console.log("aucune image renvoyée"); continue; }
+    writeFileSync(join(dir, `${sc.id}.png`), Buffer.from(img.data, "base64"));
+    done.push(sc);
+    console.log("OK");
+  }
+  // Manifeste lu par le carrousel : seules les scènes réussies y figurent.
+  writeFileSync(join(dir, "scenes.json"), JSON.stringify(done.map((sc) => ({ file: `hero/${sc.id}.jpg`, alt: sc.alt, dish: sc.dish })), null, 1) + "\n");
+  console.log(`${done.length}/${cfg.scenes.length} scènes prêtes.`);
+  process.exit(done.length ? 0 : 1);
+}
 
 const src = readFileSync(DEMO, "utf8");
 // Chaque plat de démo : titre, description et photo actuelle.

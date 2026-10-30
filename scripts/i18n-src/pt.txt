@@ -1292,3 +1292,4 @@
 1291=Pode cancelar gratuitamente enquanto a cozinha não tiver aceitado a encomenda. Se a cozinha recusar, ou se o prato não estiver conforme (comunicado em 24 h com foto), é reembolsado no cartão em 5 a 10 dias.
 1292=Acompanha o estafeta em direto no mapa, com a hora prevista de chegada. Dê-lhe o código de 4 dígitos na entrega. A gorjeta vai inteiramente para o estafeta.
 1293=Escreva a sua mensagem…
+1294=As imagens de ambiente da página inicial são criadas por inteligência artificial: as pessoas representadas não existem.

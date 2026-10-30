@@ -1292,3 +1292,4 @@
 1291=Du kannst kostenlos stornieren, solange die Küche die Bestellung nicht angenommen hat. Lehnt die Küche ab oder entspricht das Gericht nicht (innerhalb von 24 Std. mit Foto gemeldet), erhältst du in 5 bis 10 Tagen eine Erstattung auf deine Karte.
 1292=Du verfolgst deinen Fahrer live auf der Karte mit voraussichtlicher Ankunftszeit. Gib ihm bei der Übergabe deinen 4-stelligen Code. Das Trinkgeld geht vollständig an den Fahrer.
 1293=Schreib deine Nachricht…
+1294=Die Stimmungsbilder auf der Startseite wurden mit künstlicher Intelligenz erstellt: Die gezeigten Personen existieren nicht.

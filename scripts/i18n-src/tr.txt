@@ -1292,3 +1292,4 @@
 1291=Mutfak siparişi kabul etmediği sürece ücretsiz iptal edebilirsiniz. Mutfak reddederse veya yemek uygun değilse (24 saat içinde fotoğrafla bildirilirse), 5-10 gün içinde kartınıza iade yapılır.
 1292=Kuryenizi tahmini varış süresiyle haritada canlı takip edersiniz. Teslimatta ona 4 haneli kodunuzu verin. Bahşişin tamamı kuryeye gider.
 1293=Mesajınızı yazın…
+1294=Ana sayfadaki atmosfer görselleri yapay zekâ ile oluşturulmuştur: görseldeki kişiler gerçek değildir.

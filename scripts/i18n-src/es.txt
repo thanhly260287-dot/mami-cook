@@ -1292,3 +1292,4 @@
 1291=Puedes cancelar gratis mientras la cocina no haya aceptado el pedido. Si la cocina lo rechaza o el plato no es conforme (avisado en 24 h con una foto), se te reembolsa en tu tarjeta en 5 a 10 días.
 1292=Sigues a tu repartidor en directo en el mapa, con la hora estimada de llegada. Dale tu código de 4 cifras en la entrega. La propina es íntegra para el repartidor.
 1293=Escribe tu mensaje…
+1294=Las imágenes de ambiente de la página de inicio están creadas con inteligencia artificial: las personas que aparecen no existen.

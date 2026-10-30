@@ -37,6 +37,7 @@ Format : date — décision — raison — qui l'a validée.
 | 29/10/2026 | Un livreur a au plus 2 courses en cours ; recherche relancée à 8 km après 10 min, équipe alertée après 30 min | Éviter les commandes bloquées |
 | 29/10/2026 | Le livreur voit le gain, la ville et la distance **avant** d'accepter ; adresses exactes seulement après acceptation | Transparence (directive 2024/2831) et sécurité des clients |
 | 29/10/2026 | Remise validée par le code à 4 chiffres du client, comme pour le retrait | Preuve de livraison, évite les litiges |
+| 30/10/2026 | Images du carrousel d'accueil créées par IA (une scène par plat, personnes fictives de toutes origines), signalées dans les mentions légales | Aucune banque d'images libre ne propose ces scènes ; personnes fictives = pas de droit à l'image à obtenir |
 | 30/10/2026 | Assistant d'aide IA sur l'API Claude (modèle Claude Opus 5.5, effort bas, bascule automatique en cas de refus), ouvert sans compte avec limites par personne/IP ; voix gérée par le navigateur (aucun audio envoyé à nos serveurs) | Demande de l'utilisateur (assistant multilingue + appels) ; coût maîtrisé, vie privée |
 | 30/10/2026 | Les données d'exemple servent **uniquement à l'aperçu privé** ; la vraie base démarre vide (le déploiement ne charge jamais `seed.sql`) | Demande de l'utilisateur : le contenu se basera sur les premiers vrais utilisateurs |
 | 30/10/2026 | Ingrédients obligatoires (10 caractères minimum), saveurs (1 à 5) et conseils de conservation pour chaque plat | Demande de l'utilisateur ; transparence pour les clients |

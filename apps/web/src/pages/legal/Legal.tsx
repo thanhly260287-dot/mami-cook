@@ -428,14 +428,19 @@ export default function Legal() {
 /** Photos des plats de démonstration : auteurs et licences (Wikimedia Commons). */
 function PhotoCredits() {
   const [credits, setCredits] = useState<Record<string, { title: string; page: string; license: string; author: string }>>({});
+  const [aiScenes, setAiScenes] = useState(false);
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}images/dishes/credits.json`).then((r) => (r.ok ? r.json() : {})).then(setCredits).catch(() => undefined);
+    fetch(`${import.meta.env.BASE_URL}images/hero/scenes.json`).then((r) => (r.ok ? r.json() : [])).then((x) => setAiScenes(Array.isArray(x) && x.length > 0)).catch(() => undefined);
   }, []);
   const rows = Object.values(credits);
   if (!rows.length) return <p>{t("Illustrations : MAMI COOK.")}</p>;
   return (
-    <ul>{rows.map((c) => (
-      <li key={c.page}><a href={c.page} target="_blank" rel="noopener noreferrer">{c.title.replace(/^File:/, "")}</a> — {c.author || t("auteur inconnu")}, {c.license}</li>
-    ))}</ul>
+    <>
+      <ul>{rows.map((c) => (
+        <li key={c.page}><a href={c.page} target="_blank" rel="noopener noreferrer">{c.title.replace(/^File:/, "")}</a> — {c.author || t("auteur inconnu")}, {c.license}</li>
+      ))}</ul>
+      {aiScenes && <p>{t("Les images d'ambiance de la page d'accueil sont créées par intelligence artificielle : les personnes représentées n'existent pas.")}</p>}
+    </>
   );
 }
