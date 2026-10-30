@@ -1232,3 +1232,5 @@
 1231=Tiramisu nhà làm
 1232=Một người mẹ mỉm cười nấu ăn trong bếp
 1233=Ảnh {n}
+1234=đơn hàng
+1235=khách hàng

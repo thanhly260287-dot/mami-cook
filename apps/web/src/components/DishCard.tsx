@@ -17,15 +17,17 @@ export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: Math.min(index, 12) * 0.04 }}
+      initial={{ opacity: 0, y: 24, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.45, delay: (index % 4) * 0.07, ease: [0.22, 1, 0.36, 1] }}
       className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-shadow shadow-card-hover"
     >
       <Link to={`/plat/${item.drop_id}`} className="absolute inset-0 z-10" aria-label={`${item.title} — ${item.cook_name}`} />
       <div className="relative aspect-square overflow-hidden">
         <img src={photoUrl(item.photos[0])} alt="" loading="lazy" decoding="async"
-          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${soldOut ? "grayscale" : ""}`} />
+          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 duration-700 ${soldOut ? "grayscale" : ""}`} />
         <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-1.5 text-xs font-bold tabular-nums shadow-sm backdrop-blur-md">
           {item.temperature === "frozen" ? <Snowflake className="h-3 w-3 text-status-frozen" /> : <Flame className="h-3 w-3 text-status-hot" />}
           {soldOut ? t("Épuisé") : `${item.quantity_remaining} ${item.quantity_remaining > 1 ? t("plats restants") : t("plat restant")}`}

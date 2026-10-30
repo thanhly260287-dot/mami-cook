@@ -43,7 +43,7 @@ export default function Home() {
       <FlatList
         data={q.data ?? []}
         keyExtractor={(i) => i.drop_id}
-        renderItem={({ item }) => <DishCard item={item} />}
+        renderItem={({ item, index }) => <DishCard item={item} index={index} />}
         ListHeaderComponent={header}
         ListEmptyComponent={q.isLoading ? <Loading /> : <Empty emoji="🍳" title={t("Pas encore de plat près de chez vous")} text={t("Essayez une autre cuisine ou une autre position.")} />}
         contentContainerStyle={{ padding: 16 }}

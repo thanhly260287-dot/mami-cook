@@ -23,7 +23,7 @@ export default function CookScreen() {
       contentContainerStyle={{ padding: 16 }}
       data={dishes.data ?? []}
       keyExtractor={(d) => d.drop_id}
-      renderItem={({ item }) => <DishCard item={item} />}
+      renderItem={({ item, index }) => <DishCard item={item} index={index} />}
       ListHeaderComponent={
         <View style={{ marginBottom: 16 }}>
           <Stack.Screen options={{ title: k.kitchen_name }} />

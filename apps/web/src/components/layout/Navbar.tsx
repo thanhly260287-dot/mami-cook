@@ -1,4 +1,5 @@
 import { t } from "@mami/shared";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
@@ -61,7 +62,7 @@ export function Navbar() {
           <Link to="/panier" className="relative rounded-xl p-2.5 text-muted-foreground hover:bg-muted" aria-label={`Panier (${count})`}>
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full gradient-primary px-1 text-[10px] font-bold text-primary-foreground">{count}</span>
+              <motion.span key={count} initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 600, damping: 14 }} className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full gradient-primary px-1 text-[10px] font-bold text-primary-foreground">{count}</motion.span>
             )}
           </Link>
 

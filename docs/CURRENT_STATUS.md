@@ -23,7 +23,7 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 | Site web | Typecheck, lint et build OK ; 26 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes, 1220 textes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1222 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié

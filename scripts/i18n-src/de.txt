@@ -1232,3 +1232,5 @@
 1231=Hausgemachtes Tiramisu
 1232=Eine lächelnde Mutter kocht in ihrer Küche
 1233=Foto {n}
+1234=Bestellungen
+1235=Kunden

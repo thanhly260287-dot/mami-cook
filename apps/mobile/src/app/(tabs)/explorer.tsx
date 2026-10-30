@@ -23,7 +23,7 @@ export default function Explore() {
       style={{ backgroundColor: c.bg }}
       data={q.data ?? []}
       keyExtractor={(i) => i.drop_id}
-      renderItem={({ item }) => <DishCard item={item} />}
+      renderItem={({ item, index }) => <DishCard item={item} index={index} />}
       contentContainerStyle={{ padding: 16 }}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={

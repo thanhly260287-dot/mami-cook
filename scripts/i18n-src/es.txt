@@ -1232,3 +1232,5 @@
 1231=Tiramisú casero
 1232=Una mamá sonriente cocinando en su cocina
 1233=Foto {n}
+1234=pedidos
+1235=clientes

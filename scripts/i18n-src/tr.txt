@@ -1232,3 +1232,5 @@
 1231=Ev yapımı tiramisu
 1232=Mutfağında yemek yapan gülümseyen bir anne
 1233=Fotoğraf {n}
+1234=sipariş
+1235=müşteri

@@ -132,6 +132,6 @@ test("accueil : carrousel de photos (4 photos, points cliquables)", async ({ pag
   await expect(dots).toHaveCount(4);
   await page.getByRole("button", { name: "Photo 3" }).click();
   await expect(page.getByRole("button", { name: "Photo 3" })).toHaveAttribute("aria-current", "true");
-  await expect(page.locator('section img[src$="hero-2.jpg"]')).toHaveClass(/opacity-100/);
+  await expect(page.locator('section div:has(> img[src$="hero-2.jpg"])')).toHaveClass(/opacity-100/);
   expect(errors).toEqual([]);
 });

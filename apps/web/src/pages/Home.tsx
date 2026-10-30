@@ -10,6 +10,7 @@ import { HeroSection, HowItWorks, SellerDashboardPreview, TrustSection } from "@
 import { EmptyState } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Seo } from "@/components/Seo";
+import { Reveal } from "@/components/motion";
 
 export default function Home() {
   const geo = useGeo();
@@ -27,13 +28,13 @@ export default function Home() {
       <section className="py-6"><div className="container"><CuisineFilter value={cuisine} onChange={setCuisine} /></div></section>
       <section className="pb-16">
         <div className="container">
-          <div className="mb-6 flex items-center justify-between">
+          <Reveal className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">{t("Disponible aujourd'hui")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("Des plats de nos mamans, nos tantes… pour tous ! 🏠 · autour de")}{" "}{geo.label}</p>
             </div>
             <Link to={`/explorer${cuisine ? `?cuisine=${cuisine}` : ""}`} className="shrink-0 text-sm font-semibold text-primary hover:underline">{t("Voir tout →")}</Link>
-          </div>
+          </Reveal>
           {feed.isLoading ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, i) => <DishCardSkeleton key={i} />)}</div>
           ) : feed.isError ? (

@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps, type ViewStyle } from "react-native";
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps, type ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
 import { gradient, radius, useColors } from "@/lib/theme";
+import { Bounce, usePressScale } from "./motion";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -12,6 +13,7 @@ export function Button({ title, onPress, variant = "primary", loading, disabled,
 }) {
   const c = useColors();
   const off = disabled || loading;
+  const press = usePressScale(0.96);
   const fg = variant === "primary" || variant === "danger" ? "#fff" : variant === "ghost" ? c.primary : c.text;
   const content = (
     <View style={s.btnInner}>
@@ -20,7 +22,9 @@ export function Button({ title, onPress, variant = "primary", loading, disabled,
     </View>
   );
   return (
+    <Animated.View style={{ transform: [{ scale: press.scale }] }}>
     <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!off }} disabled={off}
+      onPressIn={press.onPressIn} onPressOut={press.onPressOut}
       onPress={() => { Haptics.selectionAsync().catch(() => undefined); onPress?.(); }}
       style={({ pressed }) => [{ opacity: off ? 0.5 : pressed ? 0.85 : 1, borderRadius: radius.md, overflow: "hidden" }, style]}>
       {variant === "primary" ? (
@@ -29,6 +33,7 @@ export function Button({ title, onPress, variant = "primary", loading, disabled,
         <View style={[s.btn, variant === "secondary" && { backgroundColor: c.input }, variant === "outline" && { borderWidth: 1, borderColor: c.border, backgroundColor: c.card }, variant === "danger" && { backgroundColor: c.danger }]}>{content}</View>
       )}
     </Pressable>
+    </Animated.View>
   );
 }
 
@@ -74,7 +79,7 @@ export function Badge({ label, color }: { label: string; color?: string }) {
 export function Empty({ emoji, title, text, action }: { emoji: string; title: string; text?: string; action?: ReactNode }) {
   return (
     <View style={{ alignItems: "center", paddingVertical: 60, paddingHorizontal: 24, gap: 8 }}>
-      <Text style={{ fontSize: 48 }}>{emoji}</Text>
+      <Bounce><Text style={{ fontSize: 48 }}>{emoji}</Text></Bounce>
       <T size={18} weight="700" style={{ textAlign: "center" }}>{title}</T>
       {text && <T color="#8893a5" style={{ textAlign: "center" }}>{text}</T>}
       {action && <View style={{ marginTop: 12 }}>{action}</View>}

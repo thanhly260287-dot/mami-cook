@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Animated, Pressable, View } from "react-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,15 +6,19 @@ import { cuisineLabel, formatDistance, formatEuros, formatTime, relativeDay, typ
 import { photoUrl } from "@/lib/supabase";
 import { radius, useColors } from "@/lib/theme";
 import { T } from "./ui";
+import { FadeInUp, usePressScale } from "./motion";
 
-export function DishCard({ item }: { item: FeedItem }) {
+export function DishCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
   const c = useColors();
   const soldOut = item.quantity_remaining === 0;
+  const press = usePressScale();
   return (
-    <Pressable onPress={() => router.push(`/plat/${item.drop_id}`)} accessibilityRole="button" accessibilityLabel={`${item.title}, ${item.cook_name}, ${formatEuros(item.customer_price_cents)}`}
+    <FadeInUp index={index}>
+    <Animated.View style={{ transform: [{ scale: press.scale }] }}>
+    <Pressable onPress={() => router.push(`/plat/${item.drop_id}`)} onPressIn={press.onPressIn} onPressOut={press.onPressOut} accessibilityRole="button" accessibilityLabel={`${item.title}, ${item.cook_name}, ${formatEuros(item.customer_price_cents)}`}
       style={({ pressed }) => ({ backgroundColor: c.card, borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, overflow: "hidden", opacity: pressed ? 0.92 : 1, marginBottom: 16 })}>
       <View>
-        <Image source={{ uri: photoUrl(item.photos[0]) }} style={{ width: "100%", aspectRatio: 16 / 11, opacity: soldOut ? 0.5 : 1 }} contentFit="cover" transition={200} cachePolicy="memory-disk" />
+        <Image source={{ uri: photoUrl(item.photos[0]) }} style={{ width: "100%", aspectRatio: 16 / 11, opacity: soldOut ? 0.5 : 1 }} contentFit="cover" transition={350} cachePolicy="memory-disk" />
         <View style={{ position: "absolute", top: 10, left: 10, backgroundColor: "rgba(255,255,255,0.92)", borderRadius: 99, paddingHorizontal: 10, paddingVertical: 5 }}>
           <T size={12} weight="700" color="#1D2433">{soldOut ? t("Épuisé") : `🔥 ${t(item.quantity_remaining > 1 ? "{n} restants" : "{n} restant", { n: item.quantity_remaining })}`}</T>
         </View>
@@ -43,5 +47,7 @@ export function DishCard({ item }: { item: FeedItem }) {
         </View>
       </View>
     </Pressable>
+    </Animated.View>
+    </FadeInUp>
   );
 }

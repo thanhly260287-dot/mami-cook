@@ -26,7 +26,7 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « non je veux une belle image propre dans une cuisine moderne qui donne envie la limage est sale » → ✅ maman souriante en tablier dans une cuisine blanche lumineuse (Wikimedia Commons, CC BY 2.0, Shixart1985), fondu blanc et texte foncé (#19) |
 | 29/10/2026 | « une belle image d'une maman jolie 40 ans italienne ou espagnole qui cuisine des spaghettis qui sourit et mettre les textes un peu sur l'image » → 🟡 maman brune souriante d'environ 40 ans en cuisine moderne (CC BY 2.0, Shixart1985), texte qui déborde sur la photo ; **aucune photo libre de spaghettis trouvée** (Wikimedia : rien ; Openverse en panne) → options proposées : clé Pexels gratuite ou image IA (clé Gemini) |
 | 30/10/2026 | « met plusieur image mode caruselle sur la premiere page » → ✅ carrousel de 4 photos en fondu (6 s, points cliquables, pause au survol, pas de défilement si « réduire les animations ») (#20) |
-| 30/10/2026 | « rend le site et les application plus animé avec des animation moderne » → en cours (#21) |
+| 30/10/2026 | « rend le site et les application plus animé avec des animation moderne » → ✅ site : transitions de pages, barre de progression, apparitions au défilement, cartes qui se soulèvent, zoom lent du carrousel, compteurs animés, panier qui rebondit ; appli : cartes en cascade, boutons et cartes qui s'enfoncent à l'appui, emoji qui rebondit ; tout coupé si « réduire les animations » (#21) |
 
 ## Fonctionnalités
 
