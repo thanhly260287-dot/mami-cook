@@ -27,6 +27,15 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 29/10/2026 | « une belle image d'une maman jolie 40 ans italienne ou espagnole qui cuisine des spaghettis qui sourit et mettre les textes un peu sur l'image » → 🟡 maman brune souriante d'environ 40 ans en cuisine moderne (CC BY 2.0, Shixart1985), texte qui déborde sur la photo ; **aucune photo libre de spaghettis trouvée** (Wikimedia : rien ; Openverse en panne) → options proposées : clé Pexels gratuite ou image IA (clé Gemini) |
 | 30/10/2026 | « met plusieur image mode caruselle sur la premiere page » → ✅ carrousel de 4 photos en fondu (6 s, points cliquables, pause au survol, pas de défilement si « réduire les animations ») (#20) |
 | 30/10/2026 | « rend le site et les application plus animé avec des animation moderne » → ✅ site : transitions de pages, barre de progression, apparitions au défilement, cartes qui se soulèvent, zoom lent du carrousel, compteurs animés, panier qui rebondit ; appli : cartes en cascade, boutons et cartes qui s'enfoncent à l'appui, emoji qui rebondit ; tout coupé si « réduire les animations » (#21) |
+| 30/10/2026 | « met une douzaine de photo avec que des personnages différents […] de tous âges et toutes sortes de gens » → 🟡 carrousel de 6 photos (hommes et femmes, âges variés) ; Wikimedia ne propose pas de photos de qualité pour toutes les origines → clé Pexels proposée |
+| 30/10/2026 | « met les ingrédients dans chaque plat » ; « celui qui vend des plats doit mettre les ingrédients, goûts, etc. des détails » → ✅ ingrédients obligatoires (base + formulaire), saveurs (1 à 5), conservation et réchauffage, affichés sur la fiche plat (site et appli) (#22) |
+| 30/10/2026 | « on veut voir des commandes dans commandes et aussi dans compte » ; « rajoute des choses dans les paniers » ; « je veux un dashboard pour tous avec des stats et des modifications, et des détails » ; « met un maximum de contenu » ; « pas de mode démo, juste pour moi, que je puisse travailler et voir à quoi ça ressemble » ; « tout le contenu s'effacera au nouveau compte et se basera sur les premiers vrais utilisateurs » → aperçu privé complet avec données d'exemple (en cours) ; la vraie base démarre vide |
+| 30/10/2026 | « inscription et connexion via Google et autres réseaux sociaux » → Google et Apple déjà sur le site ; Facebook et appli mobile à ajouter |
+| 30/10/2026 | « met-le dans toutes les langues mondiales » → à faire par lots (grandes langues mondiales) |
+| 30/10/2026 | « met tout en français sinon je comprends rien » (à propos de Claude Code) → règle ajoutée à la mémoire : tout écrire en français |
+| 30/10/2026 | « connecte Supabase pour créer un compte et passer commande » → en attente des secrets GitHub |
+| 30/10/2026 | « livreur GPS en temps réel, nombre de minutes pour arriver, étapes : plat récupéré, en chemin, arrivé » → à vérifier/compléter |
+| 30/10/2026 | « mettre des notes sur chaque vendeur avec les vrais clients, sur 5 avec étoiles » → à vérifier/compléter |
 
 ## Fonctionnalités
 

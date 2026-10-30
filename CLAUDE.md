@@ -63,6 +63,7 @@ Mobile : `cd apps/mobile && EXPO_OFFLINE=1 npx tsc --noEmit && npx expo lint`.
 (Copie de la mémoire globale, voir `docs/claude-global/CLAUDE.md`.)
 
 - L'utilisateur n'est pas informaticien : expliquer simplement, en français, étape par étape.
+- **Tout écrire en français**, sans exception : réponses, messages intermédiaires pendant le travail, descriptions des commandes et des outils (l'utilisateur voit tout dans Claude Code et ne lit pas l'anglais).
 - Ne jamais dire qu'une fonctionnalité marche sans l'avoir réellement testée ; donner la preuve (commande et résultat).
 - Ne pas supprimer de fonctionnalité sans son accord. Ne pas reconstruire ce qui fonctionne déjà.
 - Enregistrer les décisions importantes (`docs/DECISIONS.md`) et tenir la documentation à jour.

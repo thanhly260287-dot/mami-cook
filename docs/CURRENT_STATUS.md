@@ -18,12 +18,12 @@ Voir [TESTS.md](TESTS.md) pour les commandes et les résultats.
 
 | Partie | Preuve |
 | --- | --- |
-| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques (tableau de bord v2, filtre par ville), installations de l'appli, quota IA, justificatifs par pays | 174 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
+| Base de données : sécurité, commandes, stock, paiements, livraison, commissions, statistiques (tableau de bord v2, filtre par ville), installations de l'appli, quota IA, justificatifs par pays | 178 vérifications SQL au vert (`bash supabase/tests/run.sh`) |
 | Calcul des prix | 6 tests au vert (`pnpm --filter @mami/shared test`) |
 | Site web | Typecheck, lint et build OK ; 26 tests navigateur au vert |
 | Applis mobiles | Typecheck et lint OK ; bundles iOS et Android exportés (`expo export`) |
 | Fonctions serveur Stripe | `deno check` OK (pas de test réel avec Stripe) |
-| Traductions | 10 langues complètes, 1222 textes (`node scripts/i18n-keys.cjs --missing`) |
+| Traductions | 10 langues complètes, 1244 textes (`node scripts/i18n-keys.cjs --missing`) |
 | Aperçu en ligne du site (démo) | https://claude.ai/artifact/Qb8Cw4VCfGKUv2T65ikACR |
 
 ## Ce qui n'est pas vérifié

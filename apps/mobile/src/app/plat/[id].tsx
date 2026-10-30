@@ -4,7 +4,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
-import { ALLERGENS, DIETS, customerPrice, formatEuros, formatTime, relativeDay, t } from "@mami/shared";
+import { ALLERGENS, DIETS, FLAVORS, customerPrice, formatEuros, formatTime, relativeDay, t } from "@mami/shared";
 import { fetchDrop } from "@/lib/api";
 import { photoUrl } from "@/lib/supabase";
 import { useCart } from "@/hooks/providers";
@@ -47,6 +47,14 @@ export default function DishScreen() {
           <Pressable onPress={() => router.push(`/cuisine/${it.cook_slug}`)}><T weight="600" color={c.primary}>{it.cook_name} · ⭐ {Number(it.cook_rating).toFixed(1)} ({it.cook_rating_count}) ›</T></Pressable>
           {it.description && <T color={c.muted} style={{ lineHeight: 22 }}>{it.description}</T>}
           <T size={14}>🕐 {relativeDay(it.available_on)}, {formatTime(it.ready_from)}–{formatTime(it.ready_until)}   {it.offers_pickup ? t("🏠 Retrait") : ""}  {it.offers_delivery ? t("🛵 Livraison") : ""}</T>
+          {it.ingredients && (
+            <Card style={{ gap: 6 }}>
+              <T weight="700">{t("🌿 Ingrédients")}</T>
+              <T size={14} color={c.muted} style={{ lineHeight: 20 }}>{it.ingredients}</T>
+              {!!it.flavors?.length && <T size={13}>{it.flavors.map((fl) => { const x = FLAVORS.find((y) => y.id === fl); return `${x?.emoji ?? ""} ${t(x?.label ?? fl)}`; }).join("   ")}</T>}
+              {it.reheating && <T size={12} color={c.muted}>🌡️ {t("Conservation et réchauffage :")}{" "}{it.reheating}</T>}
+            </Card>
+          )}
           <Card style={{ backgroundColor: c.warn + "12", borderColor: c.warn + "55", gap: 6 }}>
             <T weight="700">{t("⚠️ Allergènes")}</T>
             <T size={14}>{it.allergens.length ? it.allergens.map((a) => t(ALLERGENS.find((x) => x.id === a)?.label ?? a)).join(" · ") : t("Aucun des 14 allergènes réglementaires déclaré.")}</T>

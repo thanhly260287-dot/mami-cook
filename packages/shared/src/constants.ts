@@ -64,6 +64,27 @@ export const DIETS = [
   { id: "lactose_free", label: "Sans lactose", emoji: "🥛" },
 ] as const;
 export type DietId = (typeof DIETS)[number]["id"];
+
+/** Profil de goût d'un plat (mêmes valeurs que la contrainte de la table dishes). */
+export const FLAVORS = [
+  { id: "sweet", label: "Sucré", emoji: "🍯" },
+  { id: "salty", label: "Salé", emoji: "🧂" },
+  { id: "sour", label: "Acidulé", emoji: "🍋" },
+  { id: "tangy", label: "Aigre-doux", emoji: "🍊" },
+  { id: "bitter", label: "Amer", emoji: "☕" },
+  { id: "umami", label: "Umami", emoji: "🍄" },
+  { id: "spicy", label: "Épicé", emoji: "🌶️" },
+  { id: "smoky", label: "Fumé", emoji: "🔥" },
+  { id: "herby", label: "Herbes fraîches", emoji: "🌿" },
+  { id: "garlicky", label: "Aillé", emoji: "🧄" },
+  { id: "creamy", label: "Crémeux", emoji: "🥛" },
+  { id: "crispy", label: "Croustillant", emoji: "🥨" },
+  { id: "fruity", label: "Fruité", emoji: "🍓" },
+  { id: "rich", label: "Généreux", emoji: "🍲" },
+  { id: "light", label: "Léger", emoji: "🥗" },
+] as const;
+export type FlavorId = (typeof FLAVORS)[number]["id"];
+export const FLAVOR_IDS = FLAVORS.map((f) => f.id) as [FlavorId, ...FlavorId[]];
 export const DIET_IDS = DIETS.map((d) => d.id) as [DietId, ...DietId[]];
 
 export const TEMPERATURES = [

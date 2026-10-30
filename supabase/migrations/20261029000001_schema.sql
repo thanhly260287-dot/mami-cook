@@ -192,7 +192,14 @@ create table public.dishes (
   cook_id uuid not null references public.cooks (id) on delete cascade,
   title text not null check (char_length(title) between 3 and 80),
   description text check (description is null or char_length(description) <= 1500),
-  ingredients text check (ingredients is null or char_length(ingredients) <= 1500),
+  -- Obligatoires : le client doit savoir ce qu'il mange (en plus des 14 allergènes)
+  ingredients text not null check (char_length(btrim(ingredients)) between 10 and 1500),
+  -- Profil de goût affiché sur la fiche (sucré, salé, épicé…)
+  flavors text[] not null default '{}' check (
+    flavors <@ array['sweet','salty','sour','bitter','umami','spicy','smoky','herby','creamy','crispy','fruity','garlicky','tangy','rich','light']
+  ),
+  -- Conservation et réchauffage (ex. « 2 jours au frigo, 3 min au micro-ondes »)
+  reheating text check (reheating is null or char_length(reheating) <= 300),
   cuisine text not null,
   -- Type de plat : permet de vendre aussi des desserts, pâtisseries, boissons…
   course text not null default 'main' check (course in ('starter', 'main', 'dessert', 'pastry', 'drink', 'snack')),

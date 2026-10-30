@@ -32,6 +32,10 @@ test("parcours : fiche plat → panier avec remise volume", async ({ page }) => 
   await page.getByRole("link", { name: /Ramen Tonkotsu Maison/ }).first().click();
   await expect(page.getByRole("heading", { name: "Ramen Tonkotsu Maison" })).toBeVisible();
   await expect(page.getByText("Allergènes", { exact: true })).toBeVisible();
+  // Ingrédients, saveurs et conseils de réchauffage obligatoires
+  await expect(page.getByText("Ingrédients", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Bouillon d'os de porc mijoté 14 h/)).toBeVisible();
+  await expect(page.getByText(/Conservation et réchauffage/)).toBeVisible();
   for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Ajouter un" }).click();
   await page.getByRole("button", { name: /Ajouter · / }).click();
   await page.goto("/panier");

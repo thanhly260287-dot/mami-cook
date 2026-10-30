@@ -58,6 +58,10 @@ export interface FeedItem {
   /** Devise du pays de la cuisine (EUR, CHF…). */
   currency?: string;
   course?: string;
+  /** Ingrédients, profil de goût et conseils de conservation / réchauffage. */
+  ingredients?: string | null;
+  flavors?: string[];
+  reheating?: string | null;
 }
 
 export interface FeedParams {
@@ -108,6 +112,8 @@ export interface Dish {
   title: string;
   description: string | null;
   ingredients: string | null;
+  flavors?: string[];
+  reheating?: string | null;
   cuisine: string;
   course?: string;
   photos: string[];

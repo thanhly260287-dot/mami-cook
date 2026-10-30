@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeft, Bike, Check, Clock, Flag, Flame, MapPin, ShoppingBag, Store, UtensilsCrossed } from "lucide-react";
-import { ALLERGENS, DIETS, cuisineLabel, customerPrice, formatDistance, formatMoney, formatTime, relativeDay, t } from "@mami/shared";
+import { AlertTriangle, ArrowLeft, Bike, Check, Clock, Flag, Flame, MapPin, ShoppingBag, Store, UtensilsCrossed, Leaf, Thermometer } from "lucide-react";
+import { ALLERGENS, FLAVORS, DIETS, cuisineLabel, customerPrice, formatDistance, formatMoney, formatTime, relativeDay, t } from "@mami/shared";
 import { fetchDrop } from "@/lib/api";
 import { useCart } from "@/hooks/useCart";
 import { useGeo } from "@/hooks/useGeo";
@@ -85,6 +85,20 @@ export default function DishPage() {
             {item.offers_delivery && <Info icon={<Bike />} label={item.delivery_fee_cents ? t("Livraison {price}", { price: formatMoney(item.delivery_fee_cents, item.currency) }) : t("Livraison offerte")} />}
             {item.portion_grams && <Info icon={<UtensilsCrossed />} label={t("Portion ~{g} g", { g: item.portion_grams })} />}
           </div>
+
+          {item.ingredients && (
+            <div className="mt-5 rounded-2xl border border-border bg-card p-4">
+              <p className="mb-1.5 flex items-center gap-1.5 text-sm font-bold"><Leaf className="h-4 w-4 text-primary" />{t("Ingrédients")}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{item.ingredients}</p>
+              {!!item.flavors?.length && (
+                <div className="mt-3 flex flex-wrap gap-1.5">{item.flavors.map((fl) => {
+                  const x = FLAVORS.find((y) => y.id === fl);
+                  return <Badge key={fl} tone="primary">{x?.emoji} {t(x?.label ?? fl)}</Badge>;
+                })}</div>
+              )}
+              {item.reheating && <p className="mt-3 flex gap-1.5 text-xs text-muted-foreground"><Thermometer className="h-4 w-4 shrink-0" /><span><b>{t("Conservation et réchauffage :")}</b>{" "}{item.reheating}</span></p>}
+            </div>
+          )}
 
           <div className="mt-5 rounded-2xl border border-status-warn/30 bg-status-warn/5 p-4">
             <p className="mb-2 flex items-center gap-1.5 text-sm font-bold"><AlertTriangle className="h-4 w-4 text-status-warn" />{" "}{t("Allergènes")}</p>

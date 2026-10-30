@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Camera, Eye, EyeOff, Pencil, Plus, Sparkles, Trash2, Wand2, X } from "lucide-react";
-import { ALLERGENS, COURSES, CUISINES, DIETS, TEMPERATURES, customerPrice, dishSchema, formatEuros, type Dish, type DishExtra, t } from "@mami/shared";
+import { ALLERGENS, FLAVORS, COURSES, CUISINES, DIETS, TEMPERATURES, customerPrice, dishSchema, formatEuros, type Dish, type DishExtra, t } from "@mami/shared";
 import { aiImage, fetchMyDishes, uploadImage } from "@/lib/api";
 import { requireSupabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -71,6 +71,7 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
     cuisine: dish?.cuisine ?? cook!.cuisines[0] ?? "french", course: dish?.course ?? "main", price: dish ? (dish.price_cents / 100).toFixed(2) : "",
     temperature: dish?.temperature ?? "hot", allergens: dish?.allergens ?? [], diets: dish?.diets ?? [],
     spiceLevel: dish?.spice_level ?? 0, portion: dish?.portion_grams ? String(dish.portion_grams) : "", photos: dish?.photos ?? [],
+    flavors: dish?.flavors ?? [], reheating: dish?.reheating ?? "",
   });
   const [extras, setExtras] = useState<{ id?: string; name: string; emoji: string; price: string }[]>(
     (dish?.dish_extras ?? []).filter((e) => e.is_active).sort((a, b) => a.position - b.position).map((e) => ({ id: e.id, name: e.name, emoji: e.emoji ?? "", price: (e.price_cents / 100).toFixed(2) })));
@@ -120,14 +121,14 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
       const parsed = dishSchema.safeParse({
         title: f.title, description: f.description, ingredients: f.ingredients, cuisine: f.cuisine, course: f.course, priceCents: cents(f.price),
         temperature: f.temperature, allergens: f.allergens, diets: f.diets, spiceLevel: f.spiceLevel,
-        portionGrams: f.portion ? Number(f.portion) : undefined,
+        portionGrams: f.portion ? Number(f.portion) : undefined, flavors: f.flavors, reheating: f.reheating,
         extras: extras.filter((e) => e.name.trim()).map((e) => ({ name: e.name, emoji: e.emoji || undefined, priceCents: cents(e.price || "0") })),
       });
       if (!parsed.success) throw new Error(parsed.error.issues[0].message);
       if (!f.photos.length) throw new Error(t("Ajoutez au moins une photo"));
       const sb = requireSupabase();
       const row = {
-        cook_id: cook!.id, title: parsed.data.title, description: parsed.data.description || null, ingredients: parsed.data.ingredients || null,
+        cook_id: cook!.id, title: parsed.data.title, description: parsed.data.description || null, ingredients: parsed.data.ingredients, flavors: parsed.data.flavors, reheating: parsed.data.reheating || null,
         cuisine: parsed.data.cuisine, course: parsed.data.course, price_cents: parsed.data.priceCents, temperature: parsed.data.temperature, allergens: parsed.data.allergens,
         diets: parsed.data.diets, spice_level: parsed.data.spiceLevel, portion_grams: parsed.data.portionGrams ?? null, photos: f.photos,
       };
@@ -197,7 +198,16 @@ function DishEditor({ dish, onClose }: { dish: DishWithExtras | null; onClose: (
         </Field>
         <Field label={t("Nom du plat")} htmlFor="t"><Input id="t" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={80} placeholder={t("Ex : Lasagnes bolognaise maison")} /></Field>
         <Field label={t("Description")} htmlFor="d"><Textarea id="d" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={1500} /></Field>
-        <Field label={t("Ingrédients")} htmlFor="ing"><Textarea id="ing" value={f.ingredients} onChange={(e) => setF({ ...f, ingredients: e.target.value })} maxLength={1500} className="min-h-[70px]" /></Field>
+        <Field label={t("Ingrédients (obligatoire)")} htmlFor="ing" hint={t("Tous les ingrédients, du plus important au moins important. Ex : pâtes fraîches, bœuf, tomates, béchamel, parmesan.")}>
+          <Textarea id="ing" value={f.ingredients} onChange={(e) => setF({ ...f, ingredients: e.target.value })} maxLength={1500} className="min-h-[90px]" required />
+        </Field>
+        <div>
+          <p className="mb-2 text-sm font-semibold">{t("Saveurs")}{" "}<span className="font-normal text-muted-foreground">{t("(1 à 5)")}</span></p>
+          <div className="flex flex-wrap gap-1.5">{FLAVORS.map((fl) => <Chip key={fl.id} on={f.flavors.includes(fl.id)} onClick={() => setF({ ...f, flavors: f.flavors.includes(fl.id) ? f.flavors.filter((x) => x !== fl.id) : [...f.flavors, fl.id].slice(0, 5) })}>{fl.emoji} {t(fl.label)}</Chip>)}</div>
+        </div>
+        <Field label={t("Conservation et réchauffage")} htmlFor="reh" hint={t("Ex : 2 jours au frigo ; 20 min au four à 180 °C.")}>
+          <Input id="reh" value={f.reheating} onChange={(e) => setF({ ...f, reheating: e.target.value })} maxLength={300} />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("Cuisine")} htmlFor="c"><Select id="c" value={f.cuisine} onChange={(e) => setF({ ...f, cuisine: e.target.value })}>{CUISINES.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}</Select></Field>
           <Field label={t("Température")} htmlFor="tp"><Select id="tp" value={f.temperature} onChange={(e) => setF({ ...f, temperature: e.target.value as Dish["temperature"] })}>{TEMPERATURES.map((tp) => <option key={tp.id} value={tp.id}>{tp.emoji} {t(tp.label)}</option>)}</Select></Field>

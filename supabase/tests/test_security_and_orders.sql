@@ -51,10 +51,13 @@ values (auth.uid(), :'cook_addr_id', 'SRID=4326;POINT(2.3470 48.8590)', 'hack');
 select pg_temp.check((select admin_notes is null from public.cook_private where cook_id = auth.uid()), 'notes admin non modifiables par le cuisinier');
 
 -- Un plat peut être préparé avant validation, mais pas mis en vente
-insert into public.dishes (cook_id, title, cuisine, price_cents, allergens, rating_avg)
-values (auth.uid(), 'Lasagnes Maison', 'italian', 1000, '{gluten,milk}', 5) returning id \gset dish_
+select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, price_cents) values (auth.uid(), 'Plat mystère', 'italian', 1000)$$, 'plat sans ingrédients');
+select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, price_cents, ingredients) values (auth.uid(), 'Plat mystère', 'italian', 1000, 'pâtes')$$, 'ingrédients trop vagues (moins de 10 caractères)');
+select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, price_cents, ingredients, flavors) values (auth.uid(), 'Plat', 'italian', 1000, 'Pâtes, tomates, basilic', '{bizarre}')$$, 'saveur inconnue');
+insert into public.dishes (cook_id, title, cuisine, price_cents, allergens, rating_avg, ingredients, flavors, reheating)
+values (auth.uid(), 'Lasagnes Maison', 'italian', 1000, '{gluten,milk}', 5, 'Pâtes fraîches, bœuf, tomates, béchamel, parmesan', '{rich,umami}', '2 jours au frigo ; 20 min au four à 180 °C') returning id \gset dish_
 select pg_temp.check((select rating_avg = 0 from public.dishes where id = :'dish_id'), 'note du plat non falsifiable');
-select pg_temp.expect_error(format($$insert into public.dishes (cook_id, title, cuisine, price_cents, allergens) values (auth.uid(), 'X plat', 'italian', 1000, '{poison}')$$), 'allergène inconnu');
+select pg_temp.expect_error(format($$insert into public.dishes (cook_id, title, cuisine, price_cents, allergens, ingredients) values (auth.uid(), 'X plat', 'italian', 1000, '{poison}', 'Ingrédients de test')$$), 'allergène inconnu');
 insert into public.dish_extras (dish_id, name, price_cents) values (:'dish_id', 'Sauce pesto', 150) returning id \gset extra_
 select pg_temp.expect_error(format($$insert into public.drops (dish_id, cook_id, available_on, ready_from, ready_until, quantity_total, quantity_remaining) values (%L, auth.uid(), current_date, '11:00', '14:00', 10, 10)$$, :'dish_id'), 'mise en vente avant validation');
 
@@ -110,6 +113,7 @@ select pg_temp.check((select quantity_remaining = 10 from public.drops where id 
 -- ------------------------------------------------------------------ visibilité
 select pg_temp.act_as(null);
 select pg_temp.check((select count(*) = 1 from public.feed(48.8566, 2.3522, 5)), 'visiteur anonyme voit le plat dans le flux');
+select pg_temp.check((select ingredients like 'Pâtes fraîches%' and flavors = '{rich,umami}' and reheating is not null from public.feed(48.8566, 2.3522, 5)), 'le flux affiche ingrédients, saveurs et conseils de réchauffage');
 select pg_temp.check((select count(*) = 0 from public.feed(43.2965, 5.3698, 5)), 'pas de plat à Marseille');
 select pg_temp.check((select count(*) = 1 from public.feed(48.8566, 2.3522, 5, null, 'lasagne')), 'recherche plein texte (pluriel, accents)');
 select pg_temp.check((select count(*) = 1 from public.feed(0, 0, p_drop_id => :'drop_id')), 'fiche d''un plat par identifiant (sans position)');

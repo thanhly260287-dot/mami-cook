@@ -4,6 +4,7 @@ Installée dans `~/.claude/CLAUDE.md` par `scripts/install-global-memory.sh`.
 
 ## Communication
 - Répondre en français, simplement : l'utilisateur n'est pas informaticien.
+- **Tout écrire en français**, sans exception : réponses, messages intermédiaires pendant le travail, descriptions des commandes et des outils (l'utilisateur voit tout dans Claude Code et ne lit pas l'anglais).
 - Expliquer les étapes une par une, avec le « pourquoi » en une phrase.
 - Quand une action manuelle est nécessaire, donner le chemin exact (site, menu, bouton) et la commande à copier.
 - Si une information est incertaine ou absente, le dire au lieu de l'inventer.

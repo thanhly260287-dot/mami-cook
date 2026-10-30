@@ -54,8 +54,8 @@ insert into public.addresses (user_id, line1, postal_code, city, location)
 values (auth.uid(), '5 rue Oberkampf', '75011', 'Paris', 'SRID=4326;POINT(2.3700 48.8650)') returning id \gset caddr_
 insert into public.cook_private (cook_id, address_id, exact_location, legal_name, tax_id, business_status)
 values (auth.uid(), :'caddr_id', 'SRID=4326;POINT(2.3700 48.8650)', 'Lina Diallo', '1234567890123', 'sole_trader');
-insert into public.dishes (cook_id, title, cuisine, price_cents, allergens)
-values (auth.uid(), 'Mafé de poulet', 'african', 1000, '{peanuts}') returning id \gset dish_
+insert into public.dishes (cook_id, title, cuisine, price_cents, allergens, ingredients)
+values (auth.uid(), 'Mafé de poulet', 'african', 1000, '{peanuts}', 'Poulet, pâte d''arachide, tomates, oignons, riz') returning id \gset dish_
 select pg_temp.act_as_admin_db();
 select pg_temp.verify_all_docs(:'cook', 'cook');
 select pg_temp.act_as(:'admin');
@@ -311,10 +311,10 @@ update public.cooks set country = 'FR' where id = :'cook';
 select pg_temp.act_as(:'cook');
 select pg_temp.check((public.cook_stats(30) ->> 'completed')::int = 1 and (public.cook_stats(30) ->> 'plates_sold')::int = 2
                      and (public.cook_stats(30) -> 'top_dishes' -> 0 ->> 'title') = 'Mafé de poulet', 'statistiques de la cuisinière');
-insert into public.dishes (cook_id, title, cuisine, course, price_cents) values (auth.uid(), 'Tiramisu', 'italian', 'dessert', 500) returning id \gset dess_
+insert into public.dishes (cook_id, title, cuisine, course, price_cents, ingredients, flavors) values (auth.uid(), 'Tiramisu', 'italian', 'dessert', 500, 'Mascarpone, œufs, café, biscuits, cacao', '{sweet,creamy}') returning id \gset dess_
 insert into public.drops (dish_id, cook_id, available_on, ready_from, ready_until, quantity_total, quantity_remaining)
 values (:'dess_id', auth.uid(), current_date, '11:00', '22:00', 5, 5);
-select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, course, price_cents) values (auth.uid(), 'Xxx', 'italian', 'poison', 500)$$, 'type de plat inconnu');
+select pg_temp.expect_error($$insert into public.dishes (cook_id, title, cuisine, course, price_cents, ingredients) values (auth.uid(), 'Xxx', 'italian', 'poison', 500, 'Ingrédients de test')$$, 'type de plat inconnu');
 select pg_temp.act_as(null);
 select pg_temp.check((select count(*) = 1 and bool_and(title = 'Tiramisu') from public.feed(48.8650, 2.3700, 3, p_course => 'dessert')), 'filtre desserts');
 select pg_temp.act_as(:'client');

@@ -1,7 +1,7 @@
 // Schémas de validation (formulaires côté client). Les mêmes contraintes sont
 // imposées par la base (CHECK constraints) : ne jamais se fier au client seul.
 import { z } from "zod";
-import { ALLERGEN_IDS, CUISINE_IDS, DIET_IDS, FULFILLMENTS, REPORT_REASONS, TEMPERATURE_IDS } from "./constants";
+import { ALLERGEN_IDS, CUISINE_IDS, DIET_IDS, FLAVOR_IDS, FULFILLMENTS, REPORT_REASONS, TEMPERATURE_IDS } from "./constants";
 import { MAX_QTY_PER_LINE } from "./pricing";
 
 const trimmed = (min: number, max: number) => z.string().trim().min(min).max(max);
@@ -78,7 +78,9 @@ export const dishSchema = z.object({
   diets: z.array(z.enum(DIET_IDS)).max(6),
   spiceLevel: z.number().int().min(0).max(3),
   portionGrams: z.number().int().min(50).max(3000).optional(),
-  ingredients: z.string().trim().max(1500).optional().or(z.literal("")),
+  ingredients: z.string().trim().min(10, "Indiquez la liste des ingrédients (10 caractères minimum)").max(1500),
+  flavors: z.array(z.enum(FLAVOR_IDS)).min(1, "Choisissez au moins une saveur").max(5, "5 saveurs maximum"),
+  reheating: z.string().trim().max(300).optional().or(z.literal("")),
   extras: z
     .array(z.object({ name: trimmed(1, 40), emoji: z.string().max(8).optional(), priceCents: z.number().int().min(0).max(5000) }))
     .max(10)
