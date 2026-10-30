@@ -12,6 +12,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Messages visibles dans le résumé GitHub (annotations), sans jamais afficher la clé
+const gh = (level, msg) => console.log(process.env.GITHUB_ACTIONS ? `::${level}::${msg}` : msg);
 const ROOT = new URL("..", import.meta.url).pathname;
 const DEMO = join(ROOT, "packages/shared/src/demo-data.ts");
 const OUT = join(ROOT, "apps/web/public/images/dishes");
@@ -33,7 +35,7 @@ if (process.argv.includes("--hero")) {
     process.exit(0);
   }
   const key = process.env.GEMINI_API_KEY;
-  if (!key) { console.error("Définissez GEMINI_API_KEY (clé sur https://aistudio.google.com/apikey)."); process.exit(1); }
+  if (!key) { gh("error", "Secret GEMINI_API_KEY absent : ajoutez-le dans GitHub (Settings → Secrets and variables → Actions)."); process.exit(1); }
   const done = [];
   for (const sc of cfg.scenes) {
     const jpg = join(dir, `${sc.id}.jpg`);
@@ -44,17 +46,17 @@ if (process.argv.includes("--hero")) {
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({ contents: [{ parts: [{ text: heroPrompt(sc) }] }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "3:2" } } }),
     });
-    if (!res.ok) { console.log(`échec (${res.status}) : ${(await res.text()).slice(0, 200)}`); continue; }
+    if (!res.ok) { const err = (await res.text()).replace(/\s+/g, " ").slice(0, 220); gh("warning", `${sc.id} : refus de Google (${res.status}) ${err}`); continue; }
     const body = await res.json();
     const img = (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.inlineData ?? p.inline_data).find(Boolean);
-    if (!img?.data) { console.log("aucune image renvoyée"); continue; }
+    if (!img?.data) { gh("warning", `${sc.id} : aucune image renvoyée (${body.candidates?.[0]?.finishReason ?? body.promptFeedback?.blockReason ?? "raison inconnue"})`); continue; }
     writeFileSync(join(dir, `${sc.id}.png`), Buffer.from(img.data, "base64"));
     done.push(sc);
     console.log("OK");
   }
   // Manifeste lu par le carrousel : seules les scènes réussies y figurent.
   writeFileSync(join(dir, "scenes.json"), JSON.stringify(done.map((sc) => ({ file: `hero/${sc.id}.jpg`, alt: sc.alt, dish: sc.dish })), null, 1) + "\n");
-  console.log(`${done.length}/${cfg.scenes.length} scènes prêtes.`);
+  gh(done.length === cfg.scenes.length ? "notice" : "warning", `${done.length}/${cfg.scenes.length} scènes prêtes.`);
   process.exit(done.length ? 0 : 1);
 }
 
