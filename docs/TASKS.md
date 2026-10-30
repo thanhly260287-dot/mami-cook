@@ -49,4 +49,5 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 17 | Tableau de bord v2 : ventes, commandes, panier moyen, commissions plats / livraison, plats et desserts vendus, top ventes et vendeurs, installations iOS / Android ; visible en démo | 169 vérifications SQL, 24 E2E, typecheck/lint web et mobile, i18n 1215/1215, capture d'écran |
 | 18 | Filtre par ville du tableau de bord (ventes, commandes, vendeurs, plats, livreurs) + classement des villes | 174 vérifications SQL, 24 E2E (filtre Lyon), i18n 1219/1219, capture d'écran |
 | 19 | Accueil : bannière plein écran, photo lumineuse d'une maman souriante en cuisine moderne, titre et texte dessus (téléphone : photo en haut, texte dessous) | 24 E2E, captures ordinateur et téléphone, i18n 1221/1221 |
+| 20 | Carrousel de 4 photos sur l'accueil (fondu, points, pause au survol, accessibilité) | 26 E2E (dont carrousel), captures des 4 photos ordinateur et téléphone |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

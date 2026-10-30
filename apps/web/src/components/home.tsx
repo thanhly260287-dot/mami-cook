@@ -1,19 +1,25 @@
 import { t } from "@mami/shared";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BadgeCheck, Camera, ChefHat, CreditCard, Leaf, ShieldCheck, ShoppingBag, Star, TrendingUp, Truck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection({ openCount }: { openCount?: number }) {
+  const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    // Pas de défilement automatique si l'utilisateur a demandé à réduire les animations.
+    if (paused || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => setSlide((i) => (i + 1) % HERO_SLIDES.length), 6000);
+    return () => window.clearInterval(id);
+  }, [paused]);
   return (
     // Grande photo lumineuse en fond (Wikimedia Commons, crédit dans les mentions légales), texte posé dessus.
-    <section className="relative isolate overflow-hidden bg-card">
-      <motion.img initial={{ scale: 1.06 }} animate={{ scale: 1 }} transition={{ duration: 1.2, ease: "easeOut" }}
-        src={`${import.meta.env.BASE_URL}images/hero.jpg`} alt={t("Une maman souriante qui cuisine dans sa cuisine")}
-        fetchPriority="high" decoding="async"
-        className="absolute inset-x-0 top-0 -z-10 h-[380px] w-full object-cover object-[42%_30%] sm:h-[460px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%] md:object-[40%_35%]" />
+    <section className="relative isolate overflow-hidden bg-card" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <HeroCarousel index={slide} />
       {/* Fondu vers le fond de page : par le bas sur téléphone, par la gauche de la photo sur ordinateur (le texte déborde dessus) */}
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[384px] bg-gradient-to-b from-card/0 from-40% via-card/80 via-70% to-card to-90% sm:h-[464px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%] md:bg-gradient-to-r md:from-card md:from-0% md:via-card/40 md:via-25% md:to-card/0 md:to-50%" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[384px] bg-gradient-to-b from-card/0 from-40% via-card/80 via-70% to-card to-90% sm:h-[464px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%] md:bg-gradient-to-r md:from-card md:from-0% md:via-card/40 md:via-25% md:to-card/0 md:to-50%" />
       <div className="container relative flex pb-10 pt-[270px] sm:pt-[350px] md:min-h-[620px] md:items-center md:py-20">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="max-w-xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-card/90 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-border backdrop-blur">
@@ -45,7 +51,36 @@ export function HeroSection({ openCount }: { openCount?: number }) {
           <p className="mt-0.5 text-xs text-muted-foreground">{t("Lasagnes maison · 15,00 €")}</p>
         </motion.div>
       </div>
+      {/* Points du carrousel (au premier plan pour rester cliquables) */}
+      <div className="absolute right-4 top-4 z-20 flex gap-2 md:bottom-6 md:right-[32%] md:top-auto md:translate-x-1/2">
+        {HERO_SLIDES.map((p, i) => (
+          <button key={p.file} onClick={() => setSlide(i)} aria-label={t("Photo {n}", { n: i + 1 })} aria-current={i === slide}
+            className={`h-2.5 rounded-full shadow ring-1 ring-black/10 transition-all ${i === slide ? "w-7 bg-white" : "w-2.5 bg-white/60 hover:bg-white/90"}`} />
+        ))}
+      </div>
     </section>
+  );
+}
+
+// Photos du carrousel (Wikimedia Commons, crédits dans les mentions légales).
+// Cadrage propre à chaque photo ; la dernière est affichée en miroir pour que la cuisinière soit à droite, loin du texte.
+const HERO_SLIDES = [
+  { file: "hero.jpg", className: "object-[42%_30%] md:object-[40%_35%]" },
+  { file: "hero-1.jpg", className: "object-[80%_30%] md:object-[70%_35%]" },
+  { file: "hero-2.jpg", className: "object-[45%_20%] md:object-[45%_30%]" },
+  { file: "hero-3.jpg", className: "-scale-x-100 object-[25%_25%] md:object-[30%_30%]" },
+];
+
+function HeroCarousel({ index }: { index: number }) {
+  return (
+    <div className="absolute inset-x-0 top-0 -z-10 h-[380px] overflow-hidden sm:h-[460px] md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-[64%]">
+      {HERO_SLIDES.map((slide, i) => (
+        <img key={slide.file} src={`${import.meta.env.BASE_URL}images/${slide.file}`}
+          alt={i === index ? t("Une maman souriante qui cuisine dans sa cuisine") : ""} aria-hidden={i !== index}
+          fetchPriority={i === 0 ? "high" : "low"} loading={i === 0 ? "eager" : "lazy"} decoding="async"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out ${slide.className} ${i === index ? "opacity-100" : "opacity-0"}`} />
+      ))}
+    </div>
   );
 }
 

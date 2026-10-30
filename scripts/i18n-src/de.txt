@@ -1231,3 +1231,4 @@
 1230=Hausgemachtes Phở bò
 1231=Hausgemachtes Tiramisu
 1232=Eine lächelnde Mutter kocht in ihrer Küche
+1233=Foto {n}

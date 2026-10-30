@@ -124,3 +124,14 @@ test("tableau de bord de l'équipe (démo) : ventes, plats et desserts, vendeurs
   await expect(page.getByRole("button", { name: "Candidatures" })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("accueil : carrousel de photos (4 photos, points cliquables)", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/");
+  const dots = page.getByRole("button", { name: /^Photo \d$/ });
+  await expect(dots).toHaveCount(4);
+  await page.getByRole("button", { name: "Photo 3" }).click();
+  await expect(page.getByRole("button", { name: "Photo 3" })).toHaveAttribute("aria-current", "true");
+  await expect(page.locator('section img[src$="hero-2.jpg"]')).toHaveClass(/opacity-100/);
+  expect(errors).toEqual([]);
+});
