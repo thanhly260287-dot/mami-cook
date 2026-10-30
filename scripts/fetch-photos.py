@@ -150,5 +150,13 @@ else:
             print(f"✓ hero ← {c['title']} ({c['license']})")
         else:
             print(f"✗ hero : {hero['title']} introuvable ou licence non libre")
+    # Carrousel d'accueil : images/hero-1.jpg, hero-2.jpg… (en plus de hero.jpg)
+    for i, title in enumerate(hero.get("slides", []), start=1):
+        c = by_title(title, 1600)
+        if not c:
+            print(f"✗ hero-{i} : {title} introuvable ou licence non libre"); continue
+        jpeg(c["thumb"], ROOT / f"apps/web/public/images/hero-{i}.jpg", 1600)
+        credits[f"hero-{i}"] = {k: c[k] for k in ("title", "page", "license", "author")}
+        print(f"✓ hero-{i} ← {c['title']} ({c['license']})")
     (dishes / "credits.json").write_text(json.dumps(credits, ensure_ascii=False, indent=1))
     demo.write_text(src)
