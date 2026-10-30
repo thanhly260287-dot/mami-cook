@@ -1256,3 +1256,14 @@
 1255=Tüm malzemeler, en önemliden en az önemliye. Örn.: taze makarna, dana eti, domates, beşamel, parmesan.
 1256=Umami
 1257=🌿 Malzemeler
+1258=Teslim edildi
+1259=Mutfağa ulaştı
+1260=Tahmini varış
+1261=Yolda
+1262=Kurye bulundu
+1263=Yemek alındı
+1264=Yalnızca bu mutfaktan sipariş almış müşteriler yorum yapabilir.
+1265=Doğrulanmış müşterilerden {n} yorum
+1266={n} dk
+1267=Teslimat adımları
+1268=✓ Doğrulanmış müşteri

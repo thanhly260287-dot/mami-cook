@@ -1256,5 +1256,16 @@
  "Sucré",
  "Tous les ingrédients, du plus important au moins important. Ex : pâtes fraîches, bœuf, tomates, béchamel, parmesan.",
  "Umami",
- "🌿 Ingrédients"
+ "🌿 Ingrédients",
+ "Arrivé",
+ "Arrivé à la cuisine",
+ "Arrivée estimée",
+ "En chemin",
+ "Livreur trouvé",
+ "Plat récupéré",
+ "Seuls les clients qui ont reçu une commande de cette cuisine peuvent laisser un avis.",
+ "{n} avis de clients vérifiés",
+ "{n} min",
+ "Étapes de la livraison",
+ "✓ Client vérifié"
 ]

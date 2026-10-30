@@ -331,6 +331,10 @@ export interface DeliveryDetails {
 export interface DeliveryTracking {
   status: DeliveryStatus;
   distance_m: number;
+  /** Temps d'arrivée estimé en minutes (null une fois livrée ou annulée). */
+  eta_minutes?: number | null;
+  pickup?: { lat: number | null; lng: number | null } | null;
+  dropoff?: { lat: number | null; lng: number | null } | null;
   assigned_at: string | null;
   picked_up_at: string | null;
   delivered_at: string | null;

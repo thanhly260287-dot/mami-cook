@@ -34,8 +34,8 @@ Statuts : ✅ fait et testé · 🟡 en cours · ⬜ à faire. Le détail des t�
 | 30/10/2026 | « met-le dans toutes les langues mondiales » → à faire par lots (grandes langues mondiales) |
 | 30/10/2026 | « met tout en français sinon je comprends rien » (à propos de Claude Code) → règle ajoutée à la mémoire : tout écrire en français |
 | 30/10/2026 | « connecte Supabase pour créer un compte et passer commande » → en attente des secrets GitHub |
-| 30/10/2026 | « livreur GPS en temps réel, nombre de minutes pour arriver, étapes : plat récupéré, en chemin, arrivé » → à vérifier/compléter |
-| 30/10/2026 | « mettre des notes sur chaque vendeur avec les vrais clients, sur 5 avec étoiles » → à vérifier/compléter |
+| 30/10/2026 | « livreur GPS en temps réel, nombre de minutes pour arriver, étapes : plat récupéré, en chemin, arrivé » → ✅ temps d'arrivée estimé en minutes, frise de 5 étapes, carte livreur + cuisine + client (site et appli) (#23) |
+| 30/10/2026 | « mettre des notes sur chaque vendeur avec les vrais clients, sur 5 avec étoiles » → ✅ avis réservés aux clients ayant reçu une commande (déjà en base), note /5, répartition 5★→1★, badge « Client vérifié » (#24) |
 
 ## Fonctionnalités
 

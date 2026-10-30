@@ -1256,3 +1256,14 @@
 1255=Alle Zutaten, von der wichtigsten bis zur unwichtigsten. Z. B.: frische Nudeln, Rind, Tomaten, Béchamel, Parmesan.
 1256=Umami
 1257=🌿 Zutaten
+1258=Angekommen
+1259=An der Küche
+1260=Voraussichtliche Ankunft
+1261=Unterwegs
+1262=Fahrer gefunden
+1263=Gericht abgeholt
+1264=Nur Kunden, die eine Bestellung dieser Küche erhalten haben, können bewerten.
+1265={n} Bewertungen verifizierter Kunden
+1266={n} Min.
+1267=Lieferschritte
+1268=✓ Verifizierter Kunde

@@ -198,6 +198,7 @@ select pg_temp.check((select status = 'out_for_delivery' from public.orders wher
 select pg_temp.act_as(:'client');
 select public.delivery_tracking(:'o_id') as tr \gset
 select pg_temp.check((:'tr'::jsonb #>> '{courier,name}') = 'Inès' and (:'tr'::jsonb #>> '{courier,lat}') is not null, 'le client suit son livreur en direct (prénom seulement)');
+select pg_temp.check((:'tr'::jsonb ->> 'eta_minutes')::int between 1 and 60 and (:'tr'::jsonb #>> '{dropoff,lat}') is not null and (:'tr'::jsonb #>> '{pickup,lat}') is not null, 'temps d''arrivée estimé en minutes et positions cuisine / client');
 
 select pg_temp.act_as(:'rider2');
 select pg_temp.expect_error(format($$select public.delivery_step(%L, 'delivered', '0000')$$, :'d_id'), 'remise sans le code du client');

@@ -3,9 +3,9 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bike, Check, ChefHat, CircleCheck, Clock, Flag, MapPin, MessageCircle, Package, Receipt, Send, Store, X, Zap } from "lucide-react";
-import { DELIVERY_STATUS_LABELS, formatDate, formatMoney, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale, VEHICLES } from "@mami/shared";
+import { DELIVERY_STATUS_LABELS, DELIVERY_STEP_ORDER, DELIVERY_STEPS, formatDate, formatMoney, ORDER_STATUS_LABELS, relativeDay, type Order, t, intlLocale, VEHICLES } from "@mami/shared";
 import { createReview, fetchDeliveryTracking, fetchMessages, fetchMyReviewForOrder, fetchOrder, fetchPickupAddress, orderAction, sendMessage } from "@/lib/api";
-import { RouteMap } from "@/components/RouteMap";
+import { RouteMap, type MapPoint } from "@/components/RouteMap";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtime } from "@/hooks/useRealtime";
 import { cn, errorMessage } from "@/lib/utils";
@@ -238,6 +238,11 @@ function CourierTracking({ order, isCustomer }: { order: Order; isCustomer: bool
   if (!tr) return null;
   const c = tr.courier;
   const vehicle = VEHICLES.find((v) => v.id === c?.vehicle);
+  const rank = DELIVERY_STEP_ORDER.indexOf(tr.status as (typeof DELIVERY_STEP_ORDER)[number]);
+  const points: MapPoint[] = [];
+  if (tr.pickup?.lat != null && tr.pickup.lng != null && rank < 3) points.push({ lat: tr.pickup.lat, lng: tr.pickup.lng, kind: "pickup" });
+  if (tr.dropoff?.lat != null && tr.dropoff.lng != null) points.push({ lat: tr.dropoff.lat, lng: tr.dropoff.lng, kind: "dropoff" });
+  if (c?.lat != null && c.lng != null) points.push({ lat: c.lat, lng: c.lng, kind: "courier" });
   return (
     <Card className="mb-6 overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 p-5">
@@ -246,6 +251,12 @@ function CourierTracking({ order, isCustomer }: { order: Order; isCustomer: bool
           <p className="text-lg font-extrabold">{t(DELIVERY_STATUS_LABELS[tr.status])}</p>
           {c && <p className="text-sm text-muted-foreground">{vehicle?.emoji} {c.name}{c.rating_count > 0 && ` · ⭐ ${Number(c.rating).toFixed(1)}`}</p>}
         </div>
+        {tr.eta_minutes != null && tr.status !== "delivered" && (
+          <div className="rounded-2xl gradient-primary px-5 py-3 text-center text-white shadow-primary" aria-live="polite">
+            <p className="text-xs font-semibold opacity-90">{t("Arrivée estimée")}</p>
+            <p className="text-3xl font-extrabold tabular-nums">{t("{n} min", { n: tr.eta_minutes })}</p>
+          </div>
+        )}
         {isCustomer && ["assigned", "at_pickup", "picked_up"].includes(tr.status) && (
           <div className="rounded-2xl bg-primary/10 px-4 py-2 text-center">
             <p className="text-xs font-semibold text-muted-foreground">{t("Code à donner au livreur")}</p>
@@ -253,7 +264,22 @@ function CourierTracking({ order, isCustomer }: { order: Order; isCustomer: bool
           </div>
         )}
       </div>
-      {c?.lat != null && c.lng != null && <RouteMap className="h-56 w-full z-0" points={[{ lat: c.lat, lng: c.lng, kind: "courier" }]} />}
+      {tr.status !== "cancelled" && (
+        <ol className="grid grid-cols-5 gap-1 px-5 pb-5" aria-label={t("Étapes de la livraison")}>
+          {DELIVERY_STEPS.map((step, i) => {
+            const done = rank >= step.doneAt;
+            const current = !done && (i === 0 ? rank <= 0 : rank >= DELIVERY_STEPS[i - 1].doneAt);
+            return (
+              <li key={step.label} className="flex flex-col items-center gap-1.5 text-center" aria-current={current ? "step" : undefined}>
+                <span className={cn("flex h-9 w-9 items-center justify-center rounded-full text-base transition-all",
+                  done ? "gradient-primary text-white shadow-primary" : current ? "animate-pulse bg-primary/15 ring-2 ring-primary" : "bg-muted opacity-60")}>{done ? "✓" : step.emoji}</span>
+                <span className={cn("text-[11px] font-semibold leading-tight", done || current ? "text-foreground" : "text-muted-foreground")}>{t(step.label)}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {points.length > 0 && <RouteMap className="h-64 w-full z-0" points={points} />}
     </Card>
   );
 }

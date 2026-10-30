@@ -1256,3 +1256,14 @@
 1255=Todos los ingredientes, del principal al menos importante. Ej.: pasta fresca, ternera, tomate, bechamel, parmesano.
 1256=Umami
 1257=🌿 Ingredientes
+1258=Llegado
+1259=En la cocina
+1260=Llegada estimada
+1261=En camino
+1262=Repartidor asignado
+1263=Plato recogido
+1264=Solo los clientes que recibieron un pedido de esta cocina pueden opinar.
+1265={n} opiniones de clientes verificados
+1266={n} min
+1267=Etapas de la entrega
+1268=✓ Cliente verificado

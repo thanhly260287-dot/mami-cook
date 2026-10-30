@@ -105,6 +105,20 @@ export async function fetchCookReviews(cookId: string, limit = 20): Promise<Revi
   ) as Review[];
 }
 
+export interface RatingSummary { average: number; count: number; with_comment: number; distribution: Record<"1" | "2" | "3" | "4" | "5", number> }
+
+/** Note moyenne et répartition par étoiles (avis de vrais clients, hors avis masqués). */
+export async function fetchRatingSummary(cookId: string, fallback?: { avg: number; count: number }): Promise<RatingSummary> {
+  if (DEMO_MODE) {
+    // Démo : répartition plausible à partir de la note affichée
+    const count = fallback?.count ?? 0, avg = fallback?.avg ?? 0;
+    const five = Math.round(count * Math.max(0, Math.min(1, (avg - 3.6) / 1.4)));
+    const four = Math.round((count - five) * 0.7), three = Math.round((count - five - four) * 0.6), two = Math.round((count - five - four - three) * 0.6);
+    return { average: avg, count, with_comment: Math.round(count * 0.6), distribution: { 5: five, 4: four, 3: three, 2: two, 1: Math.max(0, count - five - four - three - two) } };
+  }
+  return unwrap(await supabase!.rpc("cook_rating_summary", { _cook_id: cookId })) as RatingSummary;
+}
+
 // ------------------------------------------------------------------ favoris
 export async function fetchFavorites(): Promise<string[]> {
   if (DEMO_MODE) return [];

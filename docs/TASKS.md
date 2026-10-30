@@ -52,4 +52,6 @@ Rien en cours : tout le travail est commité. Prochaines étapes dans « À fair
 | 20 | Carrousel de 4 photos sur l'accueil (fondu, points, pause au survol, accessibilité) | 26 E2E (dont carrousel), captures des 4 photos ordinateur et téléphone |
 | 21 | Animations modernes site (framer-motion, `components/motion.tsx`) et appli (Animated, `components/motion.tsx`), respect de « réduire les animations » | 26 E2E, 0 élément resté invisible après défilement, typecheck/lint web et mobile, export iOS/Android, i18n 1222/1222 |
 | 22 | Ingrédients obligatoires, saveurs, conservation/réchauffage (base, formulaire, fiche plat site et appli, 12 plats d'exemple) | 178 vérifications SQL, 26 E2E (fiche plat), typecheck/lint web et mobile, i18n 1244/1244 |
+| 23 | Suivi livreur : temps d'arrivée en minutes, étapes (livreur trouvé, à la cuisine, plat récupéré, en chemin, arrivé), carte à 3 points | Vérification SQL du temps d'arrivée, typecheck/lint web et mobile, 28 E2E |
+| 24 | Notes /5 des cuisines : répartition par étoiles (`cook_rating_summary`), badge « Client vérifié » | Vérification SQL, E2E page cuisine |
 | 13 | Système de mémoire permanente | Ce dossier, `.claude/` ; vérifications dans [TESTS.md](TESTS.md) |

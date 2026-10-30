@@ -192,6 +192,10 @@ select pg_temp.check((select rating_avg = 5 and rating_count = 1 from public.coo
 select pg_temp.check((select rating_avg = 4 from public.dishes where id = :'dish_id'), 'note du plat mise à jour');
 select pg_temp.expect_error(format($$insert into public.reviews (order_id, customer_id, cook_id, rating) values (%L, auth.uid(), '00000000-0000-0000-0000-00000000000a', 1)$$, :'o2_id'),
   'avis sans commande terminée');
+select pg_temp.act_as(null);
+select pg_temp.check((select (s ->> 'count')::int = 1 and (s ->> 'average')::numeric = 5 and (s #>> '{distribution,5}')::int = 1 and (s #>> '{distribution,1}')::int = 0
+                      from public.cook_rating_summary('00000000-0000-0000-0000-00000000000a') s), 'résumé des notes par étoiles visible par tous (vrais clients uniquement)');
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
 update public.reviews set cook_reply = 'faux' where id = :'rev_id';
 select pg_temp.check((select cook_reply is null from public.reviews where id = :'rev_id'), 'le client ne peut pas écrire la réponse du cuisinier');
 

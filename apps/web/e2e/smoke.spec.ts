@@ -139,3 +139,12 @@ test("accueil : carrousel de photos (6 photos, points cliquables)", async ({ pag
   await expect(page.locator('section div:has(> img[src$="hero-2.jpg"])')).toHaveClass(/opacity-100/);
   expect(errors).toEqual([]);
 });
+
+test("cuisine : note sur 5, répartition par étoiles et avis de clients vérifiés", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/cuisine/mami-nono");
+  await expect(page.getByText(/avis de clients vérifiés/)).toBeVisible();
+  await expect(page.getByText("5 ★")).toBeVisible();
+  await expect(page.getByText("✓ Client vérifié").first()).toBeVisible();
+  expect(errors).toEqual([]);
+});

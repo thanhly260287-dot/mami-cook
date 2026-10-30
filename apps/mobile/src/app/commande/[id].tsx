@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DELIVERY_STATUS_LABELS, formatMoney, ORDER_STATUS_LABELS, relativeDay, t, VEHICLES } from "@mami/shared";
+import { DELIVERY_STATUS_LABELS, DELIVERY_STEP_ORDER, DELIVERY_STEPS, formatMoney, ORDER_STATUS_LABELS, relativeDay, t, VEHICLES } from "@mami/shared";
 import { createReview, fetchDeliveryTracking, fetchMessages, fetchOrder, fetchPickupAddress, orderAction, sendMessage } from "@/lib/api";
 import { errorMessage, SITE_URL, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/providers";
@@ -68,6 +68,31 @@ export default function OrderScreen() {
             <T size={12} color={c.muted}>{t("Livraison")}</T>
             <T size={18} weight="800">{t(DELIVERY_STATUS_LABELS[tr.status])}</T>
             {tr.courier && <T color={c.muted}>{vehicle?.emoji} {tr.courier.name}{tr.courier.rating_count > 0 ? ` · ⭐ ${Number(tr.courier.rating).toFixed(1)}` : ""}</T>}
+            {tr.eta_minutes != null && tr.status !== "delivered" && (
+              <View style={{ alignSelf: "flex-start", backgroundColor: c.primary, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8, marginTop: 4 }}>
+                <T size={12} color="#fff">{t("Arrivée estimée")}</T>
+                <T size={26} weight="800" color="#fff">{t("{n} min", { n: tr.eta_minutes })}</T>
+              </View>
+            )}
+            {tr.status !== "cancelled" && (() => {
+              const rank = DELIVERY_STEP_ORDER.indexOf(tr.status as (typeof DELIVERY_STEP_ORDER)[number]);
+              return (
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }} accessibilityLabel={t("Étapes de la livraison")}>
+                  {DELIVERY_STEPS.map((step, i) => {
+                    const done = rank >= step.doneAt;
+                    const current = !done && (i === 0 ? rank <= 0 : rank >= DELIVERY_STEPS[i - 1].doneAt);
+                    return (
+                      <View key={step.label} style={{ flex: 1, alignItems: "center", gap: 4 }}>
+                        <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: done ? c.primary : current ? c.primary + "26" : c.input, borderWidth: current ? 2 : 0, borderColor: c.primary }}>
+                          <T size={15} color={done ? "#fff" : c.text}>{done ? "✓" : step.emoji}</T>
+                        </View>
+                        <T size={10} weight={done || current ? "700" : "400"} color={done || current ? c.text : c.muted} style={{ textAlign: "center" }}>{t(step.label)}</T>
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })()}
             {isCustomer && ["assigned", "at_pickup", "picked_up"].includes(tr.status) && (
               <View style={{ alignItems: "center", paddingTop: 6 }}>
                 <T size={12} color={c.muted}>{t("Code à donner au livreur")}</T>

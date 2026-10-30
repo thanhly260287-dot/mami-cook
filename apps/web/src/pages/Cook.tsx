@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bike, CalendarDays, Flag, Heart, MapPin, Store } from "lucide-react";
 import { cuisineLabel, formatDate, formatEuros, relativeDay, t } from "@mami/shared";
-import { fetchCookBySlug, fetchCookReviews, fetchFavorites, fetchFeed, toggleFavorite } from "@/lib/api";
+import { fetchCookBySlug, fetchCookReviews, fetchFavorites, fetchFeed, toggleFavorite, fetchRatingSummary } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useGeo } from "@/hooks/useGeo";
 import { DishCard } from "@/components/DishCard";
@@ -23,6 +24,8 @@ export default function CookPage() {
   const cook = useQuery({ queryKey: ["cook", slug], queryFn: () => fetchCookBySlug(slug!) });
   const dishes = useQuery({ queryKey: ["cook-feed", cook.data?.id], enabled: !!cook.data, queryFn: () => fetchFeed({ lat: geo.lat, lng: geo.lng, cookId: cook.data!.id }) });
   const reviews = useQuery({ queryKey: ["cook-reviews", cook.data?.id], enabled: !!cook.data, queryFn: () => fetchCookReviews(cook.data!.id) });
+  const summary = useQuery({ queryKey: ["cook-rating", cook.data?.id], enabled: !!cook.data,
+    queryFn: () => fetchRatingSummary(cook.data!.id, { avg: Number(cook.data!.rating_avg), count: cook.data!.rating_count }) });
   const favs = useQuery({ queryKey: ["favorites", user?.id], enabled: !!user, queryFn: fetchFavorites });
   const isFav = !!cook.data && (favs.data ?? []).includes(cook.data.id);
   const fav = useMutation({
@@ -85,12 +88,37 @@ export default function CookPage() {
 
         <section className="pb-16">
           <h2 className="mb-5 text-2xl font-bold">{t("Avis (")}{c.rating_count})</h2>
+          {summary.data && summary.data.count > 0 && (
+            <Card className="mb-6 grid gap-6 p-6 sm:grid-cols-[auto_1fr] sm:items-center">
+              <div className="text-center sm:pr-6 sm:text-left">
+                <p className="text-5xl font-extrabold tabular-nums">{Number(summary.data.average).toFixed(1)}<span className="text-xl text-muted-foreground"> / 5</span></p>
+                <Stars value={Number(summary.data.average)} size={20} className="mt-1 justify-center sm:justify-start" />
+                <p className="mt-1 text-sm text-muted-foreground">{t("{n} avis de clients vérifiés", { n: summary.data.count })}</p>
+              </div>
+              <div className="space-y-1.5">
+                {(["5", "4", "3", "2", "1"] as const).map((k) => {
+                  const n = summary.data!.distribution[k] ?? 0;
+                  const pct = summary.data!.count ? Math.round((n / summary.data!.count) * 100) : 0;
+                  return (
+                    <div key={k} className="flex items-center gap-3 text-sm">
+                      <span className="w-8 shrink-0 font-semibold tabular-nums">{k} ★</span>
+                      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-full rounded-full bg-amber-400" />
+                      </div>
+                      <span className="w-10 shrink-0 text-right tabular-nums text-muted-foreground">{pct} %</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground sm:col-span-2">{t("Seuls les clients qui ont reçu une commande de cette cuisine peuvent laisser un avis.")}</p>
+            </Card>
+          )}
           {(reviews.data ?? []).length === 0 ? <p className="text-muted-foreground">{t("Pas encore d'avis.")}</p> : (
             <div className="grid gap-4 md:grid-cols-2">
               {reviews.data!.map((r) => (
                 <Card key={r.id} className="p-5">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold">{r.profiles?.display_name ?? t("Client")}</p>
+                    <p className="flex items-center gap-2 font-semibold">{r.profiles?.display_name ?? t("Client")}<Badge tone="success" className="text-[10px]">{t("✓ Client vérifié")}</Badge></p>
                     <span className="text-xs text-muted-foreground">{formatDate(r.created_at, { day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
                   <Stars value={r.rating} className="mt-1" />

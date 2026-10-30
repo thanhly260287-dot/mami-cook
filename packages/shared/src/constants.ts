@@ -156,6 +156,16 @@ export const DELIVERY_STATUS_LABELS: Record<string, string> = {
   cancelled: "Annulée",
 };
 
+/** Étapes affichées au client pendant une livraison (index = rang dans DELIVERY_STEP_ORDER). */
+export const DELIVERY_STEP_ORDER = ["searching", "assigned", "at_pickup", "picked_up", "delivered"] as const;
+export const DELIVERY_STEPS = [
+  { label: "Livreur trouvé", emoji: "🛵", doneAt: 1 },
+  { label: "Arrivé à la cuisine", emoji: "👩‍🍳", doneAt: 2 },
+  { label: "Plat récupéré", emoji: "🥡", doneAt: 3 },
+  { label: "En chemin", emoji: "🚀", doneAt: 4 },
+  { label: "Arrivé", emoji: "🏠", doneAt: 4 },
+] as const;
+
 /** Statut juridique déclaré (DSA / DAC7). */
 export const BUSINESS_STATUSES = [
   { id: "individual_occasional", label: "Particulier (activité occasionnelle)" },

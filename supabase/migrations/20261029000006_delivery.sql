@@ -677,6 +677,21 @@ as $$
   select jsonb_build_object(
     'status', d.status, 'distance_m', d.distance_m,
     'assigned_at', d.assigned_at, 'picked_up_at', d.picked_up_at, 'delivered_at', d.delivered_at,
+    -- Temps d'arrivée estimé (minutes) : livreur → cuisine → client selon le véhicule, + remise du plat
+    'eta_minutes', case when d.status in ('searching', 'assigned', 'at_pickup', 'picked_up') then
+      ceil(
+        (case
+           when d.status = 'picked_up' and co.last_location is not null
+             then extensions.st_distance(co.last_location, d.dropoff_location) * 1.3
+           when d.status in ('assigned', 'at_pickup') and co.last_location is not null
+             then extensions.st_distance(co.last_location, d.pickup_location) * 1.3 + d.distance_m
+           else d.distance_m end)
+        / (case co.vehicle when 'foot' then 5 when 'bike' then 14 when 'ebike' then 18 else 22 end * 1000.0 / 60)
+      )::integer + case when d.status = 'picked_up' then 1 else 4 end
+    end,
+    -- Cuisine : position publique floutée (≈ 400 m) ; client : son adresse (visible par lui, la cuisine et l'équipe)
+    'pickup', jsonb_build_object('lat', extensions.st_y(c.public_location::extensions.geometry), 'lng', extensions.st_x(c.public_location::extensions.geometry)),
+    'dropoff', jsonb_build_object('lat', extensions.st_y(d.dropoff_location::extensions.geometry), 'lng', extensions.st_x(d.dropoff_location::extensions.geometry)),
     'courier', case when co.id is null then null else jsonb_build_object(
       'name', split_part(p.display_name, ' ', 1), 'avatar_url', p.avatar_url, 'vehicle', co.vehicle,
       'rating', co.rating_avg, 'rating_count', co.rating_count,
@@ -687,6 +702,7 @@ as $$
       'last_seen_at', co.last_seen_at) end)
   from public.deliveries d
   join public.orders o on o.id = d.order_id
+  join public.cooks c on c.id = o.cook_id
   left join public.couriers co on co.id = d.courier_id
   left join public.profiles p on p.id = co.id
   where d.order_id = _order_id and (o.customer_id = auth.uid() or o.cook_id = auth.uid() or public.is_staff())

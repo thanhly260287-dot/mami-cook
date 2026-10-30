@@ -1256,3 +1256,14 @@
 1255=Tutti gli ingredienti, dal principale al meno importante. Es.: pasta fresca, manzo, pomodori, besciamella, parmigiano.
 1256=Umami
 1257=🌿 Ingredienti
+1258=Arrivato
+1259=Arrivato in cucina
+1260=Arrivo previsto
+1261=In arrivo
+1262=Rider trovato
+1263=Piatto ritirato
+1264=Solo i clienti che hanno ricevuto un ordine da questa cucina possono lasciare una recensione.
+1265={n} recensioni di clienti verificati
+1266={n} min
+1267=Fasi della consegna
+1268=✓ Cliente verificato

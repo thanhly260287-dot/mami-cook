@@ -1256,3 +1256,14 @@
 1255=Tất cả nguyên liệu, từ chính đến phụ. VD: mì tươi, thịt bò, cà chua, sốt béchamel, phô mai parmesan.
 1256=Umami
 1257=🌿 Nguyên liệu
+1258=Đã đến
+1259=Đã đến bếp
+1260=Dự kiến đến
+1261=Đang trên đường
+1262=Đã có tài xế
+1263=Đã lấy món
+1264=Chỉ khách đã nhận đơn từ bếp này mới có thể đánh giá.
+1265={n} đánh giá từ khách đã xác minh
+1266={n} phút
+1267=Các bước giao hàng
+1268=✓ Khách đã xác minh
