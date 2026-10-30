@@ -53,21 +53,37 @@
   "hero": {
     "_note": "Bannière d'accueil : une maman contente de cuisiner. queries = recherches ; title = fichier choisi après vérification visuelle (éviter les photos marquées « personality »).",
     "queries": [
-      "Shixart1985 pasta",
-      "Shixart1985 spaghetti",
-      "Shixart1985 woman cooking",
-      "Shixart1985 mother kitchen",
-      "Shixart1985 smiling kitchen",
-      "woman cooking spaghetti",
-      "cooking spaghetti kitchen",
-      "pasta cooking woman smiling"
+      "Japanese woman cooking kitchen",
+      "Japanese grandmother cooking",
+      "Vietnamese woman cooking",
+      "Chinese woman cooking dumplings",
+      "Korean woman cooking kimchi",
+      "Indian woman cooking kitchen",
+      "Italian grandmother making pasta",
+      "Spanish woman cooking paella",
+      "Portuguese woman cooking",
+      "French woman cooking kitchen",
+      "African woman cooking kitchen home",
+      "Moroccan woman cooking",
+      "Mexican woman cooking tortillas",
+      "Brazilian woman cooking",
+      "man cooking at home kitchen",
+      "grandfather cooking kitchen",
+      "young woman cooking kitchen",
+      "Shixart1985 cooking"
     ],
-    "title": "File:Woman prepares healthy food in a modern kitchen while smiling and mixing ingredients in a bowl.jpg",
-    "openverse": [],
+    "title": "",
+    "openverse": [
+      "japanese woman cooking",
+      "grandmother cooking",
+      "man cooking kitchen home"
+    ],
     "slides": [
       "File:Middle-aged woman cooking in kitchen while looking out the window.jpg",
       "File:Woman prepares breakfast in a modern kitchen while smiling and enjoying her cooking time.jpg",
       "File:Woman stirring a pot in a cozy kitchen, enjoying the cooking process.jpg"
-    ]
+    ],
+    "per_query": 6,
+    "max": 72
   }
 }

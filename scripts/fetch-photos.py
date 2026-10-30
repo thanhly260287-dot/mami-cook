@@ -102,9 +102,10 @@ elif mode == "hero":
     seen, cands, errors = set(), [], []
     for q in cfg["hero"]["queries"]:
         try:
+            n = 0
             for c in search(q, 600, 30):
-                if c["title"] not in seen and (c["width"] or 0) >= 1200 and c["width"] >= c["height"]:
-                    seen.add(c["title"]); cands.append({**c, "query": q})
+                if n < cfg["hero"].get("per_query", 99) and c["title"] not in seen and (c["width"] or 0) >= 1200 and c["width"] >= c["height"]:
+                    seen.add(c["title"]); cands.append({**c, "query": q}); n += 1
         except Exception as e:  # noqa: BLE001
             print(f"✗ {q} : {e}")
     for q in cfg["hero"].get("openverse", []):
@@ -114,7 +115,7 @@ elif mode == "hero":
                     seen.add(c["title"]); cands.append({**c, "query": "openverse: " + q})
         except Exception as e:  # noqa: BLE001
             print(f"✗ openverse {q} : {e}"); errors.append(f"openverse {q} : {e}")
-    cands = cands[:48]
+    cands = cands[:cfg["hero"].get("max", 48)]
     ok = []
     for c in cands:
         try:
