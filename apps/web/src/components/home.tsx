@@ -71,6 +71,8 @@ const HERO_SLIDES = [
   { file: "hero-1.jpg", className: "object-[80%_30%] md:object-[70%_35%]" },
   { file: "hero-2.jpg", className: "object-[45%_20%] md:object-[45%_30%]" },
   { file: "hero-3.jpg", className: "-scale-x-100 object-[25%_25%] md:object-[30%_30%]" },
+  { file: "hero-4.jpg", className: "object-[45%_20%] md:object-[40%_30%]" },
+  { file: "hero-5.jpg", className: "object-[75%_30%] md:object-[70%_40%]" },
 ];
 
 function HeroCarousel({ index }: { index: number }) {
